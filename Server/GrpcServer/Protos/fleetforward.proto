@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServer.Protos";
+package fleetforward;
+import "google/protobuf/any.proto";
+enum HandlerType {
+  HANDLER_UNKNOWN = 0;
+  HANDLER_COMPANY = 1;
+}
+
+enum ActionType {
+  ACTION_UNKNOWN = 0;
+  ACTION_CREATE = 1;
+  ACTION_GET = 2;
+  ACTION_UPDATE = 3;
+  ACTION_DELETE = 4;
+  ACTION_LIST = 5;
+}
+
+enum StatusType {
+  STATUS_UNKNOWN = 0;
+  STATUS_OK = 1;
+  STATUS_ERROR = 2;
+  STATUS_INVALID_PAYLOAD = 3;
+}
+
+message CompanyProto {
+  int32 id = 1;
+  string mc_number = 2;
+  string company_name = 3;
+}
+
+message Request {
+  HandlerType handler = 1;
+  ActionType action = 2;
+  google.protobuf.Any payload = 3;
+}
+
+message Response {
+  StatusType status = 1;
+  google.protobuf.Any payload = 2;
+}
+
+service FleetService {
+  rpc sendRequest (Request) returns (Response);
+}

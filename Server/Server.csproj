@@ -5,5 +5,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Grpc.AspNetCore" Version="2.65.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.27.1" />
+        <PackageReference Include="Grpc.Tools" Version="2.65.0" PrivateAssets="All" />
+    </ItemGroup>
 
+    <ItemGroup>
+        <!-- Include proto file -->
+        <Protobuf Include="Protos/fleetforward.proto" GrpcServices="Server" />
+    </ItemGroup>
 </Project>
