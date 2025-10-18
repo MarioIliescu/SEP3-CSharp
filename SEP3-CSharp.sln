@@ -4,9 +4,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{485DAD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{166CD5D0-2F8E-4398-9CCB-B3FE3E735FDE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repositories", "Shared\Repositories\Repositories.csproj", "{BA8692BE-80A3-448F-B1C1-E8604233CA60}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entities", "Shared\Entities\Entities.csproj", "{7C37B06F-7A23-41D9-86F1-0919D2D64B94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repositories", "Server\Repositories\Repositories.csproj", "{9D30094B-82D3-4A13-AD91-1C0655F6EC82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,17 +14,17 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BA8692BE-80A3-448F-B1C1-E8604233CA60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA8692BE-80A3-448F-B1C1-E8604233CA60}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA8692BE-80A3-448F-B1C1-E8604233CA60}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA8692BE-80A3-448F-B1C1-E8604233CA60}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7C37B06F-7A23-41D9-86F1-0919D2D64B94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7C37B06F-7A23-41D9-86F1-0919D2D64B94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C37B06F-7A23-41D9-86F1-0919D2D64B94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C37B06F-7A23-41D9-86F1-0919D2D64B94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D30094B-82D3-4A13-AD91-1C0655F6EC82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D30094B-82D3-4A13-AD91-1C0655F6EC82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D30094B-82D3-4A13-AD91-1C0655F6EC82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D30094B-82D3-4A13-AD91-1C0655F6EC82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{BA8692BE-80A3-448F-B1C1-E8604233CA60} = {166CD5D0-2F8E-4398-9CCB-B3FE3E735FDE}
 		{7C37B06F-7A23-41D9-86F1-0919D2D64B94} = {166CD5D0-2F8E-4398-9CCB-B3FE3E735FDE}
+		{9D30094B-82D3-4A13-AD91-1C0655F6EC82} = {485DADB4-7991-4CEB-B1D0-2CC2CCB1692E}
 	EndGlobalSection
 EndGlobal
