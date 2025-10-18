@@ -14,7 +14,7 @@ public interface ICompanyRepository
      * @param payload The company to update
      * @return The updated company
      */
-    Task<Company> UpdateAsync(Company payload);
+    Task UpdateAsync(Company payload);
 
     /**
      * Get a single company by its mcNumber
@@ -46,5 +46,5 @@ public interface ICompanyRepository
      * Get all companies
      * @return An iterable of companies
      */
-    IQueryable<Company> GetAll();
+    IQueryable<Company> GetManyAsync();
 }
