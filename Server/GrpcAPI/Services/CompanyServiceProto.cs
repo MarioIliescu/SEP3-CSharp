@@ -148,7 +148,7 @@ public class CompanyServiceProto : ICompanyRepository
 
         var response = handler.SendRequestAsync(request);
         
-        CompanyProtoList received = response.Payload.Unpack<CompanyProtoList>();
+        CompanyProtoList received = response.Result.Payload.Unpack<CompanyProtoList>();
 
         List<Company> companies = new();
 
