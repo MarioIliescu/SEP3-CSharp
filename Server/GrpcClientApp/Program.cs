@@ -1,13 +1,20 @@
-//using GrpcClientApp.Services;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Net.Client;
+using GrpcClientApp.Protos;
+using var channel = GrpcChannel.ForAddress("http://localhost:6032");
+var handler = new FleetService.FleetServiceClient(channel);
 
-var builder = WebApplication.CreateBuilder(args);
+var request = new Request
+{
+    Handler = HandlerType.HandlerCompany,
+    Action = ActionType.ActionCreate,
+    Payload = Any.Pack(new CompanyProto()
+    {
+        McNumber = "0123456789",
+        CompanyName = "Carolina SRL"
+    })
+};
 
-// Add services to the container.
-builder.Services.AddGrpc();
+        var response = await handler.SendRequestAsync(request);
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
-
-app.Run();
+        Console.WriteLine($"Response received! {response}");

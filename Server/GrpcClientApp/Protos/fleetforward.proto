@@ -1,7 +1,7 @@
-syntax = "proto3";
+﻿syntax = "proto3";
 
-option csharp_namespace = "GrpcServer.Protos";
-package fleetforward;
+option csharp_namespace = "GrpcClientApp.Protos";
+package dk.via.fleetforward.gRPC;
 import "google/protobuf/any.proto";
 enum HandlerType {
   HANDLER_UNKNOWN = 0;
@@ -40,7 +40,10 @@ message Response {
   StatusType status = 1;
   google.protobuf.Any payload = 2;
 }
+message CompanyProtoList {
+  repeated CompanyProto companies = 1;
+}
 
 service FleetService {
-  rpc sendRequest (Request) returns (Response);
+  rpc SendRequest (Request) returns (Response);
 }
