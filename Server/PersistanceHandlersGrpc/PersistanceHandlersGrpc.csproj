@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>PersistanceHandlersGrpc</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PersistanceContracts\PersistanceContracts.csproj" />
+      <ProjectReference Include="..\..\Shared\ApiContracts\ApiContracts.csproj" />
+      <ProjectReference Include="..\GrpcAPI\GrpcAPI.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,3 +1,5 @@
+using ApiContracts.Enums;
+
 namespace ApiContracts;
 
-public record Response();
+public record Response(Status Status, object Payload);

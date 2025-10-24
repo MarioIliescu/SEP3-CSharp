@@ -43,6 +43,6 @@ message CompanyProtoList {
   repeated CompanyProto companies = 1;
 }
 
-service FleetService {
+service FleetServiceProto {
   rpc SendRequest (RequestProto) returns (ResponseProto);
 }

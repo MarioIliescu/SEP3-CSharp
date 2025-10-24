@@ -8,7 +8,7 @@ namespace GrpcAPI
 {
     public class FleetMainGrpcHandler
     {
-        private readonly FleetService.FleetServiceClient _client;
+        private readonly FleetServiceProto.FleetServiceProtoClient _client;
         private const string Host = "http://localhost:6032";
         
         private static readonly Lazy<FleetMainGrpcHandler> _instance =
@@ -20,7 +20,7 @@ namespace GrpcAPI
         
         private FleetMainGrpcHandler(GrpcChannel channel)
         {
-            _client = new FleetService.FleetServiceClient(channel);
+            _client = new FleetServiceProto.FleetServiceProtoClient(channel);
         }
 
         public static FleetMainGrpcHandler Instance => _instance.Value;

@@ -2,4 +2,4 @@ using ApiContracts.Enums;
 
 namespace ApiContracts;
 
-public record Request(ActionType ActionType, HandlerType HandlerType, object Payload);
+public record Request(ActionType Action, HandlerType Handler, object Payload);

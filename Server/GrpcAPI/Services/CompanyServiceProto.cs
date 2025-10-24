@@ -139,7 +139,6 @@ public class CompanyServiceProto : ICompanyRepository
     }
     public IQueryable<Company> GetManyAsync()
     {
-        //PROTO STUFF
         RequestProto request = new()
         {
             Action = ActionTypeProto.ActionList,
@@ -147,7 +146,6 @@ public class CompanyServiceProto : ICompanyRepository
         };
 
         var response = handler.SendRequestAsync(request);
-        
         CompanyProtoList received = response.Result.Payload.Unpack<CompanyProtoList>();
 
         List<Company> companies = new();
@@ -160,7 +158,6 @@ public class CompanyServiceProto : ICompanyRepository
                 .SetId(company.Id)
                 .Build());
         }
-        
         return companies.AsQueryable();
     }
 }
