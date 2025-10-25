@@ -34,7 +34,9 @@ namespace GrpcAPI
         {
             try
             {
-                return await _client.SendRequestAsync(request);
+                ResponseProto  response= await _client.SendRequestAsync(request);
+                Console.WriteLine(response);
+                return  response;
             }
             catch (Grpc.Core.RpcException ex)
             {

@@ -1,0 +1,121 @@
+@page "/company"
+@using ApiContracts
+@using BlazorFleetApp.Services
+@inject CompanyServiceClient CompanyService
+@rendermode InteractiveServer
+
+<h3>Companies</h3>
+
+<p>@statusMessage</p>
+
+<button class="btn btn-primary mb-2" @onclick="LoadCompanies">Load Companies</button>
+
+@if (companies != null)
+{
+    <ul class="list-group mb-3">
+        @foreach (var company in companies)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@company.CompanyName (MC: @company.McNumber)</span>
+                <span>
+                    <button class="btn btn-sm btn-warning me-1" @onclick="() => StartEdit(company)">Edit</button>
+                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteCompany(company.McNumber)">Delete</button>
+                </span>
+            </li>
+        }
+    </ul>
+}
+
+<h4>@(editingCompany is null ? "Add Company" : "Edit Company")</h4>
+<div class="mb-3">
+    <label>MC Number:</label>
+    <input class="form-control" @bind="formMcNumber" />
+</div>
+<div class="mb-3">
+    <label>Company Name:</label>
+    <input class="form-control" @bind="formCompanyName" />
+</div>
+<button class="btn btn-success me-1" @onclick="SaveCompany">Save</button>
+<button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+
+@code {
+    private List<CompanyDto>? companies;
+    private string statusMessage = "Click 'Load Companies' to fetch data.";
+
+    private CompanyDto? editingCompany = null;
+    private string formMcNumber = "";
+    private string formCompanyName = "";
+
+    private async Task LoadCompanies()
+    {
+        try
+        {
+            companies = await CompanyService.GetAllAsync();
+            statusMessage = $"Loaded {companies.Count} companies.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error loading companies: {ex.Message}";
+        }
+    }
+
+    private void StartEdit(CompanyDto company)
+    {
+        editingCompany = company;
+        formMcNumber = company.McNumber;
+        formCompanyName = company.CompanyName;
+    }
+
+    private void CancelEdit()
+    {
+        editingCompany = null;
+        formMcNumber = "";
+        formCompanyName = "";
+    }
+
+    private async Task SaveCompany()
+    {
+        if (string.IsNullOrWhiteSpace(formMcNumber) || string.IsNullOrWhiteSpace(formCompanyName))
+        {
+            statusMessage = "MC Number and Company Name are required.";
+            return;
+        }
+
+        try
+        {
+            var dto = new CompanyDto(formMcNumber, formCompanyName);
+
+            if (editingCompany == null)
+            {
+                await CompanyService.CreateAsync(dto);
+                statusMessage = $"Company '{dto.CompanyName}' created.";
+            }
+            else
+            {
+                await CompanyService.UpdateAsync(dto);
+                statusMessage = $"Company '{dto.CompanyName}' updated.";
+            }
+
+            await LoadCompanies();
+            CancelEdit();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error saving company: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteCompany(string mcNumber)
+    {
+        try
+        {
+            await CompanyService.DeleteAsync(mcNumber);
+            statusMessage = $"Company with MC '{mcNumber}' deleted.";
+            await LoadCompanies();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error deleting company: {ex.Message}";
+        }
+    }
+}

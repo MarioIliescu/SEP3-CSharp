@@ -1,0 +1,38 @@
+@FleetWebApi_HostAddress = https://localhost:7087
+@contentType = application/json
+
+
+###
+
+### Get a single company by ID
+GET {{FleetWebApi_HostAddress}}/company/id
+Accept: {{contentType}}
+
+###
+
+### Create a new company
+POST {{FleetWebApi_HostAddress}}/company/create
+Content-Type: {{contentType}}
+
+{
+  "companyName": "Fleet Forward",
+  "mcNumber": "123456789"
+}
+
+###
+
+### Update a company
+PUT {{FleetWebApi_HostAddress}}/company/update
+Content-Type: {{contentType}}
+
+{
+  "id": 1,
+  "companyName": "Fleet Forward Updated",
+  "mcNumber": "123456789"
+}
+
+###
+
+### Delete a company
+DELETE {{FleetWebApi_HostAddress}}/company/delete
+Accept: {{contentType}}

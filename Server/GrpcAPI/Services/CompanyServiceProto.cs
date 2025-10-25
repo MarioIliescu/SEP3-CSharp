@@ -142,7 +142,13 @@ public class CompanyServiceProto : ICompanyRepository
         RequestProto request = new()
         {
             Action = ActionTypeProto.ActionList,
-            Handler = HandlerTypeProto.HandlerCompany
+            Handler = HandlerTypeProto.HandlerCompany,
+            Payload = Any.Pack(new CompanyProto()
+            //Poland will pay for the 2 hours of crying I suffered for this error.
+            {
+                CompanyName = "default",
+                McNumber = "default"
+            })
         };
 
         var response = handler.SendRequestAsync(request);

@@ -1,50 +1,56 @@
 namespace Repositories;
 using Entities;
+/// <summary>
+/// Defines CRUD operations for managing <see cref="Company"/> entities.
+/// </summary>
 public interface ICompanyRepository
 {
-    //CRUD operations
-    /**
-     * Create a new company
-     * @param payload The company to create
-     * @return The created company
-     */
-    Task<Company> CreateAsync(Company payload);
-    /**
-     * Update an existing company
-     * @param payload The company to update
-     * @return The updated company
-     */
-    Task UpdateAsync(Company payload);
+    
+        /// <summary>
+        /// Creates a new company.
+        /// </summary>
+        /// <param name="payload">The company to create.</param>
+        /// <returns>The created <see cref="Company"/>.</returns>
+        Task<Company> CreateAsync(Company payload);
 
-    /**
-     * Get a single company by its mcNumber
-     * @param mcNumber The mcNumber of the company to get
-     * @return The company or null if not found
-     */
-    Task<Company> GetSingleAsync(String mcNumber);
+        /// <summary>
+        /// Updates an existing company.
+        /// </summary>
+        /// <param name="payload">The company to update.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task UpdateAsync(Company payload);
 
-    /**
-     * Get a single company by its id
-     * @param id The id of the company to get
-     * @return The company or null if not found
-     */
-    Task<Company> GetSingleAsync(int id);
+        /// <summary>
+        /// Retrieves a single company by its MC number.
+        /// </summary>
+        /// <param name="mcNumber">The MC number of the company to retrieve.</param>
+        /// <returns>The matching <see cref="Company"/> or <c>null</c> if not found.</returns>
+        Task<Company> GetSingleAsync(string mcNumber);
 
-    /**
-     * Delete a company by its mcNumber
-     * @param mcNumber The mcNumber of the company to delete
-     */
-    Task DeleteAsync(String mcNumber);
+        /// <summary>
+        /// Retrieves a single company by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the company to retrieve.</param>
+        /// <returns>The matching <see cref="Company"/> or <c>null</c> if not found.</returns>
+        Task<Company> GetSingleAsync(int id);
 
-    /**
-     * Delete a company by its id
-     * @param id The id of the company to delete
-     */
-    Task DeleteAsync(int id);
+        /// <summary>
+        /// Deletes a company by its MC number.
+        /// </summary>
+        /// <param name="mcNumber">The MC number of the company to delete.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task DeleteAsync(string mcNumber);
 
-    /**
-     * Get all companies
-     * @return An iterable of companies
-     */
-    IQueryable<Company> GetManyAsync();
+        /// <summary>
+        /// Deletes a company by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the company to delete.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task DeleteAsync(int id);
+
+        /// <summary>
+        /// Retrieves all companies.
+        /// </summary>
+        /// <returns>An <see cref="IQueryable{Company}"/> containing all companies.</returns>
+        IQueryable<Company>GetManyAsync();
 }
