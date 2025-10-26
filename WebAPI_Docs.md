@@ -14,7 +14,11 @@ For a better overview of the project go back to [README](https://github.com/Mari
 
 ## NuGet used
 
+<img width="548" height="138" alt="Microsoft.AspNetCore.OpenApi" src="https://github.com/user-attachments/assets/30a6ece4-3856-4a9f-b708-0fbac7973438" />
+
 ## File System Overview
+
+<img width="394" height="308" alt="FileSystem" src="https://github.com/user-attachments/assets/c775edd0-b7ab-49fa-8068-e7ebac8b8b4a" />
 
 ## Program code (Entry point)
 
