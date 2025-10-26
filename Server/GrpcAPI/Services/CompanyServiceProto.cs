@@ -144,7 +144,7 @@ public class CompanyServiceProto : ICompanyRepository
             Action = ActionTypeProto.ActionList,
             Handler = HandlerTypeProto.HandlerCompany,
             Payload = Any.Pack(new CompanyProto()
-            //Poland will pay for the 2 hours of crying I suffered for this error.
+            //Must put in a payload, do not leave null otherwise there will be an exception on the Java server
             {
                 CompanyName = "default",
                 McNumber = "default"
