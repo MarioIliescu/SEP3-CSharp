@@ -16,7 +16,7 @@
 
 #### [Java Server](https://github.com/MarioIliescu/Sep3-Java)
 
-#### [Blazor Client Documentation]([h](https://github.com/MarioIliescu/SEP3-CSharp/blob/master/BlazorClientDocs.md))
+#### [Blazor Client Documentation](https://github.com/MarioIliescu/SEP3-CSharp/blob/master/BlazorClientDocs.md)
 
 ---
 
