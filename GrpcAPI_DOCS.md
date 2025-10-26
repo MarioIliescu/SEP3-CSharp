@@ -19,7 +19,11 @@ For a better overview of the project go back to [README](https://github.com/Mari
 
 ## Nuget packages IMPORTANT
 
+<img width="389" height="177" alt="GrpcNugets" src="https://github.com/user-attachments/assets/27e40164-4e2c-4e02-ac7d-40107290034c" />
+
 ## Required folder structure IMPORTANT
+
+<img width="388" height="299" alt="folder structure" src="https://github.com/user-attachments/assets/bbadd9d3-cb97-4233-88e2-15dad748de5e" />
 
 ## Proto file IMPORTANT
 
