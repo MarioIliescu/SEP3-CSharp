@@ -12,9 +12,9 @@
 
 For a better overview of the project go back to [README](https://github.com/MarioIliescu/SEP3-CSharp/blob/master/README.md)  
 
-## NuGet used
-
 ## File System Overview
+
+<img width="397" height="531" alt="FileSystem" src="https://github.com/user-attachments/assets/bc52736b-9648-4783-a434-dfbe13a65e32" />
 
 ## Program code (Entry point)
 
