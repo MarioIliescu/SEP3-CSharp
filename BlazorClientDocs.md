@@ -1,7 +1,6 @@
 # BlazorClient
 
 - [BlazorClient](#blazorclient)
-  - [NuGet used](#nuget-used)
   - [File System Overview](#file-system-overview)
   - [Program code (Entry point)](#program-code-entry-point)
   - [Client](#client)
