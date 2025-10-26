@@ -43,7 +43,6 @@ Are used to handle persistance of objects transmited through Grpc to the Databas
 
 Example broken down by steps:  
 
-
 ### CompanyHandlerGrpc
 
 Implement the interface and create a `readonly` instance of the designated service.
@@ -346,6 +345,16 @@ public IQueryable<Company> GetManyAsync()
 ---
 
 ## MainHandler with Grpc Client
+
+Add this to protobuf
+
+```protobuf
+service FleetServiceProto {
+  rpc SendRequest (RequestProto) returns (ResponseProto);
+}
+```
+
+C# code
 
 ```C#
 using Grpc.Net.Client;
