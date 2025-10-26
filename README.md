@@ -1,4 +1,24 @@
-# Infrastructure C# 
+# Infrastructure C#  
+
+Table of context
+
+- [Infrastructure C#](#infrastructure-c)
+  - [Flowchart of the project](#flowchart-of-the-project)
+    - [Links to documentation of parts](#links-to-documentation-of-parts)
+      - [WebAPI Documentation and Services](#webapi-documentation-and-services)
+      - [GrpcAPI and GrpcHandlers Documentation](#grpcapi-and-grpchandlers-documentation)
+      - [Java Server](#java-server)
+      - [Blazor Client Documentation](#blazor-client-documentation)
+    - [General Contracts](#general-contracts)
+      - [API Contracts](#api-contracts)
+        - [Dtos](#dtos)
+      - [Enums](#enums)
+        - [ActionType](#actiontype)
+        - [HandlerType](#handlertype)
+        - [Status](#status)
+      - [Entities](#entities)
+      - [Persistance  contract](#persistance--contract)
+      - [Repository contract](#repository-contract)
 
 ## Flowchart of the project
 
@@ -196,5 +216,25 @@ using ApiContracts;
 public interface IFleetPersistanceHandler
 {
     Task<object> HandleAsync(Request request);
+}
+```
+
+#### Repository contract
+
+Interface that every repository class must implement.  
+
+```C#
+/// <summary>
+/// Defines CRUD operations for managing <see cref="Company"/> entities.
+/// </summary>
+public interface ICompanyRepository
+{
+        Task<Company> CreateAsync(Company payload);
+        Task UpdateAsync(Company payload);
+        Task<Company> GetSingleAsync(string mcNumber);
+        Task<Company> GetSingleAsync(int id);
+        Task DeleteAsync(string mcNumber);
+        Task DeleteAsync(int id);
+        IQueryable<Company>GetManyAsync();
 }
 ```
