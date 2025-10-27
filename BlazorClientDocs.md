@@ -117,7 +117,7 @@ public class CompanyServiceClient
 
 ```C#
 @page "/company"
-@using ApiContracts
+@using ApiContracts.Company
 @using BlazorFleetApp.Services
 @inject CompanyServiceClient CompanyService
 @rendermode InteractiveServer
@@ -157,10 +157,10 @@ public class CompanyServiceClient
 <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
 
 @code {
-    private List<CompanyDto>? companies;
+    private List<CreateCompanyDto>? companies;
     private string statusMessage = "Click 'Load Companies' to fetch data.";
 
-    private CompanyDto? editingCompany = null;
+    private CreateCompanyDto? editingCompany = null;
     private string formMcNumber = "";
     private string formCompanyName = "";
 
@@ -177,7 +177,7 @@ public class CompanyServiceClient
         }
     }
 
-    private void StartEdit(CompanyDto company)
+    private void StartEdit(CreateCompanyDto company)
     {
         editingCompany = company;
         formMcNumber = company.McNumber;
@@ -201,7 +201,15 @@ public class CompanyServiceClient
 
         try
         {
-            var dto = new CompanyDto(formMcNumber, formCompanyName);
+            CreateCompanyDto? dto;
+            if (editingCompany != null)
+            {
+                 dto = new CreateCompanyDto(editingCompany.Id, formMcNumber, formCompanyName);
+            }
+            else
+            {
+                 dto = new CreateCompanyDto(Id: 0, formMcNumber, formCompanyName);
+            }
 
             if (editingCompany == null)
             {
