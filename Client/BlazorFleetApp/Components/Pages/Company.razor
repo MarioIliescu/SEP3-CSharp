@@ -83,7 +83,15 @@
 
         try
         {
-            var dto = new CreateCompanyDto(editingCompany.Id,formMcNumber, formCompanyName);
+            CreateCompanyDto? dto;
+            if (editingCompany != null)
+            {
+                 dto = new CreateCompanyDto(editingCompany.Id, formMcNumber, formCompanyName);
+            }
+            else
+            {
+                 dto = new CreateCompanyDto(Id: 0, formMcNumber, formCompanyName);
+            }
 
             if (editingCompany == null)
             {
