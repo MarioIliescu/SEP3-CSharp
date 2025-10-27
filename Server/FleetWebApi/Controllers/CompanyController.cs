@@ -1,5 +1,5 @@
 using Entities;
-using ApiContracts;
+using ApiContracts.Company;
 using Microsoft.AspNetCore.Mvc;
 using Services.Company;
 
@@ -22,7 +22,7 @@ public class CompanyController : ControllerBase
     {
         var companiesList = _companyService.GetManyAsync();
         var companiesDto = companiesList
-            .Select(c => new CompanyDto(c.McNumber, c.CompanyName))
+            .Select(c => new CreateCompanyDto(c.Id,c.McNumber, c.CompanyName))
             .ToList();
 
         return Ok(companiesDto);
@@ -30,19 +30,19 @@ public class CompanyController : ControllerBase
 
 // GET /company/{mcNumber}
     [HttpGet("{mcNumber}")]
-    public async Task<ActionResult<CompanyDto>> GetSingleCompany(string mcNumber)
+    public async Task<ActionResult<CreateCompanyDto>> GetSingleCompany(string mcNumber)
     {
         var company = await _companyService.GetSingleAsync(mcNumber);
         if (company == null)
             return NotFound("Company not found");
 
-        return Ok(new CompanyDto(company.McNumber, company.CompanyName));
+        return Ok(new CreateCompanyDto(company.Id,company.McNumber, company.CompanyName));
     }
 
 
     // POST /company
     [HttpPost]
-    public async Task<ActionResult> CreateCompany([FromBody] CompanyDto dto)
+    public async Task<ActionResult> CreateCompany([FromBody] CreateCompanyDto dto)
     {
         var company = new Company.Builder()
             .SetMcNumber(dto.McNumber)
@@ -55,9 +55,9 @@ public class CompanyController : ControllerBase
 
     // PUT /company
     [HttpPut]
-    public async Task<ActionResult> UpdateCompany([FromBody] CompanyDto dto)
+    public async Task<ActionResult> UpdateCompany([FromBody]  CreateCompanyDto dto)
     {
-        var existing = await _companyService.GetSingleAsync(dto.McNumber);
+        var existing = await _companyService.GetSingleAsync(dto.Id);
         if (existing == null)
             return NotFound("Company not found");
 

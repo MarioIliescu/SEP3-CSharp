@@ -1,6 +1,6 @@
 using System.Net.Http;
 using System.Net.Http.Json;
-using ApiContracts;
+using ApiContracts.Company;
 
 namespace BlazorFleetApp.Services;
 
@@ -14,20 +14,20 @@ public class CompanyServiceClient
     }
 
     // Get all companies
-    public async Task<List<CompanyDto>> GetAllAsync()
+    public async Task<List<CreateCompanyDto>> GetAllAsync()
     {
-        return await _http.GetFromJsonAsync<List<CompanyDto>>("company") ?? new List<CompanyDto>();
+        return await _http.GetFromJsonAsync<List<CreateCompanyDto>>("company") ?? new List<CreateCompanyDto>();
     }
 
     // Create a company
-    public async Task CreateAsync(CompanyDto company)
+    public async Task CreateAsync(CreateCompanyDto company)
     {
         var response = await _http.PostAsJsonAsync("company", company);
         response.EnsureSuccessStatusCode();
     }
 
     // Update a company
-    public async Task UpdateAsync(CompanyDto company)
+    public async Task UpdateAsync(CreateCompanyDto company)
     {
         var response = await _http.PutAsJsonAsync("company", company);
         response.EnsureSuccessStatusCode();
