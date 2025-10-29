@@ -8,7 +8,12 @@ namespace GrpcAPI.Services;
 
 public class CompanyServiceProto : ICompanyRepository
 {
-    private readonly FleetMainGrpcHandler handler = FleetMainGrpcHandler.Instance;
+    private readonly FleetMainGrpcHandler handler;
+
+    public CompanyServiceProto(FleetMainGrpcHandler fleetMainGrpcHandler)
+    {
+        handler = fleetMainGrpcHandler;
+    }
     
     public async Task<Company> CreateAsync(Company payload)
     {
@@ -38,8 +43,6 @@ public class CompanyServiceProto : ICompanyRepository
     
     public async Task UpdateAsync(Company payload)
     {
-        Company companyToUpdate = await GetSingleAsync(payload.Id);
-
         Company updated = new Company.Builder()
             .SetCompanyName(payload.CompanyName)
             .SetMcNumber(payload.McNumber)

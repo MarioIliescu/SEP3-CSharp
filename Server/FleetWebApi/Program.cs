@@ -1,3 +1,5 @@
+using Grpc.Net.Client;
+using GrpcAPI;
 using GrpcAPI.Services;
 using PersistanceContracts;
 using PersistanceHandlersGrpc.CompanyPersistance;
@@ -11,6 +13,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<CompanyServiceProto>();
 builder.Services.AddScoped<IFleetPersistanceHandler, CompanyHandlerGrpc>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddSingleton<FleetMainGrpcHandler>(sp =>
+{
+    var channel =
+        Grpc.Net.Client.GrpcChannel.ForAddress("http://localhost:6032");
+    return new FleetMainGrpcHandler(channel);
+});
 
 
 var app = builder.Build();

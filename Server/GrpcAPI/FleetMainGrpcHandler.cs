@@ -9,21 +9,11 @@ namespace GrpcAPI
     public class FleetMainGrpcHandler
     {
         private readonly FleetServiceProto.FleetServiceProtoClient _client;
-        private const string Host = "http://localhost:6032";
-        
-        private static readonly Lazy<FleetMainGrpcHandler> _instance =
-            new Lazy<FleetMainGrpcHandler>(() =>
-            {
-                var channel = Grpc.Net.Client.GrpcChannel.ForAddress(Host);
-                return new FleetMainGrpcHandler(channel);
-            });
-        
-        private FleetMainGrpcHandler(GrpcChannel channel)
+
+        public FleetMainGrpcHandler(GrpcChannel channel)
         {
             _client = new FleetServiceProto.FleetServiceProtoClient(channel);
         }
-
-        public static FleetMainGrpcHandler Instance => _instance.Value;
         
         /// <summary>
         /// Sends a request to the gRPC server specifying the handler and action
