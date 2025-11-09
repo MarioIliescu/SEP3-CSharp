@@ -18,7 +18,7 @@ public class CompanyController : ControllerBase
 
     // GET /company
     [HttpGet]
-    public async Task<ActionResult> GetCompanies()
+    public async Task<ActionResult> GetCompaniesAsync()
     {
         var companiesList = _companyService.GetManyAsync();
         var companiesDto = companiesList
@@ -30,11 +30,9 @@ public class CompanyController : ControllerBase
 
 // GET /company/{mcNumber}
     [HttpGet("{mcNumber}")]
-    public async Task<ActionResult<CreateCompanyDto>> GetSingleCompany(string mcNumber)
+    public async Task<ActionResult<CreateCompanyDto>> GetSingleCompanyAsync(string mcNumber)
     {
         var company = await _companyService.GetSingleAsync(mcNumber);
-        if (company == null)
-            return NotFound("Company not found");
 
         return Ok(new CreateCompanyDto(company.Id,company.McNumber, company.CompanyName));
     }
@@ -42,25 +40,23 @@ public class CompanyController : ControllerBase
 
     // POST /company
     [HttpPost]
-    public async Task<ActionResult> CreateCompany([FromBody] CreateCompanyDto dto)
+    public async Task<ActionResult> CreateCompanyAsync([FromBody] CreateCompanyDto dto)
     {
         var company = new Company.Builder()
             .SetMcNumber(dto.McNumber)
             .SetCompanyName(dto.CompanyName)
             .Build();
 
-        await _companyService.CreateAsync(company);
-        return CreatedAtAction(nameof(GetSingleCompany), new { mcNumber = dto.McNumber }, dto);
+        Company created = await _companyService.CreateAsync(company);
+        return CreatedAtAction(nameof(GetSingleCompanyAsync), new { mcNumber = created.McNumber }, new 
+            CreateCompanyDto(created.Id,created.McNumber, created.CompanyName));
     }
 
     // PUT /company
     [HttpPut]
-    public async Task<ActionResult> UpdateCompany([FromBody]  CreateCompanyDto dto)
+    public async Task<ActionResult> UpdateCompanyAsync([FromBody]  CreateCompanyDto dto)
     {
         var existing = await _companyService.GetSingleAsync(dto.Id);
-        if (existing == null)
-            return NotFound("Company not found");
-
         var company = new Company.Builder()
             .SetId(existing.Id)
             .SetMcNumber(dto.McNumber)
@@ -73,7 +69,7 @@ public class CompanyController : ControllerBase
 
     // DELETE /company/{mcNumber}
     [HttpDelete("{mcNumber}")]
-    public async Task<ActionResult> DeleteCompany(string mcNumber)
+    public async Task<ActionResult> DeleteCompanyAsync(string mcNumber)
     {
         var existing = await _companyService.GetSingleAsync(mcNumber);
         if (existing == null)
