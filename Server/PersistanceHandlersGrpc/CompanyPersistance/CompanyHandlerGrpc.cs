@@ -32,12 +32,12 @@ public class CompanyHandlerGrpc : IFleetPersistanceHandler
             }
             case ActionType.Delete:
             {
-                await HandleDeleteAsync(company);;
+                await _companyService.DeleteAsync(company.McNumber);
                 break;
             }
             case ActionType.Get:
             {
-                return await HandleGetAsync(company);
+                return await _companyService.GetSingleAsync(company.McNumber);
             }
             case ActionType.List:
             {
@@ -47,33 +47,5 @@ public class CompanyHandlerGrpc : IFleetPersistanceHandler
                 throw new InvalidEnumArgumentException("Unknown action type");
         }
         return Task.CompletedTask;
-    }
-
-    private async Task<Company> HandleGetAsync(Company company)
-    {
-        if (company.Id != 0)
-        {
-            return await _companyService.GetSingleAsync(company.Id);
-        }
-
-        if (!string.IsNullOrEmpty(company.McNumber))
-        {
-            return await _companyService.GetSingleAsync(company.McNumber);
-        }
-
-        throw new ArgumentException("Invalid company");
-    }
-
-    private async Task HandleDeleteAsync(Company company)
-    {
-        if (company.Id != 0)
-        {
-            await _companyService.DeleteAsync(company.Id);
-        }
-
-        if (!string.IsNullOrEmpty(company.McNumber))
-        {
-            await _companyService.DeleteAsync(company.McNumber);
-        }
     }
 }

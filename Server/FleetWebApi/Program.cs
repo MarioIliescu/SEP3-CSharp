@@ -19,17 +19,15 @@ builder.Services.AddSingleton<FleetMainGrpcHandler>(sp =>
         Grpc.Net.Client.GrpcChannel.ForAddress("http://localhost:6032");
     return new FleetMainGrpcHandler(channel);
 });
-
-
 var app = builder.Build();
-
+app.UseRouting();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-}
+    if (app.Environment.IsDevelopment())
+    {
+    }
 
-app.UseHttpsRedirection();
+    app.UseHttpsRedirection();
 
-app.MapControllers();
+    app.MapControllers();
 
-app.Run();
+    app.Run();

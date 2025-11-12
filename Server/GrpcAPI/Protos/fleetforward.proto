@@ -24,9 +24,8 @@ enum StatusTypeProto {
 }
 
 message CompanyProto {
-  int32 id = 1;
-  string mc_number = 2;
-  string company_name = 3;
+  string mc_number = 1;
+  string company_name = 2;
 }
 
 message RequestProto {
@@ -45,4 +44,45 @@ message CompanyProtoList {
 
 service FleetServiceProto {
   rpc SendRequest (RequestProto) returns (ResponseProto);
+}
+message UserProto{
+  int32 id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string email = 4;
+  string phoneNumber = 5;
+  string password = 6;
+  oneof role{
+    DriverProto driver = 7;
+    DispatcherProto dispatcher = 8;
+  }
+}
+enum StatusDriverProto{
+  UNKNOWN = 0;
+  AVAILABLE = 1;
+  BUSY = 2;
+  OFF_DUTY = 3;
+}
+enum DriverCompanyRoleProto{
+  UNKNOWN_ROLE_COMPANY = 0;
+  DRIVER = 1;
+  OWNER_OPERATOR = 2;
+}
+enum TrailerTypeProto{
+  UNKNOWN_TRAILER = 0;
+  DRY_VAN = 1;
+  FLATBED = 2;
+  REEFER = 3;
+}
+message DriverProto{
+  string companyMcNumber = 1;
+  StatusDriverProto driverStatus = 2;
+  DriverCompanyRoleProto companyRole = 3;
+  TrailerTypeProto trailerType = 4;
+  string currentState = 5;
+  int32 currentZIPCODE = 6;
+}
+message DispatcherProto{
+  double currentRate = 1;
+  repeated int32 driversAssigned = 2;
 }

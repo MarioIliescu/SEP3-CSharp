@@ -20,11 +20,22 @@ public class CompanyServiceClient
     }
 
     // Create a company
-    public async Task CreateAsync(CreateCompanyDto company)
+    /// <summary>
+    /// Creates a new company.
+    /// </summary>
+    public async Task CreateAsync(
+        CreateCompanyDto dto)
     {
-        var response = await _http.PostAsJsonAsync("company", company);
+        // POST /api/company
+        var response = await _http
+            .PostAsJsonAsync("company", dto);
+
+        // Optional: capture the returned 201 Location header
+        // var location = response.Headers.Location;
+
         response.EnsureSuccessStatusCode();
     }
+
 
     // Update a company
     public async Task UpdateAsync(CreateCompanyDto company)

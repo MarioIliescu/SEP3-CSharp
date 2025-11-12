@@ -34,17 +34,7 @@ public class CompanyService :ICompanyService
             .Build());
         return (Company) await _handler.HandleAsync(request);
     }
-
-    public async Task<Company> GetSingleAsync(int id)
-    {
-        //Logic needed to verify
-        Request request = MakeCompanyRequest(ActionType.Get, 
-            new Company.Builder()
-                .SetId(id)
-                .Build());
-        return (Company) await _handler.HandleAsync(request);
-    }
-
+    
     public async Task DeleteAsync(string mcNumber)
     {
         Request request = MakeCompanyRequest(ActionType.Delete, 
@@ -53,20 +43,11 @@ public class CompanyService :ICompanyService
                 .Build());
          await _handler.HandleAsync(request);
     }
-
-    public async Task DeleteAsync(int id)
-    {
-        Request request = MakeCompanyRequest(ActionType.Delete, 
-            new Company.Builder()
-                .SetId(id)
-                .Build());
-        await _handler.HandleAsync(request);
-    }
+    
 
     public IQueryable<Company> GetManyAsync()
     {
         Request request = MakeCompanyRequest(ActionType.List, new Company.Builder()
-            .SetId(0)
             .Build());
 
         var result = _handler.HandleAsync(request).Result as IQueryable<Company> ;
