@@ -4,7 +4,6 @@ public class Company
 {
     public string McNumber { get; private set; }
     public string CompanyName { get; private set; }
-    public int Id { get; set; } = 0;
 
     private Company() { } // private constructor, only builder can create
 
@@ -13,7 +12,6 @@ public class Company
     {
         private string _mcNumber = "DEFAULTVAL";
         private string _companyName = "Default Name";
-        private int _id = 0;
 
         public Builder SetMcNumber(string mcNumber)
         {
@@ -32,14 +30,7 @@ public class Company
             _companyName = companyName;
             return this;
         }
-
-        public Builder SetId(int id)
-        {
-            if (id < 0) 
-                throw new ArgumentException("Id cannot be negative");
-            _id = id;
-            return this;
-        }
+        
 
         public Company Build()
         {
@@ -47,7 +38,6 @@ public class Company
             {
                 McNumber = _mcNumber,
                 CompanyName = _companyName,
-                Id = _id
             };
         }
     }

@@ -20,7 +20,6 @@ public class CompanyServiceProto : ICompanyRepository
         CompanyProto proto = new()
         {
             McNumber = payload.McNumber,
-            Id = payload.Id,
             CompanyName = payload.CompanyName
         };
 
@@ -37,7 +36,6 @@ public class CompanyServiceProto : ICompanyRepository
         return await Task.FromResult(new Company.Builder()
             .SetCompanyName(received.CompanyName)
             .SetMcNumber(received.McNumber)
-            .SetId(received.Id)
             .Build());
     }
     
@@ -46,12 +44,11 @@ public class CompanyServiceProto : ICompanyRepository
         Company updated = new Company.Builder()
             .SetCompanyName(payload.CompanyName)
             .SetMcNumber(payload.McNumber)
-            .SetId(payload.Id).Build();
+            .Build();
 
         CompanyProto proto = new()
         {
             CompanyName = updated.CompanyName,
-            Id = updated.Id,
             McNumber = updated.McNumber
         };
 
@@ -78,33 +75,11 @@ public class CompanyServiceProto : ICompanyRepository
         };
         var response = await handler.SendRequestAsync(request);
         CompanyProto received = response.Payload.Unpack<CompanyProto>();
-
+        Console.WriteLine(received.CompanyName);
+        Console.WriteLine(received.McNumber);
         return await Task.FromResult(new Company.Builder()
             .SetCompanyName(received.CompanyName)
             .SetMcNumber(received.McNumber)
-            .SetId(received.Id)
-            .Build());
-    }
-    public async Task<Company> GetSingleAsync(int id)
-    {
-        CompanyProto proto = new()
-        {
-            Id = id
-        };
-
-        RequestProto request = new()
-        {
-            Action = ActionTypeProto.ActionGet,
-            Payload = Any.Pack(proto),
-            Handler = HandlerTypeProto.HandlerCompany
-        };
-        var response = await handler.SendRequestAsync(request);
-        CompanyProto received = response.Payload.Unpack<CompanyProto>();
-
-        return await Task.FromResult(new Company.Builder()
-            .SetCompanyName(received.CompanyName)
-            .SetMcNumber(received.McNumber)
-            .SetId(received.Id)
             .Build());
     }
     
@@ -113,22 +88,6 @@ public class CompanyServiceProto : ICompanyRepository
         CompanyProto proto = new()
         {
             McNumber = mcNumber
-        };
-        
-        RequestProto request = new()
-        {
-            Action = ActionTypeProto.ActionDelete,
-            Payload = Any.Pack(proto),
-            Handler = HandlerTypeProto.HandlerCompany
-        };
-        
-        await handler.SendRequestAsync(request);
-    }
-    public async Task DeleteAsync(int id)
-    {
-        CompanyProto proto = new()
-        {
-            Id = id
         };
         
         RequestProto request = new()
@@ -150,7 +109,7 @@ public class CompanyServiceProto : ICompanyRepository
             //Must put in a payload, do not leave null otherwise there will be an exception on the Java server
             {
                 CompanyName = "default",
-                McNumber = "default"
+                McNumber = "default123"
             })
         };
 
@@ -164,7 +123,6 @@ public class CompanyServiceProto : ICompanyRepository
             companies.Add(new Company.Builder()
                 .SetCompanyName(company.CompanyName)
                 .SetMcNumber(company.McNumber)
-                .SetId(company.Id)
                 .Build());
         }
         return companies.AsQueryable();

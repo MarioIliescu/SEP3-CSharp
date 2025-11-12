@@ -22,7 +22,7 @@ public class CompanyController : ControllerBase
     {
         var companiesList = _companyService.GetManyAsync();
         var companiesDto = companiesList
-            .Select(c => new CreateCompanyDto(c.Id,c.McNumber, c.CompanyName))
+            .Select(c => new CreateCompanyDto(c.McNumber, c.CompanyName))
             .ToList();
 
         return Ok(companiesDto);
@@ -34,31 +34,40 @@ public class CompanyController : ControllerBase
     {
         var company = await _companyService.GetSingleAsync(mcNumber);
 
-        return Ok(new CreateCompanyDto(company.Id,company.McNumber, company.CompanyName));
+        return Ok(new CreateCompanyDto(company.McNumber, company.CompanyName));
     }
 
 
     // POST /company
     [HttpPost]
-    public async Task<ActionResult> CreateCompanyAsync([FromBody] CreateCompanyDto dto)
+    public async Task<IActionResult> CreateCompanyAsync([FromBody] CreateCompanyDto dto)
     {
+        // 1️⃣  Build the entity
         var company = new Company.Builder()
             .SetMcNumber(dto.McNumber)
             .SetCompanyName(dto.CompanyName)
             .Build();
 
-        Company created = await _companyService.CreateAsync(company);
-        return CreatedAtAction(nameof(GetSingleCompanyAsync), new { mcNumber = created.McNumber }, new 
-            CreateCompanyDto(created.Id,created.McNumber, created.CompanyName));
+        // 2️⃣  Persist it
+        var created = await _companyService.CreateAsync(company);
+        // 4️⃣  Guard
+        if (string.IsNullOrWhiteSpace(created?.McNumber))
+        {
+            return BadRequest("McNumber was not returned by the service.");
+        }
+
+        // 5️⃣  Send the 201
+        var createdDto = new CreateCompanyDto(created.McNumber, created.CompanyName);
+        return CreatedAtAction(nameof(GetSingleCompanyAsync),
+            new { mcNumber = created.McNumber },
+            createdDto);
     }
 
     // PUT /company
     [HttpPut]
     public async Task<ActionResult> UpdateCompanyAsync([FromBody]  CreateCompanyDto dto)
     {
-        var existing = await _companyService.GetSingleAsync(dto.Id);
         var company = new Company.Builder()
-            .SetId(existing.Id)
             .SetMcNumber(dto.McNumber)
             .SetCompanyName(dto.CompanyName)
             .Build();

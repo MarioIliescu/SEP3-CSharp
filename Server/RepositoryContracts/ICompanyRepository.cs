@@ -26,13 +26,7 @@ public interface ICompanyRepository
         /// <param name="mcNumber">The MC number of the company to retrieve.</param>
         /// <returns>The matching <see cref="Company"/> or <c>null</c> if not found.</returns>
         Task<Company> GetSingleAsync(string mcNumber);
-
-        /// <summary>
-        /// Retrieves a single company by its ID.
-        /// </summary>
-        /// <param name="id">The ID of the company to retrieve.</param>
-        /// <returns>The matching <see cref="Company"/> or <c>null</c> if not found.</returns>
-        Task<Company> GetSingleAsync(int id);
+        
 
         /// <summary>
         /// Deletes a company by its MC number.
@@ -40,13 +34,7 @@ public interface ICompanyRepository
         /// <param name="mcNumber">The MC number of the company to delete.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task DeleteAsync(string mcNumber);
-
-        /// <summary>
-        /// Deletes a company by its ID.
-        /// </summary>
-        /// <param name="id">The ID of the company to delete.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task DeleteAsync(int id);
+        
 
         /// <summary>
         /// Retrieves all companies.

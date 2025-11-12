@@ -86,11 +86,11 @@
             CreateCompanyDto? dto;
             if (editingCompany != null)
             {
-                 dto = new CreateCompanyDto(editingCompany.Id, formMcNumber, formCompanyName);
+                 dto = new CreateCompanyDto(formMcNumber, formCompanyName);
             }
             else
             {
-                 dto = new CreateCompanyDto(Id: 0, formMcNumber, formCompanyName);
+                 dto = new CreateCompanyDto( formMcNumber, formCompanyName);
             }
 
             if (editingCompany == null)
