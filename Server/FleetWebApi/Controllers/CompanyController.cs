@@ -40,27 +40,18 @@ public class CompanyController : ControllerBase
 
     // POST /company
     [HttpPost]
+    [HttpPost]
     public async Task<IActionResult> CreateCompanyAsync([FromBody] CreateCompanyDto dto)
     {
-        // 1️⃣  Build the entity
         var company = new Company.Builder()
             .SetMcNumber(dto.McNumber)
             .SetCompanyName(dto.CompanyName)
             .Build();
 
-        // 2️⃣  Persist it
         var created = await _companyService.CreateAsync(company);
-        // 4️⃣  Guard
         if (string.IsNullOrWhiteSpace(created?.McNumber))
-        {
-            return BadRequest("McNumber was not returned by the service.");
-        }
-
-        // 5️⃣  Send the 201
-        var createdDto = new CreateCompanyDto(created.McNumber, created.CompanyName);
-        return CreatedAtAction(nameof(GetSingleCompanyAsync),
-            new { mcNumber = created.McNumber },
-            createdDto);
+            return BadRequest("Created entity is missing MC number");
+        return Created();
     }
 
     // PUT /company
