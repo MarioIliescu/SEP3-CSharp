@@ -51,4 +51,11 @@ public class CompanyServiceClient
         var response = await _http.SendAsync(request);
         response.EnsureSuccessStatusCode();
     }
+    // Get a company
+    public async Task GetSingleAsync(string mcNumber)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"company/{mcNumber}");
+        var response = await _http.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+    }
 }

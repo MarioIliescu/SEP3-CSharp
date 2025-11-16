@@ -1,9 +1,9 @@
 using System.ComponentModel;
-using System.Reflection;
 using ApiContracts;
 using ApiContracts.Enums;
 using GrpcAPI.Services;
 using Entities;
+
 using PersistanceContracts;
 
 namespace PersistanceHandlersGrpc.CompanyPersistance;
@@ -11,9 +11,9 @@ namespace PersistanceHandlersGrpc.CompanyPersistance;
 public class CompanyHandlerGrpc : IFleetPersistanceHandler
 {
     private readonly CompanyServiceProto _companyService ;
-    public CompanyHandlerGrpc(CompanyServiceProto _companyService)
+    public CompanyHandlerGrpc(CompanyServiceProto companyService)
     {
-        this._companyService = _companyService;
+        this._companyService = companyService;
     }
 
     public async Task<object> HandleAsync(Request request)
