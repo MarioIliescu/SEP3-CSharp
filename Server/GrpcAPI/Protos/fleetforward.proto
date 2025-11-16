@@ -83,6 +83,7 @@ message DriverProto{
   TrailerTypeProto trailerType = 4;
   string currentState = 5;
   int32 currentZIPCODE = 6;
+  UserProto user =7;
 }
 message DriverListProto{
   repeated DriverProto drivers = 1;
@@ -90,6 +91,7 @@ message DriverListProto{
 message DispatcherProto{
   double currentRate = 1;
   repeated int32 driversAssigned = 2;
+  UserProto user =3;
 }
 message DispatcherListProto{
   repeated DispatcherProto dispatchers = 1;
