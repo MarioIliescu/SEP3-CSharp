@@ -1,3 +1,4 @@
+using ApiContracts.Enums;
 using Grpc.Net.Client;
 using GrpcAPI;
 using GrpcAPI.Services;
@@ -11,7 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 //add more services
 builder.Services.AddScoped<CompanyServiceProto>();
-builder.Services.AddScoped<IFleetPersistanceHandler, CompanyHandlerGrpc>();
+builder.Services.AddKeyedScoped<IFleetPersistanceHandler,CompanyHandlerGrpc>(HandlerType.Company);
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddSingleton<FleetMainGrpcHandler>(sp =>
 {
