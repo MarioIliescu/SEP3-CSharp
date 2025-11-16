@@ -40,7 +40,6 @@ public class CompanyController : ControllerBase
 
     // POST /company
     [HttpPost]
-    [HttpPost]
     public async Task<IActionResult> CreateCompanyAsync([FromBody] CreateCompanyDto dto)
     {
         var company = new Company.Builder()
