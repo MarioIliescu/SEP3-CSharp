@@ -54,10 +54,6 @@ message UserProto{
   string email = 4;
   string phoneNumber = 5;
   string password = 6;
-  oneof role{
-    DriverProto driver = 7;
-    DispatcherProto dispatcher = 8;
-  }
 }
 enum StatusDriverProto{
   UNKNOWN = 0;
