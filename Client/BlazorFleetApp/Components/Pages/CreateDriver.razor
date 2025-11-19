@@ -1,0 +1,54 @@
+﻿@page "/create-driver"
+@using ApiContracts.Dtos.Driver
+@using BlazorFleetApp.Services
+@using BlazorFleetApp.Services.Driver
+@inject DriverServiceClient DriverService
+
+
+
+<h3>CreateDriver</h3>
+
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-info">@message</div>
+}
+
+<input class="form-control mb-2" placeholder="First name" @bind="firstname" />
+<input class="form-control mb-2" placeholder="Last name" @bind="lastname" />
+<input class="form-control mb-2" placeholder="Email address" @bind="email" />
+<input class="form-control mb-2" placeholder="Phone number" @bind="phonenumber" />
+<input class="form-control mb-2" placeholder="Password" type="password" @bind="password" />
+<input class="form-control mb-2" placeholder="Mc number"  @bind="mcNumber" />
+<input class="form-control mb-2" placeholder="Trailer type" @bind="trailertype" />
+<input class="form-control mb-2" placeholder="Location state"  @bind="locationstate" />
+<input class="form-control mb-2" placeholder="Location zip code"  @bind="locationzipcode" />
+
+<button class="btn btn-primary" @onclick="RegisterUser">Register</button>
+
+@code {
+    private string firstname = "";
+    private string lastname = "";
+    private string email = "";
+    private string phonenumber = "";
+    private string password = "";
+    private string mcNumber = "";
+    private string trailertype = "";
+    private string locationstate = "";
+    private int locationzipcode = 0;
+    private string message = "";
+
+    private async Task RegisterUser()
+    {
+        try
+        {
+            await DriverService.CreateAsync(new CreateDriverDto(firstname,lastname, email,phonenumber,
+                password,mcNumber,trailertype,locationstate,locationzipcode));
+            message = "Driver created successfully!";
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+        }
+    }
+}
