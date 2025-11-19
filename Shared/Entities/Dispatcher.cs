@@ -1,6 +1,5 @@
 ﻿namespace Entities;
 
-public class Dispatcher
+public class Dispatcher : User
 {
-    
 }
