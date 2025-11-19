@@ -1,5 +1,6 @@
 using Entities;
 using ApiContracts.Company;
+using ApiContracts.Dtos.Company;
 using Microsoft.AspNetCore.Mvc;
 using Services.Company;
 
