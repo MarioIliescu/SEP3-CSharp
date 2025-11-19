@@ -42,9 +42,4 @@ public interface IDriverRepository
     /// </summary>
     /// <returns>An <see cref="IQueryable{Driver}"/> containing all companies.</returns>
     IQueryable<Driver>GetManyAsync();
-
-
-
-
-
 }

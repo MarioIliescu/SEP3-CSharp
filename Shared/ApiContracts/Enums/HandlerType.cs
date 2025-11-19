@@ -4,4 +4,5 @@ public enum HandlerType
 {
     Unknown,
     Company,
+    Driver
 }
