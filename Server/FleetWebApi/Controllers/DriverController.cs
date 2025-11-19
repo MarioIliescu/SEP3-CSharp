@@ -77,5 +77,45 @@ public class DriverController : ControllerBase
 
         return Ok(dto);
     }
+    
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult> DeleteDriver(int id)
+    {
+        Driver? driver = await _driverService.GetSingleAsync(id);
+        if (driver == null)
+        {
+            return NotFound($"Driver with ID {id} not found.");
+        }
+
+        await _driverService.DeleteAsync(id);
+        return NoContent();
+    }
+    
+    
+    [HttpGet]
+    public async Task<ActionResult> GetAllDrivers()
+    {
+
+        var driversList = _driverService.GetManyAsync();
+        var driversDto = driversList
+            .Select(d => new DriverDto(d.Id,
+                d.FirstName,
+                d.LastName,
+                d.Email,
+                d.PhoneNumber,
+                d.Password,
+                d.Role,
+                d.McNumber,
+                d.Status,
+                d.Trailer_type,
+                d.Location_State,
+                d.Location_Zip_Code,
+                d.CompanyRole))
+            .ToList();
+
+        return Ok(driversDto);
+    }
+    
+    
 
 }
