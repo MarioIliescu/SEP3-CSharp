@@ -43,9 +43,9 @@ public class User
                 throw new ArgumentException(
                     "First name cannot be null or empty.", nameof(firstName));
 
-            if (firstName.Length < 2)
+            if (firstName.Length < 3)
                 throw new ArgumentException(
-                    "First name must be at least 2 characters long.",
+                    "First name must be at least 3 characters long.",
                     nameof(firstName));
 
             if (!Regex.IsMatch(firstName, "^[A-Za-z'-]+$"))
@@ -63,9 +63,9 @@ public class User
                 throw new ArgumentException(
                     "First name cannot be null or empty.", nameof(lastName));
 
-            if (lastName.Length < 2)
+            if (lastName.Length < 3)
                 throw new ArgumentException(
-                    "First name must be at least 2 characters long.",
+                    "First name must be at least 3 characters long.",
                     nameof(lastName));
 
             if (!Regex.IsMatch(lastName, "^[A-Za-z'-]+$"))
