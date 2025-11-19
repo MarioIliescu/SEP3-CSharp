@@ -4,7 +4,7 @@ using ApiContracts.Enums;
 using PersistanceContracts;
 using Entities;
 using Microsoft.Extensions.DependencyInjection;
-public class CompanyService :ICompanyService
+public class CompanyService : ICompanyService
 {
     private readonly IFleetPersistanceHandler _handler;
 
