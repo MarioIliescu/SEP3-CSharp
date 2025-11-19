@@ -14,7 +14,7 @@ public class UserHandlerGrpc : IFleetPersistanceHandler
     private readonly IDriverRepository _driverRepository;
     private ILogger<UserHandlerGrpc> _logger;
 
-    public UserHandlerGrpc([FromKeyedServices(HandlerType.Driver)] IDriverRepository driverRepository,
+    public UserHandlerGrpc([FromKeyedServices("user")] IDriverRepository driverRepository,
         ILogger<UserHandlerGrpc> logger)
     {
         _driverRepository = driverRepository;

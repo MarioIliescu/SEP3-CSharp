@@ -6,12 +6,12 @@ namespace Entities;
 public class User
 {
     public int Id { get; set; } = 0;
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string Email { get; set; }
-    public string PhoneNumber { get; set; }
-    public string Password { get; set; }
-    public UserRole Role { get; set; }
+    public string FirstName { get; set; } = "First";
+    public string LastName { get; set; } = "Last";
+    public string Email { get; set; } = "first.last@gmail.com";
+    public string PhoneNumber { get; set; } = "+4511119111";
+    public string Password { get; set; } = "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*";
+    public UserRole Role { get; set; } = UserRole.DRIVER;
 
     public User()
     {
@@ -24,8 +24,8 @@ public class User
         private string _firstName = "First";
         private string _lastName = "Last";
         private string _email = "first.last@gmail.com";
-        private string _phoneNumber = "+23-456-7890";
-        private string _password = "password123";
+        private string _phoneNumber = "+4511119111";
+        private string _password = "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*";
         private UserRole _role = UserRole.DRIVER;
 
 
@@ -108,7 +108,7 @@ public class User
 
             if (password.Length < 8)
                 throw new ArgumentException("Password must be at least 8 characters long.", nameof(password));
-            if (password.Length > 24)
+            if (password.Length > 50)
             {
                 throw new ArgumentException("Password cannot exceed 50 characters.", nameof(password));
             }
