@@ -32,13 +32,22 @@ public class CompanyServiceProto : ICompanyRepository
             Handler = HandlerTypeProto.HandlerCompany
         };
         _logger.LogInformation("Creating new company");
-        var response = await handler.SendRequestAsync(request);
-        _logger.LogInformation($"Created new company {proto.McNumber}");
-        CompanyProto received = response.Payload.Unpack<CompanyProto>();
-        return await Task.FromResult(new Company.Builder()
-            .SetCompanyName(received.CompanyName)
-            .SetMcNumber(received.McNumber)
-            .Build());
+        try
+        {
+            var response = await handler.SendRequestAsync(request);
+            _logger.LogInformation($"Created new company {proto.McNumber}");
+            CompanyProto received = response.Payload.Unpack<CompanyProto>();
+            return await Task.FromResult(new Company.Builder()
+                .SetCompanyName(received.CompanyName)
+                .SetMcNumber(received.McNumber)
+                .Build());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating company");
+            throw new Exception(ex.Message);
+        }
+
     }
     
     public async Task UpdateAsync(Company payload)
@@ -61,7 +70,14 @@ public class CompanyServiceProto : ICompanyRepository
             Handler = HandlerTypeProto.HandlerCompany
         };
         _logger.LogInformation($"Updating company{proto.McNumber}");
-        await handler.SendRequestAsync(request);
+        try
+        {
+            await handler.SendRequestAsync(request);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating company");
+        }
     }
     public async Task<Company> GetSingleAsync(string mcNumber)
     {
@@ -77,13 +93,21 @@ public class CompanyServiceProto : ICompanyRepository
             Handler = HandlerTypeProto.HandlerCompany
         };
         _logger.LogInformation($"Getting company {proto.McNumber}");
-        var response = await handler.SendRequestAsync(request);
-        CompanyProto received = response.Payload.Unpack<CompanyProto>();
-        _logger.LogInformation($"Company received, {received.McNumber}");
-        return await Task.FromResult(new Company.Builder()
-            .SetCompanyName(received.CompanyName)
-            .SetMcNumber(received.McNumber)
-            .Build());
+        try
+        {
+            var response = await handler.SendRequestAsync(request);
+            CompanyProto received = response.Payload.Unpack<CompanyProto>();
+            _logger.LogInformation($"Company received, {received.McNumber}");
+            return await Task.FromResult(new Company.Builder()
+                .SetCompanyName(received.CompanyName)
+                .SetMcNumber(received.McNumber)
+                .Build());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting company");
+            throw new Exception(ex.Message);
+        }
     }
     
     public async Task DeleteAsync(string mcNumber)
@@ -100,7 +124,16 @@ public class CompanyServiceProto : ICompanyRepository
             Handler = HandlerTypeProto.HandlerCompany
         };
         _logger.LogInformation($"Deleting company {proto.McNumber}");
-        await handler.SendRequestAsync(request);
+        try
+        {
+            await handler.SendRequestAsync(request);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error deleting company");
+            throw new Exception(e.Message);
+        }
+        
     }
     public IQueryable<Company> GetManyAsync()
     {
@@ -116,19 +149,28 @@ public class CompanyServiceProto : ICompanyRepository
             })
         };
         _logger.LogInformation($"Getting all company");
-        var response = handler.SendRequestAsync(request);
-        CompanyProtoList received = response.Result.Payload.Unpack<CompanyProtoList>();
-
-        List<Company> companies = new();
-
-        foreach (CompanyProto company in received.Companies)
+        try
         {
-            companies.Add(new Company.Builder()
-                .SetCompanyName(company.CompanyName)
-                .SetMcNumber(company.McNumber)
-                .Build());
+            var response = handler.SendRequestAsync(request);
+            CompanyProtoList received = response.Result.Payload.Unpack<CompanyProtoList>();
+
+            List<Company> companies = new();
+
+            foreach (CompanyProto company in received.Companies)
+            {
+                companies.Add(new Company.Builder()
+                    .SetCompanyName(company.CompanyName)
+                    .SetMcNumber(company.McNumber)
+                    .Build());
+            }
+
+            _logger.LogInformation($"Companies returned {received.Companies.Count}");
+            return companies.AsQueryable();
         }
-        _logger.LogInformation($"Companies returned {received.Companies.Count}");
-        return companies.AsQueryable();
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error getting all company");
+            throw new Exception(e.Message);
+        }
     }
 }
