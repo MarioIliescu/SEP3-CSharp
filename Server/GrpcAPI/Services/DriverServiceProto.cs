@@ -20,7 +20,7 @@ public class DriverServiceProto : IDriverRepository
         _logger = logger;
         _fleetMainGrpcHandler = fleetMainGrpcHandler;
     }
-
+    
     public async Task<Driver> CreateAsync(Driver payload)
     {
         _logger.LogInformation("Creating new user");
@@ -73,7 +73,7 @@ public class DriverServiceProto : IDriverRepository
         RequestProto request = new RequestProto()
         {
             Handler = HandlerTypeProto.HandlerDriver,
-            Action = ActionTypeProto.ActionGet,
+            Action = ActionTypeProto.ActionList,
             Payload = Any.Pack(new DriverProto()
             {
                 User = new UserProto(){Id = 0},
@@ -93,6 +93,7 @@ public class DriverServiceProto : IDriverRepository
     private Driver ParseFromProtoToDriver(DriverProto proto)
     {
         return new Driver.Builder()
+            .SetId(proto.User.Id)
             .SetLocationState(proto.CurrentState)
             .SetLocationZip(proto.CurrentZIPCODE)
             .SetTrailerType(ParseTrailerTypeProtoToTrailerType(proto.TrailerType))
@@ -165,15 +166,20 @@ public class DriverServiceProto : IDriverRepository
 
     private DriverProto ParseDriverToProto(Driver payload)
     {
+        int zipcode = 35010;
+        if (payload.Location_Zip_Code == 0)
+        {
+            zipcode = payload.Location_Zip_Code;
+        }
         return new DriverProto()
         {
             User = ParseUserToProto(payload),
-            CompanyMcNumber = payload.McNumber,
-            CurrentState = payload.Location_State,
+            CompanyMcNumber = payload.McNumber ?? "DEFAULTMCN",
+            CurrentState = payload.Location_State ?? "",
             DriverStatus = ParseStatusToProto(payload.Status),
             CompanyRole = ParseCompanyRoleToProto(payload.CompanyRole),
             TrailerType = ParseTrailerTypeToProto(payload.Trailer_type),
-            CurrentZIPCODE = payload.Location_Zip_Code
+            CurrentZIPCODE = zipcode 
         };
     }
 
@@ -182,11 +188,11 @@ public class DriverServiceProto : IDriverRepository
         return new UserProto()
         {
             Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            PhoneNumber = user.PhoneNumber,
-            Password = user.Password,
+            Email = user.Email ?? "default@default.com",
+            FirstName = user.FirstName ?? "",
+            LastName = user.LastName ?? "",
+            PhoneNumber = user.PhoneNumber ?? "+4511111111",
+            Password = user.Password ?? "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*",
         };
     }
 

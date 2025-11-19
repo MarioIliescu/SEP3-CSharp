@@ -5,11 +5,11 @@ namespace Entities;
 
 public class Driver : User
 {
-    public String McNumber { get; private set; }
+    public String McNumber { get; private set; } = "Stuffstuff";
     public DriverStatus Status { get; private set; } = DriverStatus.available;
-    public TrailerType Trailer_type { get; private set; }
-    public string Location_State { get; private set; }
-    public int Location_Zip_Code { get; private set; }
+    public TrailerType Trailer_type { get; private set; } = TrailerType.dry_van;
+    public string Location_State { get; private set; } = "AL";
+    public int Location_Zip_Code { get; private set; } = 35010;
     public new UserRole Role { get; private set; } = UserRole.DRIVER;
     public new DriverCompanyRole CompanyRole { get; private set; } = DriverCompanyRole.Driver;
 
@@ -49,8 +49,8 @@ public class Driver : User
                 throw new ArgumentException("State cannot be empty.");
 
             // Must be 2 letters
-            if (!Regex.IsMatch(state, "^[A-Za-z]{2}$"))
-                throw new ArgumentException("State must be exactly 2 letters (A–Z).");
+         //   if (!Regex.IsMatch(state, "^[A-Za-z]{2}$"))
+          //      throw new ArgumentException("State must be exactly 2 letters (A–Z).");
 
             _state = state.ToUpper();
             return this;
@@ -58,7 +58,7 @@ public class Driver : User
 
         public new Builder SetLocationZip(int zip)
         {
-            if (zip <= 0 || zip >= 100000)
+              if (zip <= 0 || zip >= 100000)
                 throw new ArgumentException("ZIP code must be between 1 and 99999.");
 
             _zip = zip;
@@ -117,6 +117,13 @@ public class Driver : User
 
             return new Driver
             {
+                Id = baseUser.Id,
+                FirstName = baseUser.FirstName,
+                LastName = baseUser.LastName,
+                Email = baseUser.Email,
+                Role = baseUser.Role,
+                PhoneNumber = baseUser.PhoneNumber,
+                Password = baseUser.Password,
                 // driver-specific
                 CompanyRole = _companyRole,
                 McNumber = _mcNumber,
