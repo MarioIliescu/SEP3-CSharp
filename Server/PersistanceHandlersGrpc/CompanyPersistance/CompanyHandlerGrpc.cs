@@ -14,7 +14,7 @@ public class CompanyHandlerGrpc : IFleetPersistanceHandler
 {
     private readonly ICompanyRepository _companyService ;
     private readonly ILogger<CompanyHandlerGrpc> _logger;
-    public CompanyHandlerGrpc([FromKeyedServices("companyProto")]ICompanyRepository companyService, ILogger<CompanyHandlerGrpc> logger)
+    public CompanyHandlerGrpc([FromKeyedServices(HandlerType.Company)]ICompanyRepository companyService, ILogger<CompanyHandlerGrpc> logger)
     {
         this._companyService = companyService;
         this._logger = logger;

@@ -24,9 +24,6 @@ public class DriverController : ControllerBase
     {
         try
         {
-            if (!Enum.TryParse<TrailerType>(dto.TrailerType, true, out var trailerType))
-                return BadRequest("Invalid trailer type");
-
             var driver = new Driver.Builder()
                 .SetFirstName(dto.FirstName)
                 .SetLastName(dto.LastName)
@@ -34,7 +31,9 @@ public class DriverController : ControllerBase
                 .SetPhoneNumber(dto.PhoneNumber)
                 .SetPassword(dto.Password)
                 .SetMcNumber(dto.McNumber)
-                .SetTrailerType(trailerType)
+                .SetTrailerType(dto.TrailerType)
+                .SetStatus(dto.StatusType)
+                .SetCompanyRole(dto.CompanyRole)
                 .SetLocationState(dto.LocationState)
                 .SetLocationZip(dto.LocationZipCode)
                 .Build();

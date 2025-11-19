@@ -9,7 +9,9 @@ public record CreateDriverDto(
     string PhoneNumber,
     string Password,
     string McNumber,
-    string TrailerType,
+    TrailerType TrailerType,
+    DriverStatus StatusType,
+    DriverCompanyRole CompanyRole,
     string LocationState,
     int LocationZipCode
 );

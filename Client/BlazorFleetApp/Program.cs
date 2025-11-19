@@ -1,5 +1,6 @@
 using BlazorFleetApp.Components;
 using BlazorFleetApp.Services;
+using BlazorFleetApp.Services.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,22 +10,12 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-var httpClientBuilder = builder.Services.AddHttpClient<CompanyServiceClient>(client =>
+builder.Services.AddScoped(sp => new HttpClient()
 {
-
-    client.BaseAddress = new Uri("https://localhost:7191");
-    client.Timeout = TimeSpan.FromSeconds(10);
+    BaseAddress = new Uri("https://localhost:7191")
 });
-if (builder.Environment.IsDevelopment())
-{
-    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() =>
-        new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        });
-}
-
+builder.Services.AddScoped<ICompanyService, CompanyServiceClient>();
+builder.Services.AddScoped<IDriverService, DriverServiceClient>();
 var app = builder.Build();
 
 // Middleware

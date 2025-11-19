@@ -1,13 +1,12 @@
 ﻿@page "/create-driver"
 @using ApiContracts.Dtos.Driver
+@using ApiContracts.Enums
 @using BlazorFleetApp.Services
 @using BlazorFleetApp.Services.Driver
-@inject DriverServiceClient DriverService
-
-
+@inject IDriverService DriverService
+@rendermode InteractiveServer
 
 <h3>CreateDriver</h3>
-
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -20,7 +19,27 @@
 <input class="form-control mb-2" placeholder="Phone number" @bind="phonenumber" />
 <input class="form-control mb-2" placeholder="Password" type="password" @bind="password" />
 <input class="form-control mb-2" placeholder="Mc number"  @bind="mcNumber" />
-<input class="form-control mb-2" placeholder="Trailer type" @bind="trailertype" />
+
+<!-- Enum dropdown FIX -->
+<select class="form-control mb-2" @bind="trailertype">
+    @foreach (var type in Enum.GetValues<TrailerType>())
+    {
+        <option value="@type">@type</option>
+    }
+</select>
+<select class="form-control mb-2" @bind="status">
+    @foreach (var type in Enum.GetValues<DriverStatus>())
+    {
+        <option value="@type">@type</option>
+    }
+</select>
+<select class="form-control mb-2" @bind="role">
+    @foreach (var type in Enum.GetValues<DriverCompanyRole>())
+    {
+        <option value="@type">@type</option>
+    }
+</select>
+
 <input class="form-control mb-2" placeholder="Location state"  @bind="locationstate" />
 <input class="form-control mb-2" placeholder="Location zip code"  @bind="locationzipcode" />
 
@@ -33,17 +52,36 @@
     private string phonenumber = "";
     private string password = "";
     private string mcNumber = "";
-    private string trailertype = "";
-    private string locationstate = "";
-    private int locationzipcode = 0;
+
+    private TrailerType trailertype = TrailerType.dry_van;
+    private DriverStatus status = DriverStatus.available;
+    private DriverCompanyRole role = DriverCompanyRole.Driver;
+
+    private string locationstate = "AL";
+    private int locationzipcode = 35010;
+
     private string message = "";
 
     private async Task RegisterUser()
     {
         try
         {
-            await DriverService.CreateAsync(new CreateDriverDto(firstname,lastname, email,phonenumber,
-                password,mcNumber,trailertype,locationstate,locationzipcode));
+            await DriverService.CreateAsync(
+                new CreateDriverDto(
+                    firstname,
+                    lastname, 
+                    email,
+                    phonenumber,
+                    password,
+                    mcNumber,
+                    trailertype,
+                    status,
+                    role,
+                    locationstate,
+                    locationzipcode
+                )
+            );
+
             message = "Driver created successfully!";
         }
         catch (Exception ex)

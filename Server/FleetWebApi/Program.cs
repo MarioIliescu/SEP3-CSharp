@@ -1,22 +1,29 @@
 using ApiContracts.Enums;
 using Grpc.Net.Client;
 using GrpcAPI;
+using GrpcAPI.Protos;
 using Serilog;
 using Serilog.Events;
 using GrpcAPI.Services;
 using PersistanceContracts;
 using PersistanceHandlersGrpc.CompanyPersistance;
+using PersistanceHandlersGrpc.UserPersistance;
 using Repositories;
 using Services.Company;
+using Services.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 //Add controllers to the container 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 //add more services
-builder.Services.AddKeyedScoped<ICompanyRepository,CompanyServiceProto>("companyProto");
+builder.Services.AddKeyedScoped<ICompanyRepository,CompanyServiceProto>(HandlerType.Company);
 builder.Services.AddKeyedScoped<IFleetPersistanceHandler,CompanyHandlerGrpc>(HandlerType.Company);
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IDriverService, DriverService>();
+builder.Services.AddKeyedScoped<IFleetPersistanceHandler,DriverHandlerGrpc>(HandlerType.Driver);
+builder.Services.AddKeyedScoped<IFleetPersistanceHandler,DriverHandlerGrpc>(HandlerType.Dispatcher);
+builder.Services.AddKeyedScoped<IDriverRepository,DriverServiceProto>(HandlerType.Driver);
 builder.Services.AddSingleton<FleetMainGrpcHandler>(sp =>
 {
     var channel =
