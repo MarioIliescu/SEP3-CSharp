@@ -77,7 +77,7 @@ public class User
             return this;
         }
         
-        public Builder setEmail(string email)
+        public Builder SetEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
                 throw new ArgumentException("Email cannot be null or empty.", nameof(email));
@@ -101,7 +101,7 @@ public class User
             return this;
         }
         
-        public Builder setPassword(string password)
+        public Builder SetPassword(string password)
         {
             if (string.IsNullOrWhiteSpace(password))
                 throw new ArgumentException("Password cannot be null or empty.", nameof(password));
@@ -134,7 +134,7 @@ public class User
             return this;
         }
         
-        public User Build()
+        public new User Build()
         {
             return new User
             {

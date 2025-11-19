@@ -5,43 +5,45 @@ namespace Entities;
 
 public class Driver : User
 {
-    public Company McNumber { get; private set; }
+    public String McNumber { get; private set; }
     public DriverStatus Status { get; private set; } = DriverStatus.available;
     public TrailerType Trailer_type { get; private set; }
     public string Location_State { get; private set; }
     public int Location_Zip_Code { get; private set; }
     public new UserRole Role { get; private set; } = UserRole.DRIVER;
+    public new DriverCompanyRole CompanyRole { get; private set; } = DriverCompanyRole.Driver;
 
     public Driver() { }
 
     public class Builder : User.Builder
     {
-        private Company _mcNumber;
+        private String _mcNumber;
         private DriverStatus _status = DriverStatus.available;
         private TrailerType _trailerType = TrailerType.dry_van;
+        private DriverCompanyRole _companyRole = DriverCompanyRole.Driver;
 
         private string _state = "NA";
         private int _zip = 10;
         
-        public Builder SetMcNumber(Company mc)
+        public new Builder SetMcNumber(String mc)
         {
             _mcNumber = mc;
             return this;
         }
 
-        public Builder SetStatus(DriverStatus status)
+        public new Builder SetStatus(DriverStatus status)
         {
             _status = status;
             return this;
         }
 
-        public Builder SetTrailerType(TrailerType type)
+        public new Builder SetTrailerType(TrailerType type)
         {
             _trailerType = type;
             return this;
         }
 
-        public Builder SetLocationState(string state)
+        public new Builder SetLocationState(string state)
         {
             if (string.IsNullOrWhiteSpace(state))
                 throw new ArgumentException("State cannot be empty.");
@@ -54,7 +56,7 @@ public class Driver : User
             return this;
         }
 
-        public Builder SetLocationZip(int zip)
+        public new Builder SetLocationZip(int zip)
         {
             if (zip <= 0 || zip >= 100000)
                 throw new ArgumentException("ZIP code must be between 1 and 99999.");
@@ -62,26 +64,61 @@ public class Driver : User
             _zip = zip;
             return this;
         }
+        public new Builder SetCompanyRole(DriverCompanyRole role)
+        {
+            this._companyRole = role;
+            return this;
+        }
 
-        
+        public new Builder SetRole(UserRole role)
+        {
+            base.SetRole(role);
+            return this;
+        }
+
+        public new Builder SetFirstName(String firstName)
+        {
+            base.SetFirstName(firstName);
+            return this;
+        }
+
+        public new Builder SetLastName(String lastName)
+        {
+            base.SetLastName(lastName);
+            return this;
+        }
+
+        public new Builder SetPhoneNumber(String phoneNumber)
+        {
+            base.SetPhoneNumber(phoneNumber);
+            return this;
+        }
+
+        public new Builder SetEmail(String email)
+        {
+            base.SetEmail(email);
+            return this;
+        }
+
+        public new Builder SetId(int Id)
+        {
+            base.SetId(Id);
+            return this;
+        }
+
+        public new Builder SetPassword(String password)
+        {
+            base.SetPassword(password);
+            return this;
+        }
         public new Driver Build()
         {
             User baseUser = base.Build(); 
 
             return new Driver
             {
-                // inherited
-                Id = baseUser.Id,
-                FirstName = baseUser.FirstName,
-                LastName = baseUser.LastName,
-                Email = baseUser.Email,
-                PhoneNumber = baseUser.PhoneNumber,
-                Password = baseUser.Password,
-
-                // forced DRIVER role
-                Role = UserRole.DRIVER,
-
                 // driver-specific
+                CompanyRole = _companyRole,
                 McNumber = _mcNumber,
                 Status = _status,
                 Trailer_type = _trailerType,
