@@ -1,3 +1,4 @@
+using System.Text;
 using ApiContracts.Enums;
 using Grpc.Net.Client;
 using GrpcAPI;
@@ -5,6 +6,8 @@ using GrpcAPI.Protos;
 using Serilog;
 using Serilog.Events;
 using GrpcAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using PersistanceContracts;
 using PersistanceHandlersGrpc.CompanyPersistance;
 using PersistanceHandlersGrpc.UserPersistance;
@@ -17,13 +20,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 //add more services
-builder.Services.AddKeyedScoped<ICompanyRepository,CompanyServiceProto>(HandlerType.Company);
-builder.Services.AddKeyedScoped<IFleetPersistanceHandler,CompanyHandlerGrpc>(HandlerType.Company);
+builder.Services.AddKeyedScoped<ICompanyRepository, CompanyServiceProto>(HandlerType.Company);
+builder.Services.AddKeyedScoped<IFleetPersistanceHandler, CompanyHandlerGrpc>(HandlerType.Company);
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
-builder.Services.AddKeyedScoped<IFleetPersistanceHandler,DriverHandlerGrpc>(HandlerType.Driver);
-builder.Services.AddKeyedScoped<IFleetPersistanceHandler,DriverHandlerGrpc>(HandlerType.Dispatcher);
-builder.Services.AddKeyedScoped<IDriverRepository,DriverServiceProto>(HandlerType.Driver);
+builder.Services.AddKeyedScoped<IFleetPersistanceHandler, DriverHandlerGrpc>(HandlerType.Driver);
+builder.Services.AddKeyedScoped<IFleetPersistanceHandler, DriverHandlerGrpc>(HandlerType.Dispatcher);
+builder.Services.AddKeyedScoped<IDriverRepository, DriverServiceProto>(HandlerType.Driver);
 builder.Services.AddSingleton<FleetMainGrpcHandler>(sp =>
 {
     var channel =
@@ -44,15 +47,36 @@ builder.Host.UseSerilog((ctx, services, lc) => lc
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 14)
 );
+// builder.Services.AddAuthentication().AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+// {
+//     options.MapInboundClaims = false;
+//     options.TokenValidationParameters = new TokenValidationParameters()
+//     {
+//         ValidateIssuer = true,
+//         ValidateAudience = true,
+//         ValidateLifetime = true,
+//         ValidateIssuerSigningKey = true,
+//         ValidAudience = builder.Configuration["Jwt:Audience"],
+//         ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "")),
+//         ClockSkew = TimeSpan.Zero,
+//     };
+// });
+
 var app = builder.Build();
 app.UseRouting();
 // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
-    {
-    }
+if (app.Environment.IsDevelopment())
+{
+}
 
-    app.UseHttpsRedirection();
+app.UseCors(x => x
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .SetIsOriginAllowed(origin => true) // allow any origin
+    .AllowCredentials());
 
-    app.MapControllers();
-
-    app.Run();
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+app.Run();

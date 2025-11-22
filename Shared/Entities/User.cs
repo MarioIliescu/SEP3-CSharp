@@ -108,9 +108,9 @@ public class User
 
             if (password.Length < 8)
                 throw new ArgumentException("Password must be at least 8 characters long.", nameof(password));
-            if (password.Length > 50)
+            if (password.Length > 255)
             {
-                throw new ArgumentException("Password cannot exceed 50 characters.", nameof(password));
+                throw new ArgumentException("Password cannot exceed 255 characters.", nameof(password));
             }
 
             if (!Regex.IsMatch(password, @"[A-Z]"))
