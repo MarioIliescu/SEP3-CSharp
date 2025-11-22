@@ -18,6 +18,9 @@ var httpClientBuilder = builder.Services.AddHttpClient<CompanyServiceClient>(cli
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();
 builder.Services.AddScoped<IDriverService, DriverServiceClient>();
 builder.Services.AddScoped<ICompanyService, CompanyServiceClient>();

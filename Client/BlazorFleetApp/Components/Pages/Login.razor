@@ -1,8 +1,10 @@
 ﻿@page "/login"
+@using System.Security.Claims
 @using BlazorFleetApp.Components.Layout
 @using Microsoft.AspNetCore.Components.Authorization
 @layout LoginRegisterLayout
 @inject NavigationManager NavMgr
+@inject AuthenticationStateProvider AuthProvider
 @rendermode InteractiveServer
 
 <link rel="stylesheet" href="css/loginStyle.css">
@@ -19,11 +21,11 @@
         <h2 id="catch-phrase">BACK ON THE ROAD?!</h2>
 
         <div class="login-part">
-            <input type="text" id="email-field" name="email-field" placeholder="Email"> <br>
-            <input type="password" id="password-field" name="password-field" placeholder="Password"> <br>
+            <input type="text" id="email-field" name="email-field" placeholder="Email" @bind="email"> <br>
+            <input type="password" id="password-field" name="password-field" placeholder="Password" @bind="password"> <br>
             <a href="" @onclick="GoToForgotPassword">Forgot password?</a>
             <p id="error-message-popup">@_errorMessage</p>
-            <input type="button" id="login-button" name="login-button" value="Log in">
+            <input type="button" id="login-button" name="login-button" value="Log in" @onclick="LoginAsync">
             <p>Don't have an account? <a href="" @onclick="GoToRegister">Create account</a> </p>
         </div>
     </NotAuthorized>
@@ -31,15 +33,53 @@
 
 @code 
 {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private string email;
+    private string password;
     private string _errorMessage = "";
-    
-    void GoToRegister()
+
+    private void GoToRegister()
     {
         NavMgr.NavigateTo("register");
     }
 
-    void GoToForgotPassword()
+    private void GoToForgotPassword()
     {
         NavMgr.NavigateTo("forgot_password");
+    }
+
+    private async Task LoginAsync()
+    {
+        _errorMessage = "";
+        try
+        {
+            await ((Authentification.AuthProvider)AuthProvider).LoginAsync(email, password);
+        }
+        catch (Exception e)
+        {
+            _errorMessage = $"{e.Message}";
+        }
+        AuthenticationState authenticationState = await State;
+        ClaimsPrincipal claimsPrincipal = authenticationState.User;
+        if (claimsPrincipal is null || !claimsPrincipal.Identity.IsAuthenticated)
+        {
+            return;
+        }
+
+        IEnumerable<Claim> claims = claimsPrincipal.Claims;
+        string userRoleAsString = claims.Single(c => c.Type == ClaimTypes.Role).Value;
+
+        if (string.IsNullOrEmpty(userRoleAsString))
+        {
+            return;
+        }
+
+        if (userRoleAsString == "DISPATCHER")
+        {
+            NavMgr.NavigateTo("/dispatch-home");
+        } else if (userRoleAsString == "DRIVER")
+        {
+            NavMgr.NavigateTo("/driver-home");
+        }
     }
 }
