@@ -1,5 +1,7 @@
+using BlazorFleetApp.Authentification;
 using BlazorFleetApp.Components;
 using BlazorFleetApp.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,9 @@ var httpClientBuilder = builder.Services.AddHttpClient<CompanyServiceClient>(cli
     client.BaseAddress = new Uri("https://localhost:7191");
     client.Timeout = TimeSpan.FromSeconds(10);
 });
+
+builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();
+
 if (builder.Environment.IsDevelopment())
 {
     httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() =>
