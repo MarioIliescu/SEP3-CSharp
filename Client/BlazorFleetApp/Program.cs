@@ -19,15 +19,11 @@ var httpClientBuilder = builder.Services.AddHttpClient<CompanyServiceClient>(cli
 });
 
 builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();
+builder.Services.AddScoped<IDriverService, DriverServiceClient>();
+builder.Services.AddScoped<ICompanyService, CompanyServiceClient>();
 
 if (builder.Environment.IsDevelopment())
 {
-    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() =>
-        new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        });
 }
 
 var app = builder.Build();
@@ -39,12 +35,14 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 
+app.UseAuthorization();
 
+app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.Run();
