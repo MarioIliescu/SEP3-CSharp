@@ -1,23 +1,28 @@
 using BlazorFleetApp.Authentification;
 using BlazorFleetApp.Components;
 using BlazorFleetApp.Services;
-using Microsoft.AspNetCore.Components.Authorization;
 using BlazorFleetApp.Services.Driver;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services
-builder.Services.AddRazorPages();             
-builder.Services.AddServerSideBlazor();       
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddScoped(sp => new HttpClient()
+var httpClientBuilder = builder.Services.AddHttpClient<CompanyServiceClient>(client =>
 {
-    BaseAddress = new Uri("https://localhost:7191")
+    client.BaseAddress = new Uri("https://localhost:7191");
 });
 
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();
+builder.Services.AddScoped<IDriverService, DriverServiceClient>();
+builder.Services.AddScoped<ICompanyService, CompanyServiceClient>();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -29,8 +34,6 @@ if (builder.Environment.IsDevelopment())
         });
 }
 
-builder.Services.AddScoped<ICompanyService, CompanyServiceClient>();
-builder.Services.AddScoped<IDriverService, DriverServiceClient>();
 var app = builder.Build();
 
 // Middleware
