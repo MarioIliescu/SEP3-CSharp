@@ -1,4 +1,5 @@
 ﻿using ApiContracts;
+using Services.Auth;
 
 namespace Services.Driver;
 

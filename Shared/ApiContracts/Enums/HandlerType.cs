@@ -5,5 +5,6 @@ public enum HandlerType
     Unknown,
     Company,
     Driver,
-    Dispatcher
+    Dispatcher,
+    Auth
 }
