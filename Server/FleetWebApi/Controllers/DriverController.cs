@@ -1,6 +1,7 @@
 ﻿using ApiContracts.Dtos.Driver;
 using ApiContracts.Enums;
 using Entities;
+using FleetWebApi.SecurityUtils;
 using Microsoft.AspNetCore.Mvc;
 using Services.Driver;
 
@@ -29,7 +30,7 @@ public class DriverController : ControllerBase
                 .SetLastName(dto.LastName)
                 .SetEmail(dto.Email)
                 .SetPhoneNumber(dto.PhoneNumber)
-                .SetPassword(dto.Password)
+                .SetPassword(PasswordHasher.Hash(dto.Password))
                 .SetMcNumber(dto.McNumber)
                 .SetTrailerType(dto.TrailerType)
                 .SetStatus(dto.StatusType)
