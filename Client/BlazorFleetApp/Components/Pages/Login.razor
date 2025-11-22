@@ -1,0 +1,45 @@
+﻿@page "/login"
+@using BlazorFleetApp.Components.Layout
+@using Microsoft.AspNetCore.Components.Authorization
+@layout LoginRegisterLayout
+@inject NavigationManager NavMgr
+@rendermode InteractiveServer
+
+<link rel="stylesheet" href="css/loginStyle.css">
+
+<AuthorizeView>
+    <Authorized>
+        <h2>You are already logged in!</h2>
+    </Authorized>
+    <NotAuthorized>
+        <div class="logo-container">
+            <img src="images/logo-03.png" alt="logo">
+        </div>
+
+        <h2 id="catch-phrase">BACK ON THE ROAD?!</h2>
+
+        <div class="login-part">
+            <input type="text" id="email-field" name="email-field" placeholder="Email"> <br>
+            <input type="password" id="password-field" name="password-field" placeholder="Password"> <br>
+            <a href="" @onclick="GoToForgotPassword">Forgot password?</a>
+            <p id="error-message-popup">@_errorMessage</p>
+            <input type="button" id="login-button" name="login-button" value="Log in">
+            <p>Don't have an account? <a href="" @onclick="GoToRegister">Create account</a> </p>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code 
+{
+    private string _errorMessage = "";
+    
+    void GoToRegister()
+    {
+        NavMgr.NavigateTo("register");
+    }
+
+    void GoToForgotPassword()
+    {
+        NavMgr.NavigateTo("forgot_password");
+    }
+}
