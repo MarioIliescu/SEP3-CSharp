@@ -1,0 +1,36 @@
+﻿@page "/"
+@page "/loading"
+@using BlazorFleetApp.Components.Layout
+@layout LoginRegisterLayout
+@inject NavigationManager NavMgr
+@rendermode InteractiveServer
+
+<link rel="stylesheet" href="css/loadingStyle.css">
+
+<div class="logo-container">
+    <img src="images/logo-03.png" alt="logo">
+</div>
+
+<h2 id="catch-phrase">LOGISTICS MADE EASY</h2>
+<div class="loadingwheel">
+    <div class="bar" id="bar1" style="--delay:0s; --min:5px; --max:33px; --dur:2s;"></div>
+    <div class="bar" id="bar2" style="--delay:0.1s; --min:7px; --max:45px; --dur:2.21s;"></div>
+    <div class="bar" id="bar3" style="--delay:0.05s; --min:3px; --max:24px; --dur:1.8s;"></div>
+    <div class="bar" id="bar4" style="--delay:0.6s; --min:10px; --max:30px; --dur:2.5s;"></div>
+    <div class="bar" id="bar5" style="--delay:0.3s; --min:8px; --max:47px; --dur:1.5s;"></div>
+    <div class="bar" id="bar6" style="--delay:0.16s; --min:5px; --max:16px; --dur:3s;"></div>
+    <div class="bar" id="bar7" style="--delay:0.2s; --min:5px; --max:31px; --dur:2s;"></div>
+    <div class="bar" id="bar8" style="--delay:0.2s; --min:7px; --max:24px; --dur:2.3s;"></div>
+</div>
+
+@code 
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(3000);
+            NavMgr.NavigateTo("/login", replace: true);
+        }
+    }
+}
