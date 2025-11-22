@@ -7,6 +7,7 @@ enum HandlerTypeProto {
   HANDLER_COMPANY = 1;
   HANDLER_DRIVER = 2;
   HANDLER_DISPATCHER = 3;
+  HANDLER_AUTH = 4;
 }
 
 enum ActionTypeProto {
@@ -54,6 +55,12 @@ message UserProto{
   string email = 4;
   string phoneNumber = 5;
   string password = 6;
+  UserRoleProto role = 7;
+}
+enum UserRoleProto{
+  UNKNOWN_ROLE = 0;
+  USER_DISPATCHER = 1;
+  USER_DRIVER =2;
 }
 enum StatusDriverProto{
   UNKNOWN = 0;
