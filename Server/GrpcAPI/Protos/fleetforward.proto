@@ -5,6 +5,8 @@ import "google/protobuf/any.proto";
 enum HandlerTypeProto {
   HANDLER_UNKNOWN = 0;
   HANDLER_COMPANY = 1;
+  HANDLER_DRIVER = 2;
+  HANDLER_DISPATCHER = 3;
 }
 
 enum ActionTypeProto {
@@ -52,10 +54,6 @@ message UserProto{
   string email = 4;
   string phoneNumber = 5;
   string password = 6;
-  oneof role{
-    DriverProto driver = 7;
-    DispatcherProto dispatcher = 8;
-  }
 }
 enum StatusDriverProto{
   UNKNOWN = 0;
@@ -81,8 +79,16 @@ message DriverProto{
   TrailerTypeProto trailerType = 4;
   string currentState = 5;
   int32 currentZIPCODE = 6;
+  UserProto user =7;
+}
+message DriverListProto{
+  repeated DriverProto drivers = 1;
 }
 message DispatcherProto{
   double currentRate = 1;
   repeated int32 driversAssigned = 2;
+  UserProto user =3;
+}
+message DispatcherListProto{
+  repeated DispatcherProto dispatchers = 1;
 }

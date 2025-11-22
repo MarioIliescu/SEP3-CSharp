@@ -1,19 +1,23 @@
 using System.ComponentModel;
-using System.Reflection;
 using ApiContracts;
 using ApiContracts.Enums;
 using GrpcAPI.Services;
 using Entities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PersistanceContracts;
+using Repositories;
 
 namespace PersistanceHandlersGrpc.CompanyPersistance;
 
 public class CompanyHandlerGrpc : IFleetPersistanceHandler
 {
-    private readonly CompanyServiceProto _companyService ;
-    public CompanyHandlerGrpc(CompanyServiceProto _companyService)
+    private readonly ICompanyRepository _companyService ;
+    private readonly ILogger<CompanyHandlerGrpc> _logger;
+    public CompanyHandlerGrpc([FromKeyedServices(HandlerType.Company)]ICompanyRepository companyService, ILogger<CompanyHandlerGrpc> logger)
     {
-        this._companyService = _companyService;
+        this._companyService = companyService;
+        this._logger = logger;
     }
 
     public async Task<object> HandleAsync(Request request)
@@ -23,27 +27,33 @@ public class CompanyHandlerGrpc : IFleetPersistanceHandler
         {
             case ActionType.Create:
             {
+                _logger.LogInformation($"Created company {company}");
                 return await _companyService.CreateAsync(company);
             }
             case ActionType.Update:
             {
                 await _companyService.UpdateAsync(company);
+                _logger.LogInformation($"Updated company {company}");
                 break;
             }
             case ActionType.Delete:
             {
                 await _companyService.DeleteAsync(company.McNumber);
+                _logger.LogInformation($"Deleted company {company.McNumber}");
                 break;
             }
             case ActionType.Get:
             {
+                _logger.LogInformation($"Get company {company.McNumber}");
                 return await _companyService.GetSingleAsync(company.McNumber);
             }
             case ActionType.List:
             {
+                _logger.LogInformation($"List company {company.McNumber}");
                 return _companyService.GetManyAsync();
             }
             default:
+                _logger.LogError($"Unknown action {request.Action}");
                 throw new InvalidEnumArgumentException("Unknown action type");
         }
         return Task.CompletedTask;

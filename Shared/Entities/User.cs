@@ -5,15 +5,15 @@ namespace Entities;
 
 public class User
 {
-    public int Id { get; private set; } = 0;
-    public string FirstName { get; private set; }
-    public string LastName { get; private set; }
-    public string Email { get; private set; }
-    public string PhoneNumber { get; private set; }
-    public string Password { get; private set; }
-    public UserRole Role { get; private set; }
+    public int Id { get; set; } = 0;
+    public string FirstName { get; set; } = "First";
+    public string LastName { get; set; } = "Last";
+    public string Email { get; set; } = "first.last@gmail.com";
+    public string PhoneNumber { get; set; } = "+4511119111";
+    public string Password { get; set; } = "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*";
+    public UserRole Role { get; set; } = UserRole.DRIVER;
 
-    private User()
+    public User()
     {
     }
 
@@ -24,8 +24,8 @@ public class User
         private string _firstName = "First";
         private string _lastName = "Last";
         private string _email = "first.last@gmail.com";
-        private string _phoneNumber = "+23-456-7890";
-        private string _password = "password123";
+        private string _phoneNumber = "+4511119111";
+        private string _password = "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*";
         private UserRole _role = UserRole.DRIVER;
 
 
@@ -43,9 +43,9 @@ public class User
                 throw new ArgumentException(
                     "First name cannot be null or empty.", nameof(firstName));
 
-            if (firstName.Length < 2)
+            if (firstName.Length < 3)
                 throw new ArgumentException(
-                    "First name must be at least 2 characters long.",
+                    "First name must be at least 3 characters long.",
                     nameof(firstName));
 
             if (!Regex.IsMatch(firstName, "^[A-Za-z'-]+$"))
@@ -63,9 +63,9 @@ public class User
                 throw new ArgumentException(
                     "First name cannot be null or empty.", nameof(lastName));
 
-            if (lastName.Length < 2)
+            if (lastName.Length < 3)
                 throw new ArgumentException(
-                    "First name must be at least 2 characters long.",
+                    "First name must be at least 3 characters long.",
                     nameof(lastName));
 
             if (!Regex.IsMatch(lastName, "^[A-Za-z'-]+$"))
@@ -77,7 +77,7 @@ public class User
             return this;
         }
         
-        public Builder setEmail(string email)
+        public Builder SetEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
                 throw new ArgumentException("Email cannot be null or empty.", nameof(email));
@@ -101,14 +101,14 @@ public class User
             return this;
         }
         
-        public Builder setPassword(string password)
+        public Builder SetPassword(string password)
         {
             if (string.IsNullOrWhiteSpace(password))
                 throw new ArgumentException("Password cannot be null or empty.", nameof(password));
 
             if (password.Length < 8)
                 throw new ArgumentException("Password must be at least 8 characters long.", nameof(password));
-            if (password.Length > 24)
+            if (password.Length > 50)
             {
                 throw new ArgumentException("Password cannot exceed 50 characters.", nameof(password));
             }
@@ -134,7 +134,7 @@ public class User
             return this;
         }
         
-        public User Build()
+        public new User Build()
         {
             return new User
             {

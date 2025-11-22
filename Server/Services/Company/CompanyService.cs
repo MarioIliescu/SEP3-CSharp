@@ -3,11 +3,12 @@ using ApiContracts;
 using ApiContracts.Enums;
 using PersistanceContracts;
 using Entities;
-public class CompanyService :ICompanyService
+using Microsoft.Extensions.DependencyInjection;
+public class CompanyService : ICompanyService
 {
     private readonly IFleetPersistanceHandler _handler;
 
-    public CompanyService(IFleetPersistanceHandler handler)
+    public CompanyService([FromKeyedServices (HandlerType.Company)] IFleetPersistanceHandler handler)
     {
         this._handler = handler;
     }

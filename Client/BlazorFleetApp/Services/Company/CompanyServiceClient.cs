@@ -4,7 +4,7 @@ using ApiContracts.Company;
 
 namespace BlazorFleetApp.Services;
 
-public class CompanyServiceClient
+public class CompanyServiceClient : ICompanyService
 {
     private readonly HttpClient _http;
 
@@ -19,14 +19,11 @@ public class CompanyServiceClient
         return await _http.GetFromJsonAsync<List<CreateCompanyDto>>("company") ?? new List<CreateCompanyDto>();
     }
 
-    // Create a company
-    /// <summary>
-    /// Creates a new company.
-    /// </summary>
+    // Create company
     public async Task CreateAsync(
         CreateCompanyDto dto)
     {
-        // POST /api/company
+        // POST/api/company
         var response = await _http
             .PostAsJsonAsync("company", dto);
 
@@ -48,6 +45,14 @@ public class CompanyServiceClient
     public async Task DeleteAsync(string mcNumber)
     {
         var request = new HttpRequestMessage(HttpMethod.Delete, $"company/{mcNumber}");
+        var response = await _http.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+    }
+    
+    // Get a company
+    public async Task GetSingleAsync(string mcNumber)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"company/{mcNumber}");
         var response = await _http.SendAsync(request);
         response.EnsureSuccessStatusCode();
     }

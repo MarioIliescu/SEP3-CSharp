@@ -2,6 +2,7 @@ using BlazorFleetApp.Authentification;
 using BlazorFleetApp.Components;
 using BlazorFleetApp.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using BlazorFleetApp.Services.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,11 +12,9 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-var httpClientBuilder = builder.Services.AddHttpClient<CompanyServiceClient>(client =>
+builder.Services.AddScoped(sp => new HttpClient()
 {
-
-    client.BaseAddress = new Uri("https://localhost:7191");
-    client.Timeout = TimeSpan.FromSeconds(10);
+    BaseAddress = new Uri("https://localhost:7191")
 });
 
 builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();
@@ -30,6 +29,8 @@ if (builder.Environment.IsDevelopment())
         });
 }
 
+builder.Services.AddScoped<ICompanyService, CompanyServiceClient>();
+builder.Services.AddScoped<IDriverService, DriverServiceClient>();
 var app = builder.Build();
 
 // Middleware
