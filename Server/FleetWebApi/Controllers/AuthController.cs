@@ -1,8 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ApiContracts.Dtos.Auth;
+using ApiContracts.Dtos.Authetication;
 using Entities;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Services.Auth;
@@ -21,14 +22,14 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
             User user = await authService.LoginAsync(new User.Builder()
                 .SetEmail(userLoginDto.Email)
                 .SetPassword(userLoginDto.Password)
-                .Build());
+                .Build()) as User ?? throw new InvalidOperationException();
             string token = GenerateJwt(user);
 
-            return Ok(token);
+            return Ok(new{token});
         }
         catch (Exception e)
         {
-            return BadRequest(e.Message);
+            return BadRequest(new { error = e.Message });
         }
     }
 
@@ -65,7 +66,6 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
             new Claim("LastName", user.LastName),
             new Claim("Email", user.Email),
             new Claim("PhoneNumber", user.PhoneNumber),
-            new Claim("Password", user.Password),
             new Claim("Role", user.Role.ToString())
         };
 
