@@ -1,4 +1,5 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using BlazorFleetApp.Services.Auth
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">BlazorFleetApp</a>
     </div>
@@ -24,5 +25,23 @@
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Create User
             </NavLink>
         </div>
+
+        <!-- Logout button at the end -->
+        <div class="nav-item px-3 mt-auto">
+            <button class="btn btn-outline-light w-100" @onclick="LogoutAsync">
+                <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Logout
+            </button>
+        </div>
     </nav>
 </div>
+
+@code {
+    [Inject] private NavigationManager NavMgr { get; set; }
+    [Inject] private IAuthService AuthService { get; set; }
+
+    private async Task LogoutAsync()
+    {
+        await AuthService.LogoutAsync(); // call your service to remove tokens / auth
+        NavMgr.NavigateTo("/login"); // redirect to login page
+    }
+}

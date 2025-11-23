@@ -21,6 +21,7 @@ public static class ProtoUtils
             .SetEmail(proto.User.Email)
             .SetFirstName(proto.User.FirstName)
             .SetLastName(proto.User.LastName)
+            .SetPassword(proto.User.Password)
             .SetRole(UserRole.DRIVER)
             .Build();
     }

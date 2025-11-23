@@ -1,6 +1,7 @@
 using BlazorFleetApp.Authentification;
 using BlazorFleetApp.Components;
 using BlazorFleetApp.Services;
+using BlazorFleetApp.Services.Auth;
 using BlazorFleetApp.Services.Driver;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -18,7 +19,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();
 builder.Services.AddScoped<IDriverService, DriverServiceClient>();
 builder.Services.AddScoped<ICompanyService, CompanyServiceClient>();
-
+builder.Services.AddScoped<IAuthService, JwtAuthService>();
 if (builder.Environment.IsDevelopment())
 {
 }

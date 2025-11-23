@@ -4,5 +4,5 @@ namespace Repositories;
 
 public interface IAuthRepository 
 {
-    Task<User> LoginAsync(User user);
+    Task<object> LoginAsync(User user);
 }

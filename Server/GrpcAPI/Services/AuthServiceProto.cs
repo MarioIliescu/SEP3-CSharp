@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using ApiContracts.Enums;
 using Entities;
 using Google.Protobuf.WellKnownTypes;
 using GrpcAPI.GrpcUtils;
@@ -17,7 +19,7 @@ public class AuthServiceProto: IAuthRepository
         _handler = handler;
         _logger = logger;
     }
-    public async Task<User> LoginAsync(User user)
+    public async Task<object> LoginAsync(User user)
     {
         _logger.LogInformation("Attempting log in");
         var response = await _handler.SendRequestAsync(
@@ -27,7 +29,20 @@ public class AuthServiceProto: IAuthRepository
                 Action = ActionTypeProto.ActionGet,
                 Payload = Any.Pack(ProtoUtils.ParseUserToProto(user)),
             });
-        UserProto userProto = response.Payload.Unpack<UserProto>();
-        return ProtoUtils.ParseFromProtoToUser(userProto); ;
+        switch (user.Role)
+        {
+            case UserRole.DRIVER:
+            {
+                DriverProto proto = response.Payload.Unpack<DriverProto>();
+                _logger.LogDebug("Found driver");
+                return ProtoUtils.ParseFromProtoToDriver(proto);
+            }
+            case UserRole.DISPATCHER:
+            {
+                throw new NotImplementedException();
+            }
+            default:
+                throw new InvalidEnumArgumentException("Invalid role");
+        }
     }
 }
