@@ -6,7 +6,6 @@ using GrpcAPI.GrpcUtils;
 using GrpcAPI.Protos;
 using Microsoft.Extensions.Logging;
 using Repositories;
-
 namespace GrpcAPI.Services;
 
 public class AuthServiceProto: IAuthRepository
@@ -29,20 +28,23 @@ public class AuthServiceProto: IAuthRepository
                 Action = ActionTypeProto.ActionGet,
                 Payload = Any.Pack(ProtoUtils.ParseUserToProto(user)),
             });
-        switch (user.Role)
+        var any = response.Payload;
+        string type = any.TypeUrl;
+
+        _logger.LogDebug("Payload TypeUrl returned: {TypeUrl}", type);
+        if (type.EndsWith("DriverProto"))
         {
-            case UserRole.DRIVER:
-            {
-                DriverProto proto = response.Payload.Unpack<DriverProto>();
-                _logger.LogDebug("Found driver");
-                return ProtoUtils.ParseFromProtoToDriver(proto);
-            }
-            case UserRole.DISPATCHER:
-            {
-                throw new NotImplementedException();
-            }
-            default:
-                throw new InvalidEnumArgumentException("Invalid role");
+            var driverProto = any.Unpack<DriverProto>();
+            _logger.LogInformation("Driver authenticated");
+            return ProtoUtils.ParseFromProtoToDriver(driverProto);
         }
+        else if (type.EndsWith("DispatcherProto"))
+        {
+          //  var dispatcherProto = any.Unpack<DispatcherProto>();
+          //  _logger.LogInformation("Dispatcher authenticated");
+          //  return ProtoUtils.ParseFromProtoToDispatcher(dispatcherProto);
+        }
+
+        throw new Exception($"Unsupported user type returned: {type}");
     }
 }
