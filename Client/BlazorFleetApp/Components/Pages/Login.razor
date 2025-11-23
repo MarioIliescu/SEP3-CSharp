@@ -1,17 +1,19 @@
 ﻿@page "/login"
 @using System.Security.Claims
+@using ApiContracts.Enums
 @using BlazorFleetApp.Components.Layout
+@using BlazorFleetApp.Services.Auth
 @using Microsoft.AspNetCore.Components.Authorization
 @layout LoginRegisterLayout
 @inject NavigationManager NavMgr
-@inject AuthenticationStateProvider AuthProvider
+@inject IAuthService AuthService
 @rendermode InteractiveServer
 
 <link rel="stylesheet" href="css/loginStyle.css">
 
 <AuthorizeView>
     <Authorized>
-        <h2>You are already logged in!</h2>
+        <h2>Resting spot for authorized users</h2>
     </Authorized>
     <NotAuthorized>
         <div class="logo-container">
@@ -31,55 +33,96 @@
     </NotAuthorized>
 </AuthorizeView>
 
-@code 
-{
+
+@code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
-    private string email;
-    private string password;
+    private string? email;
+    private string? password;
+    private string? role;
     private string _errorMessage = "";
 
-    private void GoToRegister()
-    {
-        NavMgr.NavigateTo("register");
-    }
-
-    private void GoToForgotPassword()
-    {
-        NavMgr.NavigateTo("forgot_password");
-    }
+    private void GoToRegister() => NavMgr.NavigateTo("register");
+    private void GoToForgotPassword() => NavMgr.NavigateTo("forgot_password");
 
     private async Task LoginAsync()
     {
         _errorMessage = "";
         try
         {
-            await ((Authentification.AuthProvider)AuthProvider).LoginAsync(email, password);
+            await AuthService.LoginAsync(email, password);
+            NavigateByRole();
         }
         catch (Exception e)
         {
-            _errorMessage = $"{e.Message}";
-        }
-        AuthenticationState authenticationState = await State;
-        ClaimsPrincipal claimsPrincipal = authenticationState.User;
-        if (claimsPrincipal is null || !claimsPrincipal.Identity.IsAuthenticated)
-        {
-            return;
-        }
-
-        IEnumerable<Claim> claims = claimsPrincipal.Claims;
-        string userRoleAsString = claims.Single(c => c.Type == ClaimTypes.Role).Value;
-
-        if (string.IsNullOrEmpty(userRoleAsString))
-        {
-            return;
-        }
-
-        if (userRoleAsString == "DISPATCHER")
-        {
-            NavMgr.NavigateTo("/dispatch-home");
-        } else if (userRoleAsString == "DRIVER")
-        {
-            NavMgr.NavigateTo("/driver-home");
+            Console.WriteLine(e);
+            _errorMessage = $"Error: {e.Message}";
         }
     }
+
+    private void NavigateByRole()
+    {
+        switch (role)
+        {
+           // case "DISPATCHER":
+                // NavMgr.NavigateTo("/dispatch-home");
+                //break;
+            //   case "DRIVER":
+                // NavMgr.NavigateTo("/driver-home");
+             //   break;
+            default:
+                InvokeAsync(() => NavMgr.NavigateTo("/home")); 
+                break;
+        }
+    }
+    private async Task LoadUserRoleAsync()
+    {
+        var authState = await State;
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email || c.Type == "Email")?.Value;
+
+            // Get the role claim as string
+            role = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role || c.Type == "Role" || c.Type == "role")?.Value;
+
+            if (string.IsNullOrEmpty(role))
+            {
+                _errorMessage = "Role claim missing.";
+            }
+        }
+        else
+        {
+            _errorMessage = "User not authenticated.";
+        }
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                // Get email if needed
+                email = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email || c.Type == "Email")?.Value;
+
+                // Get role as string
+                role = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role || c.Type == "Role" || c.Type == "role")?.Value;
+
+                if (!string.IsNullOrEmpty(role))
+                {
+                    // Navigate immediately based on role
+                    NavigateByRole();
+                }
+                else
+                {
+                    _errorMessage = "Role claim missing for logged-in user.";
+                }
+            }
+        }
+    }
+
 }

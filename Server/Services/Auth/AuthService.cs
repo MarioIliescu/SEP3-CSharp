@@ -17,7 +17,7 @@ public class AuthService : IAuthService
         _authHandler = authHandler;
         _logger = logger;
     }
-    public async Task<User> LoginAsync(User user)
+    public async Task<object> LoginAsync(User user)
     {
         _logger.LogDebug("Attempting login");
         var request = new Request(ActionType.Get, HandlerType.Auth, user);
