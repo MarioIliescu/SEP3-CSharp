@@ -344,6 +344,62 @@ body {
     background: #071F25;
 }
 
+.create-company-form {
+    width: 100%;
+    max-width: 430px;
+    margin: 2vh auto 0;
+    display: flex;
+    gap: 0.5rem;
+}
+
+#mc-number-field,
+#company-name-field {
+    flex: 1 1 50%;
+    height: 40px;
+    border-radius: 5px;
+    border: 3px solid #145F74;
+    background: transparent;
+    font-family: 'Ausion';
+    font-weight: normal;
+    font-size: 1.1rem;
+    color: #3C616A;
+    padding: 0 0.75rem;
+}
+
+#mc-number-field:focus,
+#company-name-field:focus {
+    outline: none;
+    border-color: #145F74;
+    color: #145F74;
+}
+
+#mc-number-field::placeholder,
+#company-name-field::placeholder {
+    font-family: 'LemonMilk';
+    font-size: 12px;
+    color: #3C616A;
+}
+
+.save-button {
+    display: block;
+    width: 100%;
+    max-width: 430px;
+    height: 40px;
+    border-radius: 5px;
+    margin: 1vh auto 0;
+    border: none;
+    background: #145F74;
+    color: #FFFFFF;
+    font-family: 'LemonMilk';
+    font-size: 14px;
+    transition: 0.5s;
+    cursor: pointer;
+}
+
+.save-button:hover {
+    background: #071F25;
+}
+
 @media (max-width: 768px) {
     .password-with-rules {
         flex-direction: column;
@@ -371,4 +427,14 @@ body {
     #confirm-password-field::placeholder {
         font-size: 11px;
     }
+}
+
+.company-popup
+{
+    display: none;
+}
+
+.company-popup.active
+{
+    display:block;
 }

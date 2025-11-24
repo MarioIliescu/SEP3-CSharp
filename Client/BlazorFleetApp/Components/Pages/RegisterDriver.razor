@@ -58,7 +58,16 @@
                     <option value="@c.McNumber">@c.McNumber — @c.CompanyName</option>
                 }
             </select>
-            <button class="add-company-button" @onclick="GoToCreateCompany"><img src="images/AddCompanyButton.png" alt="Add Company"></button>
+            <button class="add-company-button" @onclick="TogglePopupCompany"><img src="images/AddCompanyButton.png" alt="Add Company"></button>
+        </div>
+        <div class="company-popup @popup">
+
+
+            <div class="create-company-form">
+                <input id="mc-number-field" type="text" placeholder="Mc Number"/>
+                <input id="company-name-field" type="text" placeholder="Company name"/>
+            </div>
+            <button class="save-button">Save</button>
         </div>
         <select class="role-select" @bind="role" >
             <option value="@DriverCompanyRole.Driver">Driver</option>
@@ -100,6 +109,7 @@
     private string repeatPassword = "";   // <— added
     private string passwordFieldType = "password";
     private string confirmPasswordFieldType = "password";
+    private string popup = "";
 
     private string selectedCompanyMcNumber = "";
     private List<CreateCompanyDto> companies = new();
@@ -234,5 +244,10 @@
     private void ToggleConfirmPasswordField()
     {
         confirmPasswordFieldType = confirmPasswordFieldType == "password" ? "text" : "password";
+    }
+
+    private void TogglePopupCompany()
+    {
+        popup = popup == "" ? "active" : "";
     }
 }
