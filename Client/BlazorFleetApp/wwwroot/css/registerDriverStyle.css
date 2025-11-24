@@ -28,4 +28,347 @@ body {
     min-height: 100vh;
     background: linear-gradient(to bottom, #FFFFFF, #DEEDF1, #9CBEC7, #145F74);
     overflow: hidden;
+    font-family: 'LemonMilk', sans-serif;
+}
+
+.logo-container {
+    width: min(80vw, 430px);
+    position: relative;
+    overflow: hidden;
+    margin: 10vh auto 0;
+}
+
+.logo-container img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+#catch-phrase {
+    font-size: 20px;
+    font-family: 'LemonMilk';
+    font-weight: normal;
+    width: fit-content;
+    margin: 3vh auto 0;
+    text-align: center;
+}
+
+.name-fields {
+    width: 100%;
+    max-width: 430px;
+    margin: 2vh auto 0;
+    display: flex;
+    gap: 0.5rem;
+}
+
+#firstname-field,
+#lastname-field {
+    flex: 1 1 50%;
+    height: 40px;
+    border-radius: 5px;
+    border: 3px solid #145F74;
+    background: transparent;
+    font-family: 'Ausion';
+    font-weight: normal;
+    font-size: 1.1rem;
+    color: #3C616A;
+    padding: 0 0.75rem;
+}
+
+#firstname-field:focus,
+#lastname-field:focus {
+    outline: none;
+    border-color: #145F74;
+    color: #145F74;
+}
+
+#firstname-field::placeholder,
+#lastname-field::placeholder {
+    font-family: 'LemonMilk';
+    font-size: 12px;
+    color: #3C616A;
+}
+
+#phone-number-field,
+#email-field,
+#confirm-password-field {
+    display: block;
+    width: 100%;
+    max-width: 430px;
+    height: 40px;
+    border-radius: 5px;
+    border: 3px solid #145F74;
+    background: transparent;
+    font-family: 'Ausion';
+    font-weight: normal;
+    font-size: 1.1rem;
+    color: #3C616A;
+    padding: 0 0.75rem;
+    margin: 1vh auto 0;
+}
+
+#phone-number-field:focus,
+#email-field:focus,
+#confirm-password-field:focus {
+    outline: none;
+    border-color: #145F74;
+    color: #145F74;
+}
+
+#phone-number-field::placeholder,
+#email-field::placeholder,
+#confirm-password-field::placeholder {
+    font-family: 'LemonMilk';
+    font-size: 12px;
+    color: #3C616A;
+}
+
+.password-with-rules {
+    width: 100%;
+    max-width: 760px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+}
+
+.password-with-rules .password-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 430px;
+}
+
+#password-field {
+    width: 100%;
+    height: 40px;
+    border-radius: 5px;
+    border: 3px solid #145F74;
+    background: transparent;
+    font-family: 'Ausion';
+    font-weight: normal;
+    font-size: 1.1rem;
+    color: #3C616A;
+    padding: 0 2.75rem 0 0.75rem;
+}
+
+#password-field:focus {
+    outline: none;
+    border-color: #145F74;
+    color: #145F74;
+}
+
+#password-field::placeholder {
+    font-family: 'LemonMilk';
+    font-size: 12px;
+    color: #3C616A;
+}
+
+.show-password-vector {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.rules-trigger
+{
+    pointer-events: none;
+}
+
+.show-password-rules-vector {
+    pointer-events: auto;
+    position: absolute;
+    right: 140px;
+    top: 65%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+
+.rules {
+    display: none;
+    pointer-events: none;
+    position: absolute;
+    right: -200px;
+    top: -30px;
+    padding: 18px 20px;
+    border: 5px solid #145F74;
+    border-radius: 10px;
+    background: transparent;
+    color: #071F25;
+    font-family: 'LemonMilk';
+    font-size: 12px;
+    width: 320px;
+}
+
+.show-password-rules-vector:hover ~ .rules {
+    display: block;
+}
+
+.rules p {
+    margin: 0 0 6px 0;
+}
+
+.password-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 430px;
+    margin: 1vh auto 0;
+}
+
+.company-section {
+    width: 100%;
+    max-width: 430px;
+    margin: 1vh auto 0;
+    display: flex;
+    align-items: stretch;
+    gap: 0.1rem;
+}
+
+.company-select {
+    flex: 0 0 80%;
+    height: 40px;
+    border-radius: 5px;
+    border: 3px solid #145F74;
+    background: transparent;
+    font-family: 'LemonMilk';
+    font-weight: normal;
+    font-size: 0.9rem;
+    color: #3C616A;
+    padding: 0 0.75rem;
+    appearance: none;
+}
+
+.company-select:focus {
+    outline: none;
+    border-color: #145F74;
+    color: #145F74;
+}
+
+.company-select option {
+    font-family: 'LemonMilk';
+    font-size: 0.9rem;
+    color: #145F74;
+    background: #FFFFFF;
+}
+
+.add-company-button {
+    flex: 0 0 20%;
+    height: 40px;
+    border-radius: 5px;
+    border: none;
+    background: #145F74;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+.add-company-button:hover {
+    background: #071F25;
+}
+
+.add-company-button img {
+    max-width: 60%;
+    max-height: 60%;
+    object-fit: contain;
+}
+
+.role-select {
+    display: block;
+    width: 100%;
+    max-width: 430px;
+    height: 40px;
+    border-radius: 5px;
+    border: 3px solid #145F74;
+    background: transparent;
+    font-family: 'LemonMilk';
+    font-weight: normal;
+    font-size: 0.9rem;
+    color: #3C616A;
+    padding: 0 0.75rem;
+    margin: 1.5vh auto 0;
+    appearance: none;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: #145F74;
+    color: #145F74;
+}
+
+.role-select option {
+    font-family: 'LemonMilk';
+    font-size: 0.9rem;
+    color: #145F74;
+    background: #FFFFFF;
+}
+
+.error-message-popup {
+    width: 100%;
+    max-width: 430px;
+    margin: 1rem auto 0;
+    color: #6d151e;
+    font-family: 'LemonMilk';
+    font-size: 12px;
+    text-align: left;
+}
+
+.error-message-popup p
+{
+    margin-top: -15px;
+    width: fit-content;
+    margin: auto;
+}
+
+.register-button {
+    display: block;
+    width: 100%;
+    max-width: 430px;
+    height: 40px;
+    border-radius: 5px;
+    margin: 1vh auto 0;
+    border: none;
+    background: #145F74;
+    color: #FFFFFF;
+    font-family: 'LemonMilk';
+    font-size: 14px;
+    transition: 0.5s;
+    cursor: pointer;
+}
+
+.register-button:hover {
+    background: #071F25;
+}
+
+@media (max-width: 768px) {
+    .password-with-rules {
+        flex-direction: column;
+        align-items: center;
+        max-width: 430px;
+    }
+
+    .rules {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    #catch-phrase {
+        font-size: 16px;
+    }
+
+    #firstname-field::placeholder,
+    #lastname-field::placeholder,
+    #phone-number-field::placeholder,
+    #email-field::placeholder,
+    #password-field::placeholder,
+    #confirm-password-field::placeholder {
+        font-size: 11px;
+    }
 }
