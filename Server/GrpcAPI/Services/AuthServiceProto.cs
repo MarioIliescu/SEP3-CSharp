@@ -12,7 +12,6 @@ public class AuthServiceProto: IAuthRepository
 {
     private readonly FleetMainGrpcHandler _handler;
     private readonly ILogger<AuthServiceProto> _logger;
-    //private readonly DispatcherServiceProto _dispatcherService;
     public AuthServiceProto(FleetMainGrpcHandler handler, ILogger<AuthServiceProto> logger)
     {
         _handler = handler;
@@ -40,9 +39,9 @@ public class AuthServiceProto: IAuthRepository
         }
         else if (type.EndsWith("DispatcherProto"))
         {
-          //  var dispatcherProto = any.Unpack<DispatcherProto>();
-          //  _logger.LogInformation("Dispatcher authenticated");
-          //  return ProtoUtils.ParseFromProtoToDispatcher(dispatcherProto);
+           var dispatcherProto = any.Unpack<DispatcherProto>();
+           _logger.LogInformation("Dispatcher authenticated");
+            return ProtoUtils.ParseFromProtoToDispatcher(dispatcherProto);
         }
 
         throw new Exception($"Unsupported user type returned: {type}");

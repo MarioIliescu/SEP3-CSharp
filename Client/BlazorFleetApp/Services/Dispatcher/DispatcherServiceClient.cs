@@ -23,7 +23,7 @@ public class DispatcherServiceClient : IDispatcherService
     
     public async Task UpdateAsync(DispatcherDto dto)
     {
-        var response = await _http.PutAsJsonAsync("disaptcher", dto);
+        var response = await _http.PutAsJsonAsync("dispatcher", dto);
         response.EnsureSuccessStatusCode();
     }
     

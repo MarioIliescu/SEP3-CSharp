@@ -22,13 +22,26 @@
     <div class="alert alert-info">@_message</div>
 }
 
-<input class="form-control mb-2" placeholder="First name" @bind="_firstname" />
-<input class="form-control mb-2" placeholder="Last name" @bind="_lastname" />
-<input class="form-control mb-2" placeholder="Email address" @bind="_email" />
-<input class="form-control mb-2" placeholder="Phone number" @bind="_phonenumber" />
-<input class="form-control mb-2" placeholder="Password" type="password" @bind="_password" />
-<input class="form-control mb-2" placeholder="Repeat password" type="password" @bind="_repeatPassword" />
-<input class="form-control mb-2" placeholder="Current Rate" @bind="_currentRate" />
+<label>First name</label>
+<input class="form-control mb-2" @bind="_firstname" />
+
+<label>Last name</label>
+<input class="form-control mb-2" @bind="_lastname" />
+
+<label>Email address</label>
+<input class="form-control mb-2" @bind="_email" />
+
+<label>Phone number</label>
+<input class="form-control mb-2" @bind="_phonenumber" />
+
+<label>Password</label>
+<input class="form-control mb-2" type="password" @bind="_password" />
+
+<label>Repeat password</label>
+<input class="form-control mb-2" type="password" @bind="_repeatPassword" />
+
+<label>Current rate (%)</label>
+<input class="form-control mb-2" type="number" step="0.01" @bind="_currentRate" />
 
 <button class="btn btn-primary" @onclick="RegisterUser">Register</button>
 
@@ -117,7 +130,7 @@
                     _lastname,
                     _email,
                     _phonenumber,
-                    _currentRate,
+                    _currentRate/ 100,
                     _password
                 )
             );

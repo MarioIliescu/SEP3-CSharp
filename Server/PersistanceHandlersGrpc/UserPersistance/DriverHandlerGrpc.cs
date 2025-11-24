@@ -22,46 +22,32 @@ public class DriverHandlerGrpc : IFleetPersistanceHandler
     }
     public async Task<object> HandleAsync(Request request)
     {
-        switch (request.Handler)
-        {
-            case HandlerType.Driver:
-                Driver payload = request.Payload as Driver;
-                _logger.LogInformation($"Handling driver {payload}");
-                return await HandleDriverAsync(request.Action, payload);
-            default:
-                _logger.LogError($"Unhandled handler type {request.Handler}");
-                throw new NotImplementedException();
-        }
-    }
-
-    private async Task<object> HandleDriverAsync(ActionType actionType, Driver request)
-    {
-        switch (actionType)
+        Driver driver = request.Payload as Driver ?? throw new ArgumentException("Invalid request payload");
+        switch (request.Action)
         {
             case ActionType.Create:
-                _logger.LogInformation($"Creating driver {request}");
-                return await _driverRepository.CreateAsync(request);
+                _logger.LogInformation($"Creating driver {driver}");
+                return await _driverRepository.CreateAsync(driver);
             case ActionType.Update:
-                _logger.LogInformation($"Updating driver {request}");
-                await  _driverRepository.UpdateAsync(request);
-                _logger.LogInformation($"Updated driver {request}");
+                _logger.LogInformation($"Updating driver {driver}");
+                await  _driverRepository.UpdateAsync(driver);
+                _logger.LogInformation($"Updated driver {driver}");
                 break;
             case ActionType.Delete:
-                _logger.LogInformation("$Trying to delete driver {request}");
-                await _driverRepository.DeleteAsync(request.Id);
-                _logger.LogInformation($"Deleted driver with Id{request.Id}");
+                _logger.LogInformation("$Trying to delete driver {driver}");
+                await _driverRepository.DeleteAsync(driver.Id);
+                _logger.LogInformation($"Deleted driver with Id{driver.Id}");
                 break;
             case ActionType.Get:
-                _logger.LogInformation($"Fetching driver {request}");
-                return await _driverRepository.GetSingleAsync(request.Id);
+                _logger.LogInformation($"Fetching driver {driver}");
+                return await _driverRepository.GetSingleAsync(driver.Id);
             case ActionType.List:
-                _logger.LogInformation($"Getting drivers {request}");
+                _logger.LogInformation($"Getting drivers {driver}");
                 return  _driverRepository.GetManyAsync();
             default:
-                _logger.LogError($"Unknown action type {actionType}");
+                _logger.LogError($"Unknown action type {request.Action}");
                 throw new InvalidEnumArgumentException("Unknown action type");
         }
         return Task.CompletedTask;
     }
-    
 }

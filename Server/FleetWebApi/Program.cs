@@ -12,6 +12,7 @@ using PersistanceHandlersGrpc.UserPersistance;
 using Repositories;
 using Services.Auth;
 using Services.Company;
+using Services.Dispatcher;
 using Services.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,9 +26,11 @@ builder.Services.AddKeyedScoped<IFleetPersistanceHandler, CompanyHandlerGrpc>(Ha
 builder.Services.AddKeyedScoped<IFleetPersistanceHandler, AuthHandlerGrpc>(HandlerType.Auth);
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
+builder.Services.AddScoped<IDispatcherService, DispatcherService>();
 builder.Services.AddKeyedScoped<IFleetPersistanceHandler, DriverHandlerGrpc>(HandlerType.Driver);
-//builder.Services.AddKeyedScoped<IFleetPersistanceHandler, DispatcherHandlerGrpc>(HandlerType.Dispatcher);
+builder.Services.AddKeyedScoped<IFleetPersistanceHandler, DispatcherHandlerGrpc>(HandlerType.Dispatcher);
 builder.Services.AddKeyedScoped<IDriverRepository, DriverServiceProto>(HandlerType.Driver);
+builder.Services.AddKeyedScoped<IDispatcherRepository, DispatcherServiceProto>(HandlerType.Dispatcher);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<FleetMainGrpcHandler>(sp =>
 {

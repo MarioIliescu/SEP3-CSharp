@@ -59,7 +59,7 @@ public class DispatcherService : IDispatcherService
         {
             return result;
         }
-        throw new InvalidOperationException("No drivers found");
+        throw new InvalidOperationException("No dispatchers found");
     }
     
     private Request MakeDispatcherRequest(ActionType action, Dispatcher dispatcher)
