@@ -1,7 +1,8 @@
-﻿namespace Services.Dispatcher;
+﻿using Repositories;
+namespace Services.Dispatcher;
 
 using Entities;
 
-public interface IDispatcherService
+public interface IDispatcherService :IDispatcherRepository
 {
 }

@@ -6,5 +6,6 @@ public record CreateDispatcherDto(
     string LastName,
     string Email,
     string PhoneNumber,
-    int CurrentRate
+    double CurrentRate,
+    string Password
 );

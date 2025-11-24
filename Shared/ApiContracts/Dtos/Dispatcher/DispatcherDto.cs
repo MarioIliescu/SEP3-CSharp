@@ -6,5 +6,5 @@ public record DispatcherDto(
     string LastName,
     string Email,
     string PhoneNumber,
-    int CurrentRate
+    double CurrentRate
 );
