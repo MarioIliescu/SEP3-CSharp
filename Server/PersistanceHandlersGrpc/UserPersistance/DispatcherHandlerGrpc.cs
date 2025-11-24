@@ -20,35 +20,32 @@ public class DispatcherHandlerGrpc : IFleetPersistanceHandler
         _dispatcherRepository = dispatcherRepository;
         _logger = logger;
     }
-    public Task<object> HandleAsync(Request request)
+    public async Task<object> HandleAsync(Request request)
     {
-        throw new NotImplementedException();
-    }
-    private async Task<object> HandleDispatcherAsync(ActionType actionType, Dispatcher request)
-    {
-        switch (actionType)
+        Dispatcher dispatcher = request.Payload as Dispatcher ?? throw new ArgumentException("Invalid request payload");
+        switch (request.Action)
         {
             case ActionType.Create:
-                _logger.LogInformation($"Creating dispatcher {request}");
-                return await _dispatcherRepository.CreateAsync(request);
+                _logger.LogInformation($"Creating dispatcher {dispatcher}");
+                return await _dispatcherRepository.CreateAsync(dispatcher);
             case ActionType.Update:
-                _logger.LogInformation($"Updating dispatcher {request}");
-                await  _dispatcherRepository.UpdateAsync(request);
-                _logger.LogInformation($"Updated dispatcher {request}");
+                _logger.LogInformation($"Updating dispatcher {dispatcher}");
+                await  _dispatcherRepository.UpdateAsync(dispatcher);
+                _logger.LogInformation($"Updated dispatcher {dispatcher}");
                 break;
             case ActionType.Delete:
-                _logger.LogInformation("$Trying to delete dispatcher {request}");
-                await _dispatcherRepository.DeleteAsync(request.Id);
-                _logger.LogInformation($"Deleted driver with Id{request.Id}");
+                _logger.LogInformation("$Trying to delete dispatcher {dispatcher}");
+                await _dispatcherRepository.DeleteAsync(dispatcher.Id);
+                _logger.LogInformation($"Deleted driver with Id{dispatcher.Id}");
                 break;
             case ActionType.Get:
-                _logger.LogInformation($"Fetching dispatcher {request}");
-                return await _dispatcherRepository.GetSingleAsync(request.Id);
+                _logger.LogInformation($"Fetching dispatcher {dispatcher}");
+                return await _dispatcherRepository.GetSingleAsync(dispatcher.Id);
             case ActionType.List:
-                _logger.LogInformation($"Getting dispatchers {request}");
+                _logger.LogInformation($"Getting dispatchers {dispatcher}");
                 return  _dispatcherRepository.GetManyAsync();
             default:
-                _logger.LogError($"Unknown action type {actionType}");
+                _logger.LogError($"Unknown action type {request.Action}");
                 throw new InvalidEnumArgumentException("Unknown action type");
         }
         return Task.CompletedTask;

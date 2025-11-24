@@ -27,13 +27,25 @@
     <div class="alert alert-info">@message</div>
 }
 
-<input class="form-control mb-2" placeholder="First name" @bind="firstname" />
-<input class="form-control mb-2" placeholder="Last name" @bind="lastname" />
-<input class="form-control mb-2" placeholder="Email address" @bind="email" />
-<input class="form-control mb-2" placeholder="Phone number" @bind="phonenumber" />
-<input class="form-control mb-2" placeholder="Password" type="password" @bind="password" />
-<input class="form-control mb-2" placeholder="Repeat password" type="password" @bind="repeatPassword" />
+<label>First name</label>
+<input class="form-control mb-2" @bind="firstname" />
 
+<label>Last name</label>
+<input class="form-control mb-2" @bind="lastname" />
+
+<label>Email address</label>
+<input class="form-control mb-2" @bind="email" />
+
+<label>Phone number</label>
+<input class="form-control mb-2" @bind="phonenumber" />
+
+<label>Password</label>
+<input class="form-control mb-2" type="password" @bind="password" />
+
+<label>Repeat password</label>
+<input class="form-control mb-2" type="password" @bind="repeatPassword" />
+
+<label>Company</label>
 <select class="form-control mb-2" @bind="selectedCompanyMcNumber">
     <option value="">-- Select Company --</option>
     @foreach (var c in companies)
@@ -44,8 +56,9 @@
 
 <button class="btn btn-secondary mb-2" @onclick="GoToCreateCompany">
     Company not listed? Create new company
-</button>
+</button><br/>
 
+<label>Trailer Type</label>
 <select class="form-control mb-2" @bind="trailertype">
     <option value="">-- Select Trailer Type --</option>
     @foreach (var type in Enum.GetValues<TrailerType>())
@@ -54,8 +67,11 @@
     }
 </select>
 
-<input class="form-control mb-2" placeholder="Location state (e.g. TX)" @bind="locationstate" />
-<input class="form-control mb-2" placeholder="Location zip code" @bind="locationzipcode" />
+<label>Location state (e.g. TX)</label>
+<input class="form-control mb-2"  @bind="locationstate" />
+
+<label>Location ZIP code</label>
+<input class="form-control mb-2"  @bind="locationzipcode" />
 
 <button class="btn btn-primary" @onclick="RegisterUser">Register</button>
 
@@ -74,8 +90,8 @@
     private DriverStatus status = DriverStatus.available;
     private DriverCompanyRole role = DriverCompanyRole.Driver;
 
-    private string locationstate = "";
-    private int locationzipcode;
+    private string locationstate = "AL";
+    private int locationzipcode = 35010;
 
     private string message = "";
     private List<string> validationErrors = new();
