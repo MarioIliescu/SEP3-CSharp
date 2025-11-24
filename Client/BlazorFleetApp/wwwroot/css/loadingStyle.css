@@ -5,76 +5,79 @@
     font-style: normal;
 }
 
-body
-{
-    height: 800px;
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
     background: linear-gradient(to bottom, #FFFFFF, #DEEDF1, #9CBEC7, #145F74);
     overflow: hidden;
+    font-family: 'LemonMilk', sans-serif;
 }
 
-.logo-container
-{
-    width: 430px;
-    height: 70px;
+.logo-container {
+    width: min(80vw, 430px);
+    height: auto;
     position: relative;
     overflow: hidden;
-    margin: 10% auto 0;
+    margin: 10vh auto 0;
 }
 
-.logo-container img
-{
+.logo-container img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    object-fit: contain;
 }
 
-#catch-phrase
-{
+#catch-phrase {
     font-size: 20px;
     font-family: 'LemonMilk';
     font-weight: normal;
     width: fit-content;
-    margin: 0 auto;
-    margin-top: 15%;
+    margin: 15vh auto 0;
+    text-align: center;
 }
 
-.loadingwheel
-{
+.loadingwheel {
     width: 100px;
     height: 50px;
     position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 0 auto;
-    margin-top: 1%;
+    margin: 1vh auto 0;
 }
 
-.loadingwheel .bar
-{
+.loadingwheel .bar {
     width: 5px;
     height: 0px;
     background-color: #145F74;
     animation: animateBars var(--dur, 1s) ease-in-out var(--delay, 0s) infinite alternate;
 }
 
-@keyframes animateBars
-{
-    0% {height: 0px;}
-    10%   { height: var(--min); }
-    20%  { height: calc((var(--min) + var(--max)) * 0.35); }
-    45%  { height: calc((var(--min) + var(--max)) * 0.8); }
-    70%  { height: calc((var(--min) + var(--max)) * 0.25); }
+@keyframes animateBars {
+    0% { height: 0px; }
+    10% { height: var(--min); }
+    20% { height: calc((var(--min) + var(--max)) * 0.35); }
+    45% { height: calc((var(--min) + var(--max)) * 0.8); }
+    70% { height: calc((var(--min) + var(--max)) * 0.25); }
     80% { height: var(--max); }
-    100% {height: 0px;}
+    100% { height: 0px; }
 }
 
-.loadingwheel.ready
-{
+.loadingwheel.ready {
     display: none;
 }
 
-#catch-phrase.ready
-{
-    margin-top: 5%;
+#catch-phrase.ready {
+    margin-top: 5vh;
 }

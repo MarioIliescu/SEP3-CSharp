@@ -1,0 +1,78 @@
+﻿@page "/select-role"
+@layout LoginRegisterLayout
+@using BlazorFleetApp.Components.Layout
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavMgr
+
+<link rel="stylesheet" href="css/selectRole.css"/>
+
+<AuthorizeView>
+    <Authorized>
+        <h2>Resting spot for authorized users</h2>
+    </Authorized>
+    <NotAuthorized>
+        <div class="logo-container">
+            <img src="images/logo-03.png" alt="logo">
+        </div>
+        
+        <h2 id="catch-phrase">WHAT IS YOUR ROLE?!</h2>
+        
+        <div class="select-part">
+            <div class="driver-box @(driverSelected ? "selected" : "")" @onclick="ToggleDriver">
+                <div class="vector-container">
+                    <img src="images/SelectDriveRole.png" alt="driver-vector">
+                </div>
+                <h2>DRIVER</h2>
+            </div>
+            <div class="dispatcher-box @(dispatcherSelected ? "selected" : "")" @onclick="ToggleDispatcher">
+                <div class="vector-container">
+                    <img src="images/SelectDispatcherRole.png" alt="dispatcher-vector">
+                </div>
+                <h2>DISPATCHER</h2>
+            </div>
+        </div>
+        <p id="error-message-popup">@_errorMessage</p>
+        <button class="continue-button" type="button" @onclick="Redirect">CONTINUE</button>
+        <p>Already have an account? <a href="" @onclick="GoToLogin">Login</a> </p>
+        
+    </NotAuthorized>
+</AuthorizeView>
+
+@code 
+{
+    private bool driverSelected = false;
+    private bool dispatcherSelected = false;
+    private string _errorMessage = "";
+    
+    private void Redirect()
+    {
+        _errorMessage = "";
+        if (driverSelected && dispatcherSelected)
+        {
+            _errorMessage = "You need to select only one";
+        } else if (driverSelected && !dispatcherSelected)
+        {
+            NavMgr.NavigateTo("/register-driver");
+        } else if (dispatcherSelected && !driverSelected)
+        {
+            NavMgr.NavigateTo("/register-dispatcher");
+        }
+
+        _errorMessage = "You need to select one";
+    }
+    
+    private void GoToLogin()
+    {
+        NavMgr.NavigateTo("/login");
+    }
+
+    public void ToggleDriver()
+    {
+        driverSelected = !driverSelected;
+    }
+
+    public void ToggleDispatcher()
+    {
+        dispatcherSelected = !dispatcherSelected;
+    }
+}
