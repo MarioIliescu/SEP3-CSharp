@@ -24,7 +24,10 @@
 
         <div class="login-part">
             <input type="text" id="email-field" name="email-field" placeholder="Email" @bind="email"> <br>
-            <input type="password" id="password-field" name="password-field" placeholder="Password" @bind="password"> <br>
+            <div class="password-wrapper">
+                <input type="@passwordFieldType" id="password-field" name="password-field" placeholder="Password" @bind="password">
+                <img class="show-password-vector" src="images/ShowPasswordVector.png" @onclick="ToggleFieldType"/>
+            </div>
             <a href="" @onclick="GoToForgotPassword">Forgot password?</a>
             <p id="error-message-popup">@_errorMessage</p>
             <input type="button" id="login-button" name="login-button" value="Log in" @onclick="LoginAsync">
@@ -36,12 +39,13 @@
 
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private string passwordFieldType = "password";
     private string? email;
     private string? password;
     private string? role;
     private string _errorMessage = "";
 
-    private void GoToRegister() => NavMgr.NavigateTo("register");
+    private void GoToRegister() => NavMgr.NavigateTo("select-role");
     private void GoToForgotPassword() => NavMgr.NavigateTo("forgot_password");
 
     private async Task LoginAsync()
@@ -125,4 +129,8 @@
         }
     }
 
+    public void ToggleFieldType()
+    {
+        passwordFieldType = passwordFieldType == "password" ? "text" : "password";
+    }
 }

@@ -1,0 +1,166 @@
+﻿@font-face {
+    font-family: 'LemonMilk';
+    src: url('../fonts/LEMONMILK-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #FFFFFF, #DEEDF1, #9CBEC7, #145F74);
+    overflow: hidden;
+    font-family: 'LemonMilk', sans-serif;
+}
+
+.logo-container {
+    width: min(80vw, 430px);
+    position: relative;
+    overflow: hidden;
+    margin: 10vh auto 0;
+}
+
+.logo-container img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+#catch-phrase {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-family: 'LemonMilk';
+    font-weight: normal;
+    width: fit-content;
+    margin: 2vh auto 0;
+    text-align: center;
+}
+
+.select-part {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 3rem;
+    width: 100%;
+    max-width: 800px;
+    margin: 3vh auto 0;
+    position: relative;
+}
+
+.driver-box,
+.dispatcher-box {
+    flex: 1 1 220px;
+    max-width: 260px;
+    border: solid 5px #145F74;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    height: auto;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.select-part .vector-container {
+    height: clamp(180px, 30vh, 240px);
+    overflow: hidden;
+}
+
+.vector-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.driver-box:hover,
+.dispatcher-box:hover {
+    background-color: #145F74;
+    color: white;
+}
+
+.driver-box.selected,
+.dispatcher-box.selected {
+    border-color: #071F25;
+    color: white;
+    background-color: #071F25;
+}
+
+.select-part h2 {
+    font-family: 'LemonMilk';
+    font-size: clamp(1.125rem, 2.4vw, 1.5rem);
+    width: fit-content;
+    margin: 1rem auto 0;
+    text-align: center;
+}
+
+#error-message-popup {
+    margin: 1rem auto 0;
+    font-family: 'LemonMilk';
+    font-size: clamp(0.875rem, 1.8vw, 1rem);
+    color: #6d151e;
+    width: min(80vw, 300px);
+    text-align: center;
+}
+
+.continue-button {
+    border: none;
+    background: #145F74;
+    color: #FFFFFF;
+    font-family: 'LemonMilk';
+    transition: 0.3s;
+    width: 100%;
+    max-width: 430px;
+    height: 40px;
+    border-radius: 5px;
+    display: block;
+    margin: auto;
+    margin-top: 1rem;
+}
+
+.continue-button:hover {
+    background: #071F25;
+}
+
+p {
+    margin: 0.5rem auto auto;
+    font-size: 0.90rem;
+    width: fit-content;
+    font-family: 'LemonMilk';
+}
+
+a {
+    font-family: 'LemonMilk';
+    text-decoration: none;
+    color: #145F74;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+a:hover {
+    color: #071F25;
+}
+
+@media (max-width: 600px) {
+    .logo-container {
+        margin-top: 6vh;
+    }
+
+    .select-part {
+        gap: 1.5rem;
+    }
+
+    .driver-box,
+    .dispatcher-box {
+        max-width: 90vw;
+    }
+}

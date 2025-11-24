@@ -1,65 +1,66 @@
-﻿@page "/create-driver"
+﻿@page "/register-driver"
+@layout LoginRegisterLayout
+@using BlazorFleetApp.Components.Layout
 @using System.Text.RegularExpressions
 @using ApiContracts.Company
 @using ApiContracts.Dtos.Driver
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services
 @using BlazorFleetApp.Services.Driver
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IDriverService DriverService
 @inject ICompanyService CompanyService
 @inject NavigationManager Nav
 @rendermode InteractiveServer
 
-<h3>Create Driver</h3>
+<link rel="stylesheet" href="css/registerDriverStyle.css">
+<AuthorizeView>
+    <Authorized>
+        Safe heaven for those who are logged in
+    </Authorized>
+    <NotAuthorized>
+        <div class="name-fields">
+            <input id="firstname-field" type="text" placeholder="First Name" @bind="firstname"/>
+            <input id="lastname-field" type="text" placeholder="Last Name" @bind="lastname"/>
+        </div>
+        <input id="phone-number-field" type="text" placeholder="Phone number" @bind="phonenumber"/>
+        <input id="email-field" type="text" placeholder="Email Address" @bind="email"/>
+        <div class="password-with-rules">
+            <div class="password-wrapper">
+                <input id="password-field" type="@passwordFieldType" placeholder="Create Password" @bind="password"/>
+                <img class="show-password-vector" src="images/ShowPasswordVector.png" @onclick="TogglePasswordField" />
+                <img class="show-password-rules-vector" src="#"/>
+            </div>
+            <div class="rules">
+                <p>Must be at least 8 characters long</p>
+                <p>Can't exceed 50 characters</p>
+                <p>Include upper & lower case letters</p>
+                <p>Include at least one number</p>
+            </div>
+        </div>
+        <div class="password-wrapper">
+            <input id="confirm-password-field" type="@confirmPasswordFieldType" placeholder="Confirm password" @bind="repeatPassword" />
+            <img class="show-password-vector" src="images/ShowPasswordVector.png" @onclick="ToggleConfirmPasswordField" />
+        </div>
+        <div class="company-section">
+            <select class="company-select" @bind="selectedCompanyMcNumber">
+                <option value="">Select Company</option>
+                @foreach (var c in companies)
+                {
+                    <option value="@c.McNumber">@c.McNumber — @c.CompanyName</option>
+                }
+            </select>
+            <button class="add-company-button"><img src="#" alt="Add Company"></button>
+        </div>
+        <select class="role-select" @bind="role">
+            <option value="@DriverCompanyRole.Driver">Driver</option>
+            <option value="@DriverCompanyRole.OwnerOperator">Owner Operator</option>
+        </select>
+        <button class="register-button" @onclick="RegisterUser">Create Account</button>
+    </NotAuthorized>
+</AuthorizeView>
 
-@if (validationErrors.Any())
-{
-    <div class="alert alert-danger">
-        @foreach (var err in validationErrors)
-        {
-            <div>@err</div>
-        }
-    </div>
-}
-
-@if (!string.IsNullOrEmpty(message))
-{
-    <div class="alert alert-info">@message</div>
-}
-
-<label>First name</label>
-<input class="form-control mb-2" @bind="firstname" />
-
-<label>Last name</label>
-<input class="form-control mb-2" @bind="lastname" />
-
-<label>Email address</label>
-<input class="form-control mb-2" @bind="email" />
-
-<label>Phone number</label>
-<input class="form-control mb-2" @bind="phonenumber" />
-
-<label>Password</label>
-<input class="form-control mb-2" type="password" @bind="password" />
-
-<label>Repeat password</label>
-<input class="form-control mb-2" type="password" @bind="repeatPassword" />
-
-<label>Company</label>
-<select class="form-control mb-2" @bind="selectedCompanyMcNumber">
-    <option value="">-- Select Company --</option>
-    @foreach (var c in companies)
-    {
-        <option value="@c.McNumber">@c.McNumber - @c.CompanyName</option>
-    }
-</select>
-
-<button class="btn btn-secondary mb-2" @onclick="GoToCreateCompany">
-    Company not listed? Create new company
-</button><br/>
-
-<label>Trailer Type</label>
-<select class="form-control mb-2" @bind="trailertype">
+<!--<select class="form-control mb-2" @bind="trailertype">
     <option value="">-- Select Trailer Type --</option>
     @foreach (var type in Enum.GetValues<TrailerType>())
     {
@@ -67,13 +68,10 @@
     }
 </select>
 
-<label>Location state (e.g. TX)</label>
-<input class="form-control mb-2"  @bind="locationstate" />
+<input class="form-control mb-2" placeholder="Location state (e.g. TX)" @bind="locationstate" />
+<input class="form-control mb-2" placeholder="Location zip code" @bind="locationzipcode" />
 
-<label>Location ZIP code</label>
-<input class="form-control mb-2"  @bind="locationzipcode" />
-
-<button class="btn btn-primary" @onclick="RegisterUser">Register</button>
+<button class="btn btn-primary" @onclick="RegisterUser">Register</button>-->
 
 @code {
     private string firstname = "";
@@ -82,16 +80,18 @@
     private string phonenumber = "";
     private string password = "";
     private string repeatPassword = "";   // <— added
+    private string passwordFieldType = "password";
+    private string confirmPasswordFieldType = "password";
 
     private string selectedCompanyMcNumber = "";
     private List<CreateCompanyDto> companies = new();
 
     private TrailerType? trailertype;
     private DriverStatus status = DriverStatus.available;
-    private DriverCompanyRole role = DriverCompanyRole.Driver;
+    private DriverCompanyRole role;
 
-    private string locationstate = "AL";
-    private int locationzipcode = 35010;
+    private string locationstate = "";
+    private int locationzipcode;
 
     private string message = "";
     private List<string> validationErrors = new();
@@ -209,5 +209,15 @@
         {
             message = $"Error: {ex.Message}";
         }
+    }
+
+    private void TogglePasswordField()
+    {
+        passwordFieldType = passwordFieldType == "password" ? "text" : "password";
+    }
+
+    private void ToggleConfirmPasswordField()
+    {
+        confirmPasswordFieldType = confirmPasswordFieldType == "password" ? "text" : "password";
     }
 }

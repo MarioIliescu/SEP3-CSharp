@@ -1,0 +1,31 @@
+﻿@font-face {
+    font-family: 'LemonMilk';
+    src: url('../fonts/LEMONMILK-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Ausion';
+    src: url('../fonts/AusionPersonalUse.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #FFFFFF, #DEEDF1, #9CBEC7, #145F74);
+    overflow: hidden;
+}
