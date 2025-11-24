@@ -116,6 +116,37 @@ public static class ProtoUtils
             CurrentZIPCODE = zipcode
         };
     }
+    
+    public static Dispatcher ParseFromProtoToDispatcher(DispatcherProto proto)
+    {
+        return new Dispatcher.Builder()
+            .SetId(proto.User.Id)
+            .SetCurrentRate(proto.CurrentRate)
+            .SetEmail(proto.User.Email)
+            .SetFirstName(proto.User.FirstName)
+            .SetLastName(proto.User.LastName)
+            .SetPassword(proto.User.Password)
+            .SetRole(UserRole.DRIVER)
+            .Build();
+    }
+    public static RequestProto ParseDispatcherRequest(ActionTypeProto action, Dispatcher payload)
+    {
+        return new RequestProto()
+        {
+            Handler = HandlerTypeProto.HandlerDispatcher,
+            Action = action,
+            Payload = Any.Pack(ParseDispatcherToProto(payload))
+        };
+    }
+    
+    public static DispatcherProto ParseDispatcherToProto(Dispatcher payload)
+    {
+        return new DispatcherProto()
+        {
+            User = ParseUserToProto(payload),
+            CurrentRate = payload.Current_Rate
+        };
+    }
 
     public static UserProto ParseUserToProto(User user)
     {
