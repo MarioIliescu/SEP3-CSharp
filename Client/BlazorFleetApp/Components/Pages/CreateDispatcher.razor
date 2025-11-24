@@ -1,116 +1,110 @@
 @page "/create-dispatcher"
-@using System.Numerics
 @using System.Text.RegularExpressions
-@using ApiContracts.Company
 @using ApiContracts.Dtos.Dispatcher
-@using ApiContracts.Enums
-@using BlazorFleetApp.Services
 @using BlazorFleetApp.Services.Dispatcher
 @inject IDispatcherService DispatcherService
-@inject ICompanyService CompanyService
-@inject NavigationManager Nav
 @rendermode InteractiveServer
 
 <h3>Create Dispatcher</h3>
 
-@if (validationErrors.Any())
+@if (_validationErrors.Any())
 {
     <div class="alert alert-danger">
-        @foreach (var err in validationErrors)
+        @foreach (var err in _validationErrors)
         {
             <div>@err</div>
         }
     </div>
 }
 
-@if (!string.IsNullOrEmpty(message))
+@if (!string.IsNullOrEmpty(_message))
 {
-    <div class="alert alert-info">@message</div>
+    <div class="alert alert-info">@_message</div>
 }
 
-<input class="form-control mb-2" placeholder="First name" @bind="firstname" />
-<input class="form-control mb-2" placeholder="Last name" @bind="lastname" />
-<input class="form-control mb-2" placeholder="Email address" @bind="email" />
-<input class="form-control mb-2" placeholder="Phone number" @bind="phonenumber" />
-<input class="form-control mb-2" placeholder="Password" type="password" @bind="password" />
-<input class="form-control mb-2" placeholder="Repeat password" type="password" @bind="repeatPassword" />
-<input class="form-control mb-2" placeholder="Current Rate" @bind="currentRate" />
+<input class="form-control mb-2" placeholder="First name" @bind="_firstname" />
+<input class="form-control mb-2" placeholder="Last name" @bind="_lastname" />
+<input class="form-control mb-2" placeholder="Email address" @bind="_email" />
+<input class="form-control mb-2" placeholder="Phone number" @bind="_phonenumber" />
+<input class="form-control mb-2" placeholder="Password" type="password" @bind="_password" />
+<input class="form-control mb-2" placeholder="Repeat password" type="password" @bind="_repeatPassword" />
+<input class="form-control mb-2" placeholder="Current Rate" @bind="_currentRate" />
 
 <button class="btn btn-primary" @onclick="RegisterUser">Register</button>
 
 @code {
-    private string firstname = "";
-    private string lastname = "";
-    private string email = "";
-    private string phonenumber = "";
-    private string password = "";
-    private string repeatPassword = "";   // <— added
+    private string _firstname = "";
+    private string _lastname = "";
+    private string _email = "";
+    private string _phonenumber = "";
+    private string _password = "";
+    private string _repeatPassword = "";
 
-    private double currentRate;
+    private double _currentRate;
 
-    private string message = "";
-    private List<string> validationErrors = new();
+    private string _message = "";
+    private List<string> _validationErrors = new();
 
     private async Task RegisterUser()
     {
-        validationErrors.Clear();
+        _validationErrors.Clear();
         
         //Validation
 
         // FIRST NAME
-        if (string.IsNullOrWhiteSpace(firstname))
-            validationErrors.Add("First name is required.");
-        else if (firstname.Length < 3)
-            validationErrors.Add("First name must be at least 3 characters long.");
-        else if (!Regex.IsMatch(firstname, "^[A-Za-z'-]+$"))
-            validationErrors.Add("First name contains invalid characters (allowed: letters, ' and -).");
+        if (string.IsNullOrWhiteSpace(_firstname))
+            _validationErrors.Add("First name is required.");
+        else if (_firstname.Length < 3)
+            _validationErrors.Add("First name must be at least 3 characters long.");
+        else if (!Regex.IsMatch(_firstname, "^[A-Za-z'-]+$"))
+            _validationErrors.Add("First name contains invalid characters (allowed: letters, ' and -).");
 
         // LAST NAME
-        if (string.IsNullOrWhiteSpace(lastname))
-            validationErrors.Add("Last name is required.");
-        else if (lastname.Length < 3)
-            validationErrors.Add("Last name must be at least 3 characters long.");
-        else if (!Regex.IsMatch(lastname, "^[A-Za-z'-]+$"))
-            validationErrors.Add("Last name contains invalid characters (allowed: letters, ' and -).");
+        if (string.IsNullOrWhiteSpace(_lastname))
+            _validationErrors.Add("Last name is required.");
+        else if (_lastname.Length < 3)
+            _validationErrors.Add("Last name must be at least 3 characters long.");
+        else if (!Regex.IsMatch(_lastname, "^[A-Za-z'-]+$"))
+            _validationErrors.Add("Last name contains invalid characters (allowed: letters, ' and -).");
 
         // EMAIL (same regex as backend)
-        if (string.IsNullOrWhiteSpace(email) ||
-            !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-            validationErrors.Add("A valid email address is required.");
+        if (string.IsNullOrWhiteSpace(_email) ||
+            !Regex.IsMatch(_email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            _validationErrors.Add("A valid email address is required.");
 
         // PHONE NUMBER (same as backend)
-        if (string.IsNullOrWhiteSpace(phonenumber))
-            validationErrors.Add("Phone number is required.");
-        else if (!Regex.IsMatch(phonenumber, @"^\+?\d{1,3}([ -]?\d{2,4}){2,5}$"))
-            validationErrors.Add("Phone number format is invalid (example: +49 123 456 789).");
+        if (string.IsNullOrWhiteSpace(_phonenumber))
+            _validationErrors.Add("Phone number is required.");
+        else if (!Regex.IsMatch(_phonenumber, @"^\+?\d{1,3}([ -]?\d{2,4}){2,5}$"))
+            _validationErrors.Add("Phone number format is invalid (example: +49 123 456 789).");
 
         // PASSWORD (identical rules as backend)
-        if (string.IsNullOrWhiteSpace(password))
-            validationErrors.Add("Password is required.");
+        if (string.IsNullOrWhiteSpace(_password))
+            _validationErrors.Add("Password is required.");
         else
         {
-            if (password.Length < 8)
-                validationErrors.Add("Password must be at least 8 characters long.");
-            if (password.Length > 50)
-                validationErrors.Add("Password cannot exceed 50 characters.");
-            if (!Regex.IsMatch(password, @"[A-Z]"))
-                validationErrors.Add("Password must contain at least one uppercase letter.");
-            if (!Regex.IsMatch(password, @"[a-z]"))
-                validationErrors.Add("Password must contain at least one lowercase letter.");
-            if (!Regex.IsMatch(password, @"[0-9]"))
-                validationErrors.Add("Password must contain at least one digit.");
+            if (_password.Length < 8)
+                _validationErrors.Add("Password must be at least 8 characters long.");
+            if (_password.Length > 50)
+                _validationErrors.Add("Password cannot exceed 50 characters.");
+            if (!Regex.IsMatch(_password, @"[A-Z]"))
+                _validationErrors.Add("Password must contain at least one uppercase letter.");
+            if (!Regex.IsMatch(_password, @"[a-z]"))
+                _validationErrors.Add("Password must contain at least one lowercase letter.");
+            if (!Regex.IsMatch(_password, @"[0-9]"))
+                _validationErrors.Add("Password must contain at least one digit.");
         }
         // REPEAT PASSWORD MATCH
-        if (password != repeatPassword)
-            validationErrors.Add("Passwords do not match.");
+        if (_password != _repeatPassword)
+            _validationErrors.Add("Passwords do not match.");
 
 
         // CURRENT RATE
-        if (currentRate < 1)
-            validationErrors.Add("Current Rate must be a positive number");
+        if (_currentRate < 1)
+            _validationErrors.Add("Current Rate must be a positive number");
 
         // If any validation failed
-        if (validationErrors.Any())
+        if (_validationErrors.Any())
             return;
 
 
@@ -118,20 +112,20 @@
         {
             await DispatcherService.CreateAsync(
                 new CreateDispatcherDto(
-                    firstname,
-                    lastname,
-                    email,
-                    phonenumber,
-                    currentRate,
-                    password
+                    _firstname,
+                    _lastname,
+                    _email,
+                    _phonenumber,
+                    _currentRate,
+                    _password
                 )
             );
 
-            message = "Dispatcher created successfully!";
+            _message = "Dispatcher created successfully!";
         }
         catch (Exception ex)
         {
-            message = $"Error: {ex.Message}";
+            _message = $"Error: {ex.Message}";
         }
     }
 }
