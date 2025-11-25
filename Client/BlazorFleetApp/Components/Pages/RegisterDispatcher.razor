@@ -2,48 +2,79 @@
 @using System.Text.RegularExpressions
 @using ApiContracts.Dtos.Dispatcher
 @using BlazorFleetApp.Services.Dispatcher
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IDispatcherService DispatcherService
+@inject NavigationManager NavMgr
 @rendermode InteractiveServer
 
-<h3>Create Dispatcher</h3>
+<link rel="stylesheet" href="css/registerDispatcherStyle.css"/>
+<AuthorizeView>
+    <Authorized>
+        <h2>Safe heaven for those who are logged in</h2>
+    </Authorized>
+    <NotAuthorized>
+        <div class="logo-container">
+            <img src="images/LogoDispatcher.png" alt="logo">
+        </div>
 
-@if (_validationErrors.Any())
-{
-    <div class="alert alert-danger">
-        @foreach (var err in _validationErrors)
-        {
-            <div>@err</div>
-        }
-    </div>
-}
-
-@if (!string.IsNullOrEmpty(_message))
-{
-    <div class="alert alert-info">@_message</div>
-}
-
-<label>First name</label>
-<input class="form-control mb-2" @bind="_firstname" />
-
-<label>Last name</label>
-<input class="form-control mb-2" @bind="_lastname" />
-
-<label>Email address</label>
-<input class="form-control mb-2" @bind="_email" />
-
-<label>Phone number</label>
-<input class="form-control mb-2" @bind="_phonenumber" />
-
-<label>Password</label>
-<input class="form-control mb-2" type="password" @bind="_password" />
-
-<label>Repeat password</label>
-<input class="form-control mb-2" type="password" @bind="_repeatPassword" />
-
-<label>Current rate (%)</label>
-<input class="form-control mb-2" type="number" step="0.01" @bind="_currentRate" />
-
-<button class="btn btn-primary" @onclick="RegisterUser">Register</button>
+        <h2 id="catch-phrase">WHO'S READY TO DISPATCH!</h2>
+        
+        <div class="name-fields">
+            <input id="firstname-field" type="text" placeholder="First Name" @bind="_firstname"/>
+            <input id="lastname-field" type="text" placeholder="Last Name" @bind="_lastname"/>
+        </div>
+        
+        <input id="phone-number-field" type="text" placeholder="Phone Number" @bind="_phonenumber"/>
+        <input id="email-field" type="text" placeholder="Email" @bind="_email"/>
+        <div class="password-with-rules">
+            <div class="password-wrapper">
+                <input id="password-field" type="@_passwordFieldType" placeholder="Create Password" @bind="_password"/>
+                <img class="show-password-vector" src="images/ShowPasswordVector.png" @onclick="TogglePasswordField"/>
+            </div>
+            <div class="rules-trigger">
+                <img class="show-password-rules-vector" src="images/PasswordRules.png"/>
+                <div class="rules">
+                    <p>Must be at least 8 characters long</p>
+                    <p>Can't exceed 50 characters</p>
+                    <p>Include upper & lower case letters</p>
+                    <p>Include at least one number</p>
+                </div>
+            </div>
+        </div>
+        <div class="password-wrapper">
+            <input id="confirm-password-field" type="@_confirmPasswordFieldType" placeholder="Confirm password" @bind="_repeatPassword"/>
+            <img class="show-password-vector" src="images/ShowPasswordVector.png" @onclick="ToggleConfirmPasswordField"/>
+        </div>
+        
+        <div class="error-message-popup @_successClass">
+            @if (_validationErrors.Count > 5)
+            {
+                int temp = 0;
+                foreach (var v in _validationErrors)
+                {
+                    <p>@v</p>
+                    temp++;
+                    if (temp == 5)
+                    {
+                        <p>...</p>
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                @foreach (var v in _validationErrors)
+                {
+                    <p>@v</p>
+                }
+            }
+        </div>
+        <button class="register-button" @onclick="RegisterUser">Create Account</button>
+        <div class="d-flex justify-content-center mb-auto">
+            <p class="login-redirect" >Already have an account? <a href="#" @onclick="GoToLogin">Login</a> </p>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private string _firstname = "";
@@ -52,8 +83,11 @@
     private string _phonenumber = "";
     private string _password = "";
     private string _repeatPassword = "";
+    private string _passwordFieldType = "password";
+    private string _confirmPasswordFieldType = "password";
+    private string _successClass = "";
 
-    private double _currentRate;
+    private double _currentRate = 1;
 
     private string _message = "";
     private List<string> _validationErrors = new();
@@ -136,10 +170,35 @@
             );
 
             _message = "Dispatcher created successfully!";
+            ToggleSuccessClass();
+            _validationErrors.Add("Dispatcher created successfully");
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(3000);
+            NavMgr.NavigateTo("/login");
         }
         catch (Exception ex)
         {
             _message = $"Error: {ex.Message}";
         }
+    }
+    
+    private void TogglePasswordField()
+    {
+        _passwordFieldType = _passwordFieldType == "password" ? "text" : "password";
+    }
+
+    private void ToggleConfirmPasswordField()
+    {
+        _confirmPasswordFieldType = _confirmPasswordFieldType == "password" ? "text" : "password";
+    }
+
+    private void ToggleSuccessClass()
+    {
+        _successClass = _successClass == "" ? "success" : "";
+    }
+
+    private void GoToLogin()
+    {
+        NavMgr.NavigateTo("/login");
     }
 }
