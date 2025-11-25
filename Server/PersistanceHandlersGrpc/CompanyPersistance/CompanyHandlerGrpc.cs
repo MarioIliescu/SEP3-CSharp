@@ -22,40 +22,49 @@ public class CompanyHandlerGrpc : IFleetPersistanceHandler
 
     public async Task<object> HandleAsync(Request request)
     {
-        var company = (Company)request.Payload?? throw new ArgumentNullException(nameof(request.Payload));
-        switch (request.Action)
+        try
         {
-            case ActionType.Create:
+            var company = (Company)request.Payload ?? throw new ArgumentNullException(nameof(request.Payload));
+            switch (request.Action)
             {
-                _logger.LogInformation($"Created company {company}");
-                return await _companyService.CreateAsync(company);
+                case ActionType.Create:
+                {
+                    _logger.LogInformation($"Created company {company}");
+                    return await _companyService.CreateAsync(company);
+                }
+                case ActionType.Update:
+                {
+                    await _companyService.UpdateAsync(company);
+                    _logger.LogInformation($"Updated company {company}");
+                    break;
+                }
+                case ActionType.Delete:
+                {
+                    await _companyService.DeleteAsync(company.McNumber);
+                    _logger.LogInformation($"Deleted company {company.McNumber}");
+                    break;
+                }
+                case ActionType.Get:
+                {
+                    _logger.LogInformation($"Get company {company.McNumber}");
+                    return await _companyService.GetSingleAsync(company.McNumber);
+                }
+                case ActionType.List:
+                {
+                    _logger.LogInformation($"List company {company.McNumber}");
+                    return _companyService.GetManyAsync();
+                }
+                default:
+                    _logger.LogError($"Unknown action {request.Action}");
+                    throw new InvalidEnumArgumentException("Unknown action type");
             }
-            case ActionType.Update:
-            {
-                await _companyService.UpdateAsync(company);
-                _logger.LogInformation($"Updated company {company}");
-                break;
-            }
-            case ActionType.Delete:
-            {
-                await _companyService.DeleteAsync(company.McNumber);
-                _logger.LogInformation($"Deleted company {company.McNumber}");
-                break;
-            }
-            case ActionType.Get:
-            {
-                _logger.LogInformation($"Get company {company.McNumber}");
-                return await _companyService.GetSingleAsync(company.McNumber);
-            }
-            case ActionType.List:
-            {
-                _logger.LogInformation($"List company {company.McNumber}");
-                return _companyService.GetManyAsync();
-            }
-            default:
-                _logger.LogError($"Unknown action {request.Action}");
-                throw new InvalidEnumArgumentException("Unknown action type");
+
+            return Task.CompletedTask;
         }
-        return Task.CompletedTask;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
+            throw new Exception(ex.Message);
+        }
     }
 }

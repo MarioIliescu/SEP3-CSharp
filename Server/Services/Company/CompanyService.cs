@@ -16,7 +16,14 @@ public class CompanyService : ICompanyService
     {
         //Logic needed to verify
         Request request = MakeCompanyRequest(ActionType.Create, payload);
-        return (Company) await  _handler.HandleAsync(request);
+        try
+        {
+            return (Company)await _handler.HandleAsync(request);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
     }
 
     public async Task UpdateAsync(Company payload)

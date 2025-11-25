@@ -1,6 +1,8 @@
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using ApiContracts.Company;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace BlazorFleetApp.Services;
 
@@ -26,10 +28,11 @@ public class CompanyServiceClient : ICompanyService
         // POST/api/company
         var response = await _http
             .PostAsJsonAsync("company", dto);
-
-        // Optional: capture the returned 201 Location header
-        // var location = response.Headers.Location;
-
+        if (response.StatusCode == HttpStatusCode.BadRequest)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new Exception(error);
+        }
         response.EnsureSuccessStatusCode();
     }
 

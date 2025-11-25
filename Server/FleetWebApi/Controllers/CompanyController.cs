@@ -47,10 +47,16 @@ public class CompanyController : ControllerBase
             .SetMcNumber(dto.McNumber)
             .SetCompanyName(dto.CompanyName)
             .Build();
-
-        var created = await _companyService.CreateAsync(company);
-        if (string.IsNullOrWhiteSpace(created?.McNumber))
-            return BadRequest("Created entity is missing MC number");
+        try
+        {
+            var created = await _companyService.CreateAsync(company);
+            if (string.IsNullOrWhiteSpace(created?.McNumber))
+                return BadRequest("Created entity is missing MC number");
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
         return Created();
     }
 
