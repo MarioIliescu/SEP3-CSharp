@@ -58,22 +58,25 @@
                     <option value="@c.McNumber">@c.McNumber — @c.CompanyName</option>
                 }
             </select>
-            <button class="add-company-button" @onclick="TogglePopupCompany"><img src="images/AddCompanyButton.png" alt="Add Company"></button>
+            <button class="add-company-button @activeAddCompanyButton" @onclick="TogglePopupCompany"><img src="images/AddCompanyButton.png" alt="Add Company"></button>
         </div>
         <div class="company-popup @popup">
 
 
             <div class="create-company-form">
-                <input id="mc-number-field" type="text" placeholder="Mc Number"/>
-                <input id="company-name-field" type="text" placeholder="Company name"/>
+                <p>Register your company:</p>
+                <div class="input-fields">
+                    <input id="mc-number-field" type="text" placeholder="Mc Number" @bind="formMcNumber"/>
+                    <input id="company-name-field" type="text" placeholder="Company name" @bind="formCompanyName"/>
+                </div>
             </div>
-            <button class="save-button">Save</button>
+            <button class="save-button" @onclick="SaveCompany">Save</button>
         </div>
         <select class="role-select" @bind="role" >
             <option value="@DriverCompanyRole.Driver">Driver</option>
             <option value="@DriverCompanyRole.OwnerOperator">Owner Operator</option>
         </select>
-        <div class="error-message-popup">
+        <div class="error-message-popup @successClass">
             @if (validationErrors.Count > 5)
             {
                 int temp = 0;
@@ -98,7 +101,7 @@
         </div>
         <button class="register-button" @onclick="RegisterUser">Create Account</button>
         <div class="d-flex justify-content-center mb-auto">
-            <p>Already have an account? <a href="" @onclick="GoToLogin">Login</a> </p>
+            <p class="login-redirect" >Already have an account? <a href="#" @onclick="GoToLogin">Login</a> </p>
         </div>
         
     </NotAuthorized>
@@ -114,6 +117,10 @@
     private string passwordFieldType = "password";
     private string confirmPasswordFieldType = "password";
     private string popup = "";
+    private string successClass = "";
+    private string formMcNumber = "";
+    private string formCompanyName = "";
+    private string activeAddCompanyButton = "";
 
     private string selectedCompanyMcNumber = "";
     private List<CreateCompanyDto> companies = new();
@@ -130,7 +137,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        companies = await CompanyService.GetAllAsync();
+        await LoadCompanies();
     }
 
     private void GoToCreateCompany()
@@ -233,6 +240,11 @@
             );
 
             message = "Driver created successfully!";
+            ToggleSuccessClass();
+            validationErrors.Add("Driver created successfully");
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(3000);
+            Nav.NavigateTo("/login");
         }
         catch (Exception ex)
         {
@@ -250,19 +262,89 @@
         confirmPasswordFieldType = confirmPasswordFieldType == "password" ? "text" : "password";
     }
 
-    private void TogglePopupCompany()
+    private async Task TogglePopupCompany()
     {
         popup = popup == "" ? "active" : "";
+        if (popup == "")
+        {
+            ClearFields();
+            await InvokeAsync(StateHasChanged);
+        }
+        ToggleCompanyButton();
+        validationErrors.Clear();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleSuccessClass()
+    {
+        successClass = successClass == "" ? "success" : "";
     }
 
     private void ClearFields()
     {
-     firstname = "";
-     lastname = "";
-     email = "";
-     phonenumber = "";
-     password = "";
-     message = "Thank you for signing in !";
+        formMcNumber = "";
+        formCompanyName = "";
+    }
+
+    private void ToggleCompanyButton()
+    {
+        activeAddCompanyButton = activeAddCompanyButton == "" ? "active" : "";
+    }
+
+    private async Task LoadCompanies()
+    {
+        companies = await CompanyService.GetAllAsync();
+    }
+    
+    private async Task SaveCompany()
+    {
+        validationErrors.Clear();
+        if (string.IsNullOrWhiteSpace(formMcNumber) || string.IsNullOrWhiteSpace(formCompanyName))
+        {
+            validationErrors.Add("MC Number and Company Name are required.");
+            return;
+        }
+
+        if (formMcNumber.Length != 10)
+        {  
+            validationErrors.Add("MC Number needs to be 10 digits.");
+            return;
+        }
+        
+        @foreach (CreateCompanyDto companyDto in companies)
+        {
+            if (formMcNumber == companyDto.McNumber)
+            {
+                validationErrors.Add("A company with this MC Number already exists.");
+                return;
+            }
+        }
+
+        try
+        {
+            CreateCompanyDto dto = new
+            (
+                McNumber: formMcNumber,
+                CompanyName: formCompanyName
+            );
+            await CompanyService.CreateAsync(dto);
+            message = $"Company '{dto.CompanyName}' created.";
+            validationErrors.Clear();
+            ToggleSuccessClass();
+            validationErrors.Add("Company added successfully.");
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(2000);
+            ToggleSuccessClass();
+            validationErrors.Clear();
+            await LoadCompanies();
+            await TogglePopupCompany();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            validationErrors.Add($"{ex.Message}");
+            message = $"Error saving company: {ex.Message}";
+        }
     }
 
     private void GoToLogin()

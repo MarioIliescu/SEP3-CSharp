@@ -35,7 +35,7 @@ body {
     width: min(80vw, 430px);
     position: relative;
     overflow: hidden;
-    margin: 10vh auto 0;
+    margin: 7vh auto 0;
 }
 
 .logo-container img {
@@ -56,14 +56,15 @@ body {
 .name-fields {
     width: 100%;
     max-width: 430px;
-    margin: 2vh auto 0;
-    display: flex;
-    gap: 0.5rem;
+    margin: 1vh auto 0;
+    display:flex;
+    justify-content: space-between;
 }
 
 #firstname-field,
 #lastname-field {
-    flex: 1 1 50%;
+    width: 100%;
+    max-width: 210px;
     height: 40px;
     border-radius: 5px;
     border: 3px solid #145F74;
@@ -181,7 +182,7 @@ body {
     pointer-events: auto;
     position: absolute;
     right: 140px;
-    top: 65%;
+    top: 60%;
     transform: translateY(-50%);
     cursor: pointer;
 }
@@ -275,6 +276,12 @@ body {
     max-width: 60%;
     max-height: 60%;
     object-fit: contain;
+    transition: 0.5s;
+}
+
+.add-company-button.active img
+{
+    transform: rotate(45deg);
 }
 
 .role-select {
@@ -290,7 +297,7 @@ body {
     font-size: 0.9rem;
     color: #3C616A;
     padding: 0 0.75rem;
-    margin: 1.5vh auto 0;
+    margin: 1vh auto 0;
     appearance: none;
 }
 
@@ -315,6 +322,10 @@ body {
     font-family: 'LemonMilk';
     font-size: 12px;
     text-align: left;
+}
+.error-message-popup.success
+{
+    color: #26b050;
 }
 
 .error-message-popup p
@@ -347,14 +358,25 @@ body {
 .create-company-form {
     width: 100%;
     max-width: 430px;
-    margin: 2vh auto 0;
+    margin: 1vh auto 0;
+}
+
+.create-company-form p
+{
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.create-company-form .input-fields
+{
     display: flex;
-    gap: 0.5rem;
+    justify-content: space-between;
 }
 
 #mc-number-field,
 #company-name-field {
-    flex: 1 1 50%;
+    width: 100%;
+    max-width: 210px;
     height: 40px;
     border-radius: 5px;
     border: 3px solid #145F74;
@@ -398,6 +420,18 @@ body {
 
 .save-button:hover {
     background: #071F25;
+}
+
+.login-redirect
+{
+    margin-top: 0.5vh;
+    font-size: 0.75rem;
+}
+
+.login-redirect a
+{
+    text-decoration: none;
+    color: #145F74;
 }
 
 @media (max-width: 768px) {
