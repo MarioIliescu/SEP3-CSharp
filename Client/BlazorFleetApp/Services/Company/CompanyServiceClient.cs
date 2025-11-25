@@ -16,9 +16,9 @@ public class CompanyServiceClient : ICompanyService
     }
 
     // Get all companies
-    public async Task<List<CreateCompanyDto>> GetAllAsync()
+    public async Task<List<CompanyDto>> GetAllAsync()
     {
-        return await _http.GetFromJsonAsync<List<CreateCompanyDto>>("company") ?? new List<CreateCompanyDto>();
+        return await _http.GetFromJsonAsync<List<CompanyDto>>("company") ?? new List<CompanyDto>();
     }
 
     // Create company

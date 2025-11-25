@@ -39,10 +39,10 @@
 <button class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
 
 @code {
-    private List<CreateCompanyDto>? companies;
+    private List<CompanyDto>? companies;
     private string statusMessage = "Click 'Load Companies' to fetch data.";
 
-    private CreateCompanyDto? editingCompany = null;
+    private CompanyDto? editingCompany = null;
     private string formMcNumber = "";
     private string formCompanyName = "";
 
@@ -59,7 +59,7 @@
         }
     }
 
-    private void StartEdit(CreateCompanyDto company)
+    private void StartEdit(CompanyDto company)
     {
         editingCompany = company;
         formMcNumber = company.McNumber;

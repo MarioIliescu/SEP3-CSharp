@@ -23,7 +23,7 @@ public class CompanyController : ControllerBase
     {
         var companiesList = _companyService.GetManyAsync();
         var companiesDto = companiesList
-            .Select(c => new CreateCompanyDto(c.McNumber, c.CompanyName))
+            .Select(c => new CompanyDto(c.McNumber, c.CompanyName))
             .ToList();
 
         return Ok(companiesDto);
@@ -31,11 +31,11 @@ public class CompanyController : ControllerBase
 
 // GET /company/{mcNumber}
     [HttpGet("{mcNumber}")]
-    public async Task<ActionResult<CreateCompanyDto>> GetSingleCompanyAsync(string mcNumber)
+    public async Task<ActionResult<CompanyDto>> GetSingleCompanyAsync(string mcNumber)
     {
         var company = await _companyService.GetSingleAsync(mcNumber);
 
-        return Ok(new CreateCompanyDto(company.McNumber, company.CompanyName));
+        return Ok(new CompanyDto(company.McNumber, company.CompanyName));
     }
 
 
