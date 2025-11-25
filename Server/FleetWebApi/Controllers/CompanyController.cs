@@ -23,7 +23,7 @@ public class CompanyController : ControllerBase
     {
         var companiesList = _companyService.GetManyAsync();
         var companiesDto = companiesList
-            .Select(c => new CreateCompanyDto(c.McNumber, c.CompanyName))
+            .Select(c => new CompanyDto(c.McNumber, c.CompanyName))
             .ToList();
 
         return Ok(companiesDto);
