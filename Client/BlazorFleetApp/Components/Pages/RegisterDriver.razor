@@ -97,6 +97,10 @@
             }
         </div>
         <button class="register-button" @onclick="RegisterUser">Create Account</button>
+        <div class="d-flex justify-content-center mb-auto">
+            <p>Already have an account? <a href="" @onclick="GoToLogin">Login</a> </p>
+        </div>
+        
     </NotAuthorized>
 </AuthorizeView>
 
@@ -249,5 +253,20 @@
     private void TogglePopupCompany()
     {
         popup = popup == "" ? "active" : "";
+    }
+
+    private void ClearFields()
+    {
+     firstname = "";
+     lastname = "";
+     email = "";
+     phonenumber = "";
+     password = "";
+     message = "Thank you for signing in !";
+    }
+
+    private void GoToLogin()
+    {
+        Nav.NavigateTo("/login");
     }
 }
