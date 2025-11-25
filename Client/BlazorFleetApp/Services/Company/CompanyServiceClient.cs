@@ -53,10 +53,11 @@ public class CompanyServiceClient : ICompanyService
     }
     
     // Get a company
-    public async Task GetSingleAsync(string mcNumber)
+    public async Task<CompanyDto> GetSingleAsync(string mcNumber)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"company/{mcNumber}");
         var response = await _http.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<CompanyDto>()
+               ?? throw new InvalidOperationException("Company not found");
     }
 }
