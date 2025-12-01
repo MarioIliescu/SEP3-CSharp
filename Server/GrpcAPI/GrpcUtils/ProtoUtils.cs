@@ -33,6 +33,29 @@ public static class ProtoUtils
             ).SetMcNumber(proto.McNumber)
             .Build();
     }
+    
+    public static Job ParseFromProtoToJob(JobProto proto)
+    {
+        return new Job.Builder()
+            .SetId(proto.JobId)
+            .SetDispatcherId(proto.JobDispatcherId)
+            .SetDriverId(proto.JobDriverId)
+            .SetTitle(proto.Title)
+            .SetDescription(proto.Description)
+            .SetLoadedMiles(proto.LoadedMiles)
+            .SetWeight(proto.WeightOfCargo)
+            .SetTrailerType(ParseTrailerTypeProtoToTrailerType(proto.JobTrailerType))
+            .SetTotalPrice(proto.TotalPrice)
+            .SetCargoInfo(proto.CargoInfo)
+            .SetPickupTime(proto.PickUpTime.ToDateTime())
+            .SetDeliveryTime(proto.DeliveryTime.ToDateTime())
+            .SetPickupState(proto.PickUpLocationState)
+            .SetPickupZip(proto.PickUpLocationZipCode)
+            .SetDropState(proto.DropLocationState)
+            .SetDropZip(proto.DropLocationZipCode)
+            .SetStatus(ParseJobStatusProtoToJobStatus(proto.CurrentJobStatus))
+            .Build();
+    }
 
     public static RequestProto ParseCompanyRequest(ActionTypeProto proto, Company company)
     {
@@ -43,6 +66,18 @@ public static class ProtoUtils
             Payload = Any.Pack(ParseCompanyToProto(company)),
         };
     }
+
+    public static RequestProto ParseJobRequest(ActionTypeProto proto, Job job)
+    {
+        return new RequestProto()
+        {
+            Handler = HandlerTypeProto.HandlerJob,
+            Action = proto,
+            Payload = Any.Pack(ParseJobToProto(job))
+        };
+    }
+    
+
 
     public static DriverStatus ParseDriverStatusProtoToDriverStatus(StatusDriverProto proto)
     {
@@ -56,6 +91,24 @@ public static class ProtoUtils
                 return DriverStatus.off_duty;
             default:
                 throw new InvalidEnumArgumentException("Invalid status driver status");
+        }
+    }
+    public static JobStatus ParseJobStatusProtoToJobStatus(JobStatusProto proto)
+    {
+        switch (proto)
+        {
+            case JobStatusProto.JobAvailable:
+                return JobStatus.available;
+            case JobStatusProto.JobAssigned:
+                return JobStatus.assigned;
+            case JobStatusProto.JobOngoing:
+                return JobStatus.ongoing;
+            case JobStatusProto.JobCompleted:
+                return JobStatus.completed;
+            case JobStatusProto.JobExpired:
+                return JobStatus.expired;
+            default:
+                throw new InvalidEnumArgumentException("Invalid job status");
         }
     }
 
@@ -176,6 +229,24 @@ public static class ProtoUtils
                 throw new InvalidEnumArgumentException("Status unknown");
         }
     }
+    public static JobStatusProto ParseJobStatusToProto(JobStatus status)
+    {
+        switch (status)
+        {
+            case JobStatus.assigned:
+                return JobStatusProto.JobAssigned;
+            case JobStatus.available:
+                return JobStatusProto.JobAvailable;
+            case JobStatus.ongoing:
+                return JobStatusProto.JobOngoing;
+            case JobStatus.completed:
+                return JobStatusProto.JobCompleted;
+            case JobStatus.expired:
+                return JobStatusProto.JobExpired;
+            default:
+                throw new InvalidEnumArgumentException("Unknown job status");
+        }
+    }
 
     public static DriverCompanyRoleProto ParseCompanyRoleToProto(DriverCompanyRole payload)
     {
@@ -211,6 +282,33 @@ public static class ProtoUtils
         {
             CompanyName = company.CompanyName,
             McNumber = company.McNumber,
+        };
+    }
+
+    public static JobProto ParseJobToProto(Job job)
+    {
+        return new JobProto()
+        {
+            JobId = job.jobId,
+            JobDispatcherId = job.dispatcherId,
+            JobDriverId = job.driverId,
+            Title = job.Title,
+            Description = job.Description,
+            LoadedMiles = job.loaded_miles,
+            WeightOfCargo = job.weight_of_cargo,
+            JobTrailerType =
+                ParseTrailerTypeToProto(job.type_of_trailer_needed),
+            TotalPrice = job.total_price,
+            CargoInfo = job.cargo_info,
+            PickUpTime =
+                Timestamp.FromDateTime(job.pickup_time.ToUniversalTime()),
+            DeliveryTime =
+                Timestamp.FromDateTime(job.delivery_time.ToUniversalTime()),
+            PickUpLocationState = job.pickup_location_state,
+            PickUpLocationZipCode = job.pickup_location_zip,
+            DropLocationState = job.drop_location_state,
+            DropLocationZipCode = job.drop_location_zip,
+            CurrentJobStatus = ParseJobStatusToProto(job.current_status)
         };
     }
 
