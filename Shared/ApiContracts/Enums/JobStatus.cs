@@ -6,5 +6,8 @@ public enum JobStatus
     completed,
     expired,
     assigned,
-    ongoing
+    ongoing,
+    accepted,
+    loading,
+    unloading
 }

@@ -107,6 +107,12 @@ public static class ProtoUtils
                 return JobStatus.completed;
             case JobStatusProto.JobExpired:
                 return JobStatus.expired;
+            case JobStatusProto.JobAccepted :
+                return JobStatus.accepted;
+            case JobStatusProto.JobLoading:
+                return JobStatus.loading;
+            case JobStatusProto.JobUnloading:
+                return JobStatus.unloading;
             default:
                 throw new InvalidEnumArgumentException("Invalid job status");
         }
@@ -243,6 +249,12 @@ public static class ProtoUtils
                 return JobStatusProto.JobCompleted;
             case JobStatus.expired:
                 return JobStatusProto.JobExpired;
+            case JobStatus.loading:
+                return JobStatusProto.JobLoading;
+            case JobStatus.unloading:
+                return JobStatusProto.JobUnloading;
+            case JobStatus.accepted:
+                return JobStatusProto.JobAccepted;
             default:
                 throw new InvalidEnumArgumentException("Unknown job status");
         }
