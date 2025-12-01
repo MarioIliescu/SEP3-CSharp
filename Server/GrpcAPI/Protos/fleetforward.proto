@@ -2,6 +2,7 @@
 package dk.via.fleetforward.gRPC;
 option csharp_namespace = "GrpcAPI.Protos";
 import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
 enum HandlerTypeProto {
   HANDLER_UNKNOWN = 0;
   HANDLER_COMPANY = 1;
@@ -79,6 +80,14 @@ enum TrailerTypeProto{
   FLATBED = 2;
   REEFER = 3;
 }
+enum JobStatusProto{
+  JOB_UNKNOWN = 0;
+  JOB_AVAILABLE = 1;
+  JOB_ONGOING = 2;
+  JOB_ASSIGNED = 3;
+  JOB_COMPLETED = 4;
+  JOB_EXPIRED = 5;
+}
 message DriverProto{
   string companyMcNumber = 1;
   StatusDriverProto driverStatus = 2;
@@ -87,6 +96,25 @@ message DriverProto{
   string currentState = 5;
   int32 currentZIPCODE = 6;
   UserProto user =7;
+}
+message JobProto{
+int32  jobId = 1;
+int32 jobDispatcherId = 2;
+int32 jobDriverId = 3;
+string title = 4;
+string description = 5;
+int32 loadedMiles = 6;
+int32 weightOfCargo = 7;
+TrailerTypeProto jobTrailerType = 8;
+int32 totalPrice = 9;
+string cargoInfo = 10;
+google.protobuf.Timestamp pickUpTime = 11;
+google.protobuf.Timestamp deliveryTime = 12;
+string pickUpLocationState = 13;
+int32 pickUpLocationZipCode = 14;
+string dropLocationState = 15;
+int32 dropLocationZipCode = 16;
+JobStatusProto currentJobStatus = 17;
 }
 message DriverListProto{
   repeated DriverProto drivers = 1;
@@ -98,4 +126,7 @@ message DispatcherProto{
 }
 message DispatcherListProto{
   repeated DispatcherProto dispatchers = 1;
+}
+message JobListProto{
+  repeated JobListProto jobs = 1;
 }
