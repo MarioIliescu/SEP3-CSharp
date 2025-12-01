@@ -25,6 +25,7 @@ public class AuthService : IAuthService
             throw new Exception("User not found, please register");
         _logger.LogDebug("Found user");
         User returnedUser = fetchedUser as User ?? throw new Exception("User not found, please register");
+        returnedUser.Role = (fetchedUser as User).Role;
         if (PasswordHasher.Verify(user.Password, returnedUser.Password))
         {
             return returnedUser;

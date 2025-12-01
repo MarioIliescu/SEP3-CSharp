@@ -126,7 +126,7 @@ public static class ProtoUtils
             .SetFirstName(proto.User.FirstName)
             .SetLastName(proto.User.LastName)
             .SetPassword(proto.User.Password)
-            .SetRole(UserRole.DRIVER)
+            .SetRole(UserRole.DISPATCHER)
             .Build();
     }
     public static RequestProto ParseDispatcherRequest(ActionTypeProto action, Dispatcher payload)

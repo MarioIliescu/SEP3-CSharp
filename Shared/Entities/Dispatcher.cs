@@ -5,8 +5,6 @@ namespace Entities;
 public class Dispatcher : User
 {
     public double Current_Rate { get; private set; }
-    public new UserRole Role { get; private set; } = UserRole.DISPATCHER;
-
     public Dispatcher() { }
 
     public class Builder : User.Builder
