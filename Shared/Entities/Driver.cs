@@ -10,7 +10,6 @@ public class Driver : User
     public TrailerType Trailer_type { get; private set; } = TrailerType.dry_van;
     public string Location_State { get; private set; } = "AL";
     public int Location_Zip_Code { get; private set; } = 35010;
-    public new UserRole Role { get; private set; } = UserRole.DRIVER;
     public new DriverCompanyRole CompanyRole { get; private set; } = DriverCompanyRole.Driver;
 
     public Driver() { }

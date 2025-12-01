@@ -8,6 +8,7 @@ enum HandlerTypeProto {
   HANDLER_DRIVER = 2;
   HANDLER_DISPATCHER = 3;
   HANDLER_AUTH = 4;
+  HANDLER_JOB = 5;
 }
 
 enum ActionTypeProto {
