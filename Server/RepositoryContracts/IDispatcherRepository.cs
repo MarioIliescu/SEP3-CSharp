@@ -41,7 +41,7 @@ public interface IDispatcherRepository
     /// <summary>
     /// Retrieves all dispatchers.
     /// </summary>
-    /// <returns>An <see cref="IQueryable{Dispatcher}"/> containing all companies.</returns>
+    /// <returns>An <see cref="IQueryable{Dispatcher}"/> containing all dispatchers.</returns>
     IQueryable<Dispatcher>GetManyAsync();
 
 

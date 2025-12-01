@@ -6,5 +6,6 @@ public enum HandlerType
     Company,
     Driver,
     Dispatcher,
-    Auth
+    Auth,
+    Job
 }

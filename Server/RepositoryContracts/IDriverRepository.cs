@@ -40,6 +40,6 @@ public interface IDriverRepository
     /// <summary>
     /// Retrieves all drivers.
     /// </summary>
-    /// <returns>An <see cref="IQueryable{Driver}"/> containing all companies.</returns>
+    /// <returns>An <see cref="IQueryable{Driver}"/> containing all drivers.</returns>
     IQueryable<Driver>GetManyAsync();
 }
