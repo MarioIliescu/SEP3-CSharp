@@ -96,8 +96,6 @@ public class Job
 
         public Builder SetDescription(string desc)
         {
-            if (string.IsNullOrWhiteSpace(desc))
-                throw new ArgumentException("Description is required.");
             if (desc.Length > 300)
                 throw new ArgumentException("Description cannot exceed 300 characters.");
             _description = desc;
@@ -172,7 +170,7 @@ public class Job
 
         public Builder SetPickupZip(int zip)
         {
-            if (zip <= 0 || zip >= 100000)
+            if (zip is <= 0 or >= 100000)
                 throw new ArgumentException("ZIP must be 1–99999.");
             _pickupZip = zip;
             return this;
@@ -192,7 +190,7 @@ public class Job
 
         public Builder SetDropZip(int zip)
         {
-            if (zip <= 0 || zip >= 100000)
+            if (zip is <= 0 or >= 100000)
                 throw new ArgumentException("ZIP must be 1–99999.");
             _dropZip = zip;
             return this;
