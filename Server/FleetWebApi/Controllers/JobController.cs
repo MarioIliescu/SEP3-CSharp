@@ -32,6 +32,7 @@ public class JobController : ControllerBase
                 .SetTotalPrice(dto.TotalPrice)
                 .SetCargoInfo(dto.CargoInfo)
                 .SetPickupTime(dto.PickupTime)
+                .SetDeliveryTime(dto.DeliveryTime)
                 .SetPickupState(dto.PickupLocationState)
                 .SetPickupZip(dto.PickupLocationZip)
                 .SetDropState(dto.DropLocationState)

@@ -54,6 +54,9 @@
 
                 <label>Pickup Time:</label>
                 <input type="datetime-local" @bind="pickupTime" />
+                
+                <label>Delivery Time:</label>
+                <input type="datetime-local" @bind="deliveryTime" />
 
                 <div class="location-fields">
                     <input type="text" placeholder="Pickup State (2 letters)" maxlength="2" @bind="pickupState" />
@@ -88,6 +91,7 @@
     private string cargoInfo = "";
 
     private DateTime pickupTime;
+    private DateTime deliveryTime;
 
     private string pickupState = "";
     private int pickupZip;
@@ -161,6 +165,9 @@
 
         if (pickupTime <= DateTime.Now)
             validationErrors.Add("Pickup time must be in the future.");
+        if (deliveryTime <= pickupTime)
+            validationErrors.Add("Delivery time must be after pickup.");
+
 
         if (string.IsNullOrWhiteSpace(pickupState))
             validationErrors.Add("Pickup state is required.");
@@ -191,6 +198,7 @@
             TotalPrice: totalPrice,
             CargoInfo: cargoInfo,
             PickupTime: pickupTime,
+            DeliveryTime: deliveryTime,
             PickupLocationState: pickupState.ToUpper(),
             PickupLocationZip: pickupZip,
             DropLocationState: dropState.ToUpper(),
@@ -215,6 +223,7 @@
             dropZip = 0;
             trailerType = TrailerType.dry_van;
             pickupTime = default;
+            deliveryTime = default;
 
 
         }
