@@ -1,0 +1,67 @@
+﻿@page "/manage-company"
+@using ApiContracts.Company
+@using BlazorFleetApp.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ICompanyService CompanyService
+@attribute [Authorize]
+
+
+<h3>Manage My Company</h3>
+
+<p>@statusMessage</p>
+
+@if (company == null)
+{
+    <p>Loading company info...</p>
+}
+else
+{
+    <div class="list-group mb-3">
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+            <span>@company.CompanyName (MC: @company.McNumber)</span>
+            <span>
+                <button class="btn btn-sm btn-warning me-1" @onclick="StartEdit">Edit</button>
+            </span>
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private CompanyDto? company;
+    private string statusMessage = "";
+    private string companyMC = "";
+    
+    private async Task LoadCompanyAsync()
+    {
+        try
+        {
+            company = await CompanyService.GetSingleAsync(companyMC);
+            statusMessage = "Company Loaded succesfully.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error loading companies: {ex.Message}";
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            { 
+                companyMC = user.Claims.FirstOrDefault(c => c.Type == "CompanyMC")?.Value ?? "your company";
+            }
+
+            if (!string.IsNullOrEmpty(companyMC))
+            {
+                await LoadCompanyAsync();
+            }
+                
+        }
+    }
+}
