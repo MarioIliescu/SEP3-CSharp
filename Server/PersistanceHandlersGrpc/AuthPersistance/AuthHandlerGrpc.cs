@@ -20,7 +20,16 @@ public class AuthHandlerGrpc : IFleetPersistanceHandler
     }
     public async Task<object> HandleAsync(Request request)
     {
-        User user = request.Payload as User ?? throw new ArgumentException(nameof(request.Payload));
-        return await _authRepository.LoginAsync(user);
+        var user = request.Payload as User ?? throw new ArgumentException(nameof(request.Payload));
+        var response = await _authRepository.LoginAsync(user);
+        if (response is Dispatcher dispatcher)
+        {
+            return dispatcher;
+        }
+        else if (response is Driver driver)
+        {
+            return driver;
+        }
+        throw new ArgumentException(nameof(request.Payload));
     }
 }
