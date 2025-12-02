@@ -5,31 +5,31 @@ namespace Entities;
 
 public class Job
 {
-    public int jobId { get; set; }
-    public int dispatcherId { get; private set; }
-    public int driverId { get; private set; } = 0;
+    public int JobId { get; set; }
+    public int DispatcherId { get; private set; }
+    public int DriverId { get; private set; } = 0;
 
     public string Title { get; private set; }
     public string Description { get; private set; }
 
-    public int loaded_miles { get; private set; }
-    public int weight_of_cargo { get; private set; }
+    public int Loaded_Miles { get; private set; }
+    public int Weight_Of_Cargo { get; private set; }
 
-    public TrailerType type_of_trailer_needed { get; private set; } = TrailerType.dry_van;
-    public int total_price { get; private set; }
+    public TrailerType Type_Of_Trailer_Needed { get; private set; } = TrailerType.Dry_van;
+    public int Total_Price { get; private set; }
 
-    public string cargo_info { get; private set; }
+    public string Cargo_Info { get; private set; }
 
-    public DateTime pickup_time { get; private set; }
-    public DateTime delivery_time { get; private set; }
+    public DateTime Pickup_Time { get; private set; }
+    public DateTime Delivery_Time { get; private set; }
 
-    public string pickup_location_state { get; private set; }
-    public int pickup_location_zip { get; private set; }
+    public string Pickup_Location_State { get; private set; }
+    public int Pickup_Location_Zip { get; private set; }
 
-    public string drop_location_state { get; private set; }
-    public int drop_location_zip { get; private set; }
+    public string Drop_Location_State { get; private set; }
+    public int Drop_Location_Zip { get; private set; }
 
-    public JobStatus current_status { get; private set; } = JobStatus.available;
+    public JobStatus Current_Status { get; private set; } = JobStatus.Available;
 
     public Job() { }
 
@@ -46,7 +46,7 @@ public class Job
         private int _loadedMiles = 100;
         private int _weight = 1000;
 
-        private TrailerType _trailerType = TrailerType.dry_van;
+        private TrailerType _trailerType = TrailerType.Dry_van;
         private int _totalPrice = 1000;
 
         private string _cargoInfo = "Cargo Info";
@@ -60,7 +60,7 @@ public class Job
         private string _dropState = "AL";
         private int _dropZip = 35049;
 
-        private JobStatus _status = JobStatus.available;
+        private JobStatus _status = JobStatus.Available;
 
         public Builder SetId(int id)
         {
@@ -207,29 +207,29 @@ public class Job
         {
             return new Job
             {
-                jobId = _jobId,
-                dispatcherId = _dispatcherId,
-                driverId = _driverId,
+                JobId = _jobId,
+                DispatcherId = _dispatcherId,
+                DriverId = _driverId,
 
                 Title = _title,
                 Description = _description,
 
-                loaded_miles = _loadedMiles,
-                weight_of_cargo = _weight,
-                type_of_trailer_needed = _trailerType,
-                total_price = _totalPrice,
-                cargo_info = _cargoInfo,
+                Loaded_Miles = _loadedMiles,
+                Weight_Of_Cargo = _weight,
+                Type_Of_Trailer_Needed = _trailerType,
+                Total_Price = _totalPrice,
+                Cargo_Info = _cargoInfo,
 
-                pickup_time = _pickupTime,
-                delivery_time = _deliveryTime,
+                Pickup_Time = _pickupTime,
+                Delivery_Time = _deliveryTime,
 
-                pickup_location_state = _pickupState,
-                pickup_location_zip = _pickupZip,
+                Pickup_Location_State = _pickupState,
+                Pickup_Location_Zip = _pickupZip,
 
-                drop_location_state = _dropState,
-                drop_location_zip = _dropZip,
+                Drop_Location_State = _dropState,
+                Drop_Location_Zip = _dropZip,
 
-                current_status = _status
+                Current_Status = _status
             };
         }
     }

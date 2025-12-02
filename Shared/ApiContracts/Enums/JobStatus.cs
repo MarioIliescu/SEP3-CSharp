@@ -2,12 +2,12 @@
 
 public enum JobStatus
 {
-    available,
-    completed,
-    expired,
-    assigned,
-    ongoing,
-    accepted,
-    loading,
-    unloading
+    Available,
+    Completed,
+    Expired,
+    Assigned,
+    Ongoing,
+    Accepted,
+    Loading,
+    Unloading
 }

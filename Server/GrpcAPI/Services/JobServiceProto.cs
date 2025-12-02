@@ -47,7 +47,7 @@ public class JobServiceProto : IJobRepository
             await _handler.SendRequestAsync(
                 ProtoUtils.ParseJobRequest(ActionTypeProto.ActionUpdate,
                     payload));
-            _logger.LogInformation($"Updated new job with Id {payload.jobId}");
+            _logger.LogInformation($"Updated new job with Id {payload.JobId}");
             await Task.CompletedTask;
         }
         catch (Exception e)

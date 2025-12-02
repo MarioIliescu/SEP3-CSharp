@@ -41,7 +41,7 @@ public class JobService : IJobService
         Request request = MakeJobRequest(
             ActionType.Get, new Job()
             {
-                jobId = id
+                JobId = id
             }
         );
         return (Job)await _handler.HandleAsync(request);
@@ -52,7 +52,7 @@ public class JobService : IJobService
         Request request = MakeJobRequest(
             ActionType.Delete, new Job()
             {
-                jobId = id
+                JobId = id
             }
         );
         await _handler.HandleAsync(request);

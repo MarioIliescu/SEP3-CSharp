@@ -2,7 +2,7 @@
 
 public enum TrailerType
 {
-    dry_van,
-    flatbed,
-    reefer
+    Dry_van,
+    Flatbed,
+    Reefer
 }

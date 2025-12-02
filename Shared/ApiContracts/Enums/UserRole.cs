@@ -2,6 +2,6 @@
 
 public enum UserRole
 {
-    DRIVER,
-    DISPATCHER,
+    Driver,
+    Dispatcher,
 }
