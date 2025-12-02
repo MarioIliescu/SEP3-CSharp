@@ -1,0 +1,129 @@
+﻿@page "/manage-company"
+@using ApiContracts.Company
+@using BlazorFleetApp.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ICompanyService CompanyService
+@attribute [Authorize]
+
+
+<h3>Manage My Company</h3>
+
+<p>@statusMessage</p>
+
+@if (company == null)
+{
+    <p>Loading company info...</p>
+}
+else
+{
+    <div class="list-group mb-3">
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+            <span>@company.CompanyName (MC: @company.McNumber)</span>
+            <span>
+                <button class="add-company-button @activeAddCompanyButton" @onclick="TogglePopupCompany"><img src="images/AddCompanyButton.png" alt="Edit Company"></button>
+            </span>
+        </div>
+    </div>
+}
+
+<div class="company-popup @popup">
+    <div class="create-company-form">
+        <p>Edit your company's name:</p>
+        <div class="input-fields">
+            <input id="company-name-field" type="text" placeholder="Company name" @bind="formCompanyName"/>
+        </div>
+    </div>
+    <button class="save-button" @onclick="SaveCompany">Save</button>
+</div>
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private CompanyDto? company;
+    private string statusMessage = "";
+    private string companyMC = "";
+    private string formMcNumber = "";
+    private string formCompanyName = "";
+    private string popup = "";
+    private string activeAddCompanyButton = "";
+    
+    private async Task LoadCompanyAsync()
+    {
+        try
+        {
+            company = await CompanyService.GetSingleAsync(companyMC);
+            statusMessage = "Company Loaded succesfully.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error loading companies: {ex.Message}";
+        }
+    }
+    
+    private void StartEdit()
+    {
+        formMcNumber = company.McNumber;
+        formCompanyName = company.CompanyName;
+    }
+    
+    private async Task SaveCompany()
+    {
+        if (string.IsNullOrWhiteSpace(formMcNumber) || string.IsNullOrWhiteSpace(formCompanyName))
+        {
+            statusMessage = "MC Number and Company Name are required.";
+            return;
+        }
+
+        try
+        {
+            CreateCompanyDto dto = new CreateCompanyDto(formMcNumber, formCompanyName);
+            await CompanyService.UpdateAsync(dto);
+            statusMessage = $"Company '{dto.CompanyName}' updated.";
+
+            await LoadCompanyAsync();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error saving company: {ex.Message}";
+        }
+        popup = "";
+        activeAddCompanyButton = "";
+    }
+    
+    private async Task TogglePopupCompany()
+    {
+        popup = popup == "" ? "active" : "";
+        if (popup == "active")
+        {
+            StartEdit();
+            await InvokeAsync(StateHasChanged);
+        }
+        ToggleCompanyButton();
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private void ToggleCompanyButton()
+    {
+        activeAddCompanyButton = popup;
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            { 
+                companyMC = user.Claims.FirstOrDefault(c => c.Type == "CompanyMC")?.Value ?? "your company";
+            }
+
+            if (!string.IsNullOrEmpty(companyMC))
+            {
+                await LoadCompanyAsync();
+            }
+                
+        }
+    }
+}

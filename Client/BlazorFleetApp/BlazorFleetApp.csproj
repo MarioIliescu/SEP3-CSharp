@@ -19,4 +19,10 @@
       <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="10.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Components\Pages\ManageCompany.razor.css">
+        <DependentUpon>ManageCompany.razor</DependentUpon>
+      </None>
+    </ItemGroup>
+
 </Project>

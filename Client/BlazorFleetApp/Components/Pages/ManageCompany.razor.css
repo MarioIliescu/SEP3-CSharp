@@ -1,0 +1,94 @@
+/* Button to open/close popup */
+.add-company-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  border: none;
+  background: #145F74;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+}
+
+.add-company-button:hover {
+  background: #071F25;
+}
+
+.add-company-button img {
+  max-width: 60%;
+  max-height: 60%;
+  object-fit: contain;
+  transition: 0.5s;
+}
+
+.add-company-button.active img {
+  transform: rotate(45deg);
+}
+
+/* Popup container */
+.company-popup {
+  display: none; /* hidden by default */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 450px;
+  background-color: white;
+  border: 2px solid #145F74;
+  border-radius: 10px;
+  padding: 20px;
+  z-index: 1000;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Show popup when active */
+.company-popup.active {
+  display: block;
+}
+
+/* Popup content */
+.company-popup p {
+  font-family: 'LemonMilk';
+  font-size: 0.9rem;
+  color: #3C616A;
+  margin-bottom: 10px;
+}
+
+.company-popup input {
+  width: 100%;
+  height: 40px;
+  margin-bottom: 10px;
+  padding: 0 10px;
+  border-radius: 5px;
+  border: 2px solid #145F74;
+  font-family: 'LemonMilk';
+  font-size: 0.9rem;
+  color: #3C616A;
+}
+
+.company-popup input:focus {
+  outline: none;
+  border-color: #071F25;
+}
+
+/* Save button */
+.save-button {
+  width: 100%;
+  height: 40px;
+  background-color: #145F74;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'LemonMilk';
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.save-button:hover {
+  background-color: #071F25;
+}
