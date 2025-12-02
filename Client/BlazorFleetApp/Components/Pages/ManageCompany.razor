@@ -29,9 +29,8 @@ else
 
 <div class="company-popup @popup">
     <div class="create-company-form">
-        <p>Register your company:</p>
+        <p>Edit your company's name:</p>
         <div class="input-fields">
-            <input id="mc-number-field" type="text" placeholder="Mc Number" @bind="formMcNumber"/>
             <input id="company-name-field" type="text" placeholder="Company name" @bind="formCompanyName"/>
         </div>
     </div>
@@ -87,12 +86,14 @@ else
         {
             statusMessage = $"Error saving company: {ex.Message}";
         }
+        popup = "";
+        activeAddCompanyButton = "";
     }
     
     private async Task TogglePopupCompany()
     {
         popup = popup == "" ? "active" : "";
-        if (popup == "")
+        if (popup == "active")
         {
             StartEdit();
             await InvokeAsync(StateHasChanged);
@@ -103,7 +104,7 @@ else
     
     private void ToggleCompanyButton()
     {
-        activeAddCompanyButton = activeAddCompanyButton == "" ? "active" : "";
+        activeAddCompanyButton = popup;
     }
     
     protected override async Task OnInitializedAsync()
