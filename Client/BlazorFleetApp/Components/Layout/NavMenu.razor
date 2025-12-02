@@ -29,7 +29,7 @@
                 </NavLink>
             </div>
         }
-        @if (companyRole.Equals("Dispatcher"))
+        @if (userRole.Equals("DISPATCHER"))
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="create-job">
@@ -52,6 +52,7 @@
     [Inject] private IAuthService AuthService { get; set; }
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     private string companyRole= "your company role";
+    private string userRole = "user";
     private async Task LogoutAsync()
     {
         await AuthService.LogoutAsync(); // call your service to remove tokens / auth
@@ -67,6 +68,7 @@
             if (user?.Identity?.IsAuthenticated ?? false)
             {
                 companyRole = user.Claims.FirstOrDefault(c => c.Type == "CompanyRole")?.Value ?? "your company role";
+                userRole = user.Claims.FirstOrDefault(c=> c.Type == "Role")?.Value ?? "user";
             }
         }
     }

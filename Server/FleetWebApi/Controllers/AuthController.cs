@@ -71,6 +71,7 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
             new Claim(JwtRegisteredClaimNames.Iat, 
                 new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(), 
                 ClaimValueTypes.Integer64),
+            new Claim("Id", user.Id.ToString()),
             new Claim("FirstName", user.FirstName),
             new Claim("LastName", user.LastName),
             new Claim("Email", user.Email),

@@ -103,30 +103,22 @@
     private List<string> validationErrors = new();
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
 
-    
+
 
 
 
     protected override async Task OnInitializedAsync()
     {
-        AuthenticationState authenticationState = await State;
-        ClaimsPrincipal claimsPrincipal = authenticationState.User;
-
-        if (claimsPrincipal.Identity == null || !claimsPrincipal.Identity.IsAuthenticated)
+        if (State != null)
         {
-            return; // user not logged in
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                dispatcherId = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
+            }
         }
-
-        var idClaim = claimsPrincipal.Claims
-            .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-
-        if (idClaim == null)
-        {
-            message = "User ID not found in claims.";
-            return;
-        }
-
-        dispatcherId = int.Parse(idClaim.Value);
     }
 
 
