@@ -88,6 +88,7 @@ app.UseCors(x => x
     .AllowCredentials());
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
