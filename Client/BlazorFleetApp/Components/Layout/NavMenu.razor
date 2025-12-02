@@ -10,6 +10,7 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
+        
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
@@ -18,9 +19,10 @@
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="register-dispatcher">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Register Dispatcher 
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Register Dispatcher
             </NavLink>
         </div>
+
         @if (@companyRole.Equals("OwnerOperator"))
         {
             <div class="nav-item px-3">
@@ -29,14 +31,25 @@
                 </NavLink>
             </div>
         }
+
+        @if (userRole.Equals("DRIVER"))
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="manage-account-driver">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Account Driver
+                </NavLink>
+            </div>
+        }
+
         @if (userRole.Equals("DISPATCHER"))
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="create-job">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Create Job 
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Create Job
                 </NavLink>
             </div>
         }
+
 
         <!-- Logout button at the end -->
         <div class="nav-item px-3 mt-auto">
