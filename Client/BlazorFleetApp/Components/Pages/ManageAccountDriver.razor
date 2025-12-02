@@ -1,5 +1,6 @@
 ﻿@page "/manage-account-driver"
 @using ApiContracts.Dtos.Driver
+@using ApiContracts.Enums
 @using BlazorFleetApp.Services.Driver
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
@@ -7,6 +8,13 @@
 @attribute [Authorize]
 
 <h3>Manage Account - Driver</h3>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div class="alert alert-success" role="alert">
+        @statusMessage
+    </div>
+}
 
 <div class="mb-3">
     <label class="form-label">Email</label>
@@ -27,25 +35,53 @@
     <label class="form-label">Last Name</label>
     <InputText class="form-control" @bind-Value="lastName" />
 </div>
+
+<div class="mb-3">
+    <label class="form-label">Trailer Type</label>
+
+    <InputSelect @bind-Value="trailerType" TValue="TrailerType">
+        @foreach (var t in Enum.GetValues<TrailerType>())
+        {
+            <option value="@t">@t.ToString()</option>
+        }
+    </InputSelect>
+</div>
+
+<button class="btn btn-primary mt-3" @onclick="Save">
+    Save Changes
+</button>
+
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    
     private DriverDto? driver;
     private string email = "";
     private string phoneNumber = "";
     private string firstName = "";
     private string lastName = "";
+    private TrailerType trailerType;
+    
+    private string statusMessage = "";
 
     private async Task Save()
     {
+        if (driver == null)
+            return; // Or show an error message
+
         var updated = driver with
         {
             Email = email,
             PhoneNumber = phoneNumber,
             FirstName = firstName,
-            LastName = lastName
+            LastName = lastName,
+            TrailerType = trailerType
+            
         };
 
         await DriverService.UpdateAsync(updated);
+        
+        statusMessage = "Driver information updated successfully!";
+        StateHasChanged();
     }
     
     protected override async Task OnInitializedAsync()
@@ -61,6 +97,7 @@
                 firstName = user.FindFirst("FirstName")?.Value ?? "";
                 lastName = user.FindFirst("LastName")?.Value ?? "";
                 phoneNumber = user.FindFirst("PhoneNumber")?.Value ?? "";
+                trailerType = Enum.Parse<TrailerType>(user.FindFirst("TrailerType")?.Value ?? "dry_van");
             }
             
             var driverIdString = user.FindFirst("Id")?.Value;
