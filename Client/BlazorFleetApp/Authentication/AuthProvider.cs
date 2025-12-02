@@ -1,10 +1,8 @@
 ﻿using System.Security.Claims;
-
 using BlazorFleetApp.Services.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 
-
-namespace BlazorFleetApp.Authentification;
+namespace BlazorFleetApp.Authentication;
 
 public class AuthProvider : AuthenticationStateProvider
 {

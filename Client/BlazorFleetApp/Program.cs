@@ -1,4 +1,4 @@
-using BlazorFleetApp.Authentification;
+using BlazorFleetApp.Authentication;
 using BlazorFleetApp.Components;
 using BlazorFleetApp.Services;
 using BlazorFleetApp.Services.Auth;
