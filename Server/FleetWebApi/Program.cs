@@ -8,12 +8,14 @@ using Microsoft.IdentityModel.Tokens;
 using PersistanceContracts;
 using PersistanceHandlersGrpc.AuthPersistance;
 using PersistanceHandlersGrpc.CompanyPersistance;
+using PersistanceHandlersGrpc.JobPersistance;
 using PersistanceHandlersGrpc.UserPersistance;
 using Repositories;
 using Services.Auth;
 using Services.Company;
 using Services.Dispatcher;
 using Services.Driver;
+using Services.Job;
 
 var builder = WebApplication.CreateBuilder(args);
 //Add controllers to the container 
@@ -27,10 +29,14 @@ builder.Services.AddKeyedScoped<IFleetPersistanceHandler, AuthHandlerGrpc>(Handl
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IDispatcherService, DispatcherService>();
+builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddKeyedScoped<IFleetPersistanceHandler, DriverHandlerGrpc>(HandlerType.Driver);
 builder.Services.AddKeyedScoped<IFleetPersistanceHandler, DispatcherHandlerGrpc>(HandlerType.Dispatcher);
+builder.Services.AddKeyedScoped<IFleetPersistanceHandler, JobHandlerGrpc>(HandlerType.Job);
 builder.Services.AddKeyedScoped<IDriverRepository, DriverServiceProto>(HandlerType.Driver);
 builder.Services.AddKeyedScoped<IDispatcherRepository, DispatcherServiceProto>(HandlerType.Dispatcher);
+builder.Services.AddKeyedScoped<IJobRepository, JobServiceProto>(
+    HandlerType.Job);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<FleetMainGrpcHandler>(sp =>
 {

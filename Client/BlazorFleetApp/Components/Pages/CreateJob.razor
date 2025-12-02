@@ -1,0 +1,227 @@
+﻿@page "/create-job"
+@using System.Security.Claims
+@using ApiContracts.Enums
+@using ApiContracts.Dtos.Job
+@using System.Text.RegularExpressions
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Nav
+@inject IJobService JobService
+@inject AuthenticationStateProvider AuthProvider
+
+@attribute [Authorize]
+<h2>Create Job</h2>
+
+<AuthorizeView>
+    <Authorized>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert alert-success">@message</div>
+        }
+            
+        else
+        {
+            <div class="job-form">
+
+                <div class="error-popup">
+                    @foreach (var e in validationErrors)
+                    {
+                        <p>@e</p>
+                    }
+                </div>
+
+                <input type="text" placeholder="Title" @bind="title" />
+
+                <textarea placeholder="Description"
+                          maxlength="300"
+                          @bind="description"></textarea>
+
+                <input type="number" placeholder="Loaded Miles" @bind="loadedMiles" />
+                <input type="number" placeholder="Weight of Cargo" @bind="weight" />
+
+                <select @bind="trailerType">
+                    @foreach (TrailerType t in Enum.GetValues(typeof(TrailerType)))
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+
+                <input type="number" placeholder="Total Price" @bind="totalPrice" />
+
+                <input type="text" placeholder="Cargo Info" maxlength="30" @bind="cargoInfo" />
+
+                <label>Pickup Time:</label>
+                <input type="datetime-local" @bind="pickupTime" />
+                
+                <label>Delivery Time:</label>
+                <input type="datetime-local" @bind="deliveryTime" />
+
+                <div class="location-fields">
+                    <input type="text" placeholder="Pickup State (2 letters)" maxlength="2" @bind="pickupState" />
+                    <input type="number" placeholder="Pickup ZIP" @bind="pickupZip" />
+
+                    <input type="text" placeholder="Drop State (2 letters)" maxlength="2" @bind="dropState" />
+                    <input type="number" placeholder="Drop ZIP" @bind="dropZip" />
+                </div>
+
+                <button @onclick="CreateJobBlazor">Create Job</button>
+            </div>
+        }
+
+    </Authorized>
+
+    <NotAuthorized>
+        <h3>Access denied — dispatchers only.</h3>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+
+    private string message = "";
+
+    private string title = "";
+    private string description = "";
+    private int loadedMiles;
+    private int weight;
+    private TrailerType trailerType = TrailerType.dry_van;
+    private int totalPrice;
+    private string cargoInfo = "";
+
+    private DateTime pickupTime;
+    private DateTime deliveryTime;
+
+    private string pickupState = "";
+    private int pickupZip;
+    private string dropState = "";
+    private int dropZip;
+
+    private int dispatcherId = 0;
+
+    private List<string> validationErrors = new();
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                dispatcherId = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
+            }
+        }
+    }
+
+
+
+    private async Task CreateJobBlazor()
+    {
+        validationErrors.Clear();
+        message = "";
+
+        if (dispatcherId <= 0)
+            validationErrors.Add("Dispatcher ID must be positive.");
+
+        if (string.IsNullOrWhiteSpace(title))
+            validationErrors.Add("Title is required.");
+        else if (title.Length > 20)
+            validationErrors.Add("Title cannot exceed 20 characters.");
+
+        if (string.IsNullOrWhiteSpace(description))
+            validationErrors.Add("Description is required.");
+        else if (description.Length > 300)
+            validationErrors.Add("Description cannot exceed 300 characters.");
+
+        if (loadedMiles <= 0)
+            validationErrors.Add("Loaded miles must be greater than 0.");
+
+        if (weight <= 0)
+            validationErrors.Add("Weight must be greater than 0.");
+
+        if (totalPrice <= 0)
+            validationErrors.Add("Total price must be greater than 0.");
+
+        if (string.IsNullOrWhiteSpace(cargoInfo))
+            validationErrors.Add("Cargo info is required.");
+        else if (cargoInfo.Length > 30)
+            validationErrors.Add("Cargo info cannot exceed 30 characters.");
+
+        if (pickupTime <= DateTime.Now)
+            validationErrors.Add("Pickup time must be in the future.");
+        if (deliveryTime <= pickupTime)
+            validationErrors.Add("Delivery time must be after pickup.");
+
+
+        if (string.IsNullOrWhiteSpace(pickupState))
+            validationErrors.Add("Pickup state is required.");
+        else if (!Regex.IsMatch(pickupState, "^[A-Za-z]{2}$"))
+            validationErrors.Add("Pickup state must be exactly 2 letters.");
+
+        if (pickupZip <= 0 || pickupZip >= 100000)
+            validationErrors.Add("Pickup ZIP must be between 1 and 99999.");
+
+        if (string.IsNullOrWhiteSpace(dropState))
+            validationErrors.Add("Drop state is required.");
+        else if (!Regex.IsMatch(dropState, "^[A-Za-z]{2}$"))
+            validationErrors.Add("Drop state must be exactly 2 letters.");
+
+        if (dropZip <= 0 || dropZip >= 100000)
+            validationErrors.Add("Drop ZIP must be between 1 and 99999.");
+
+        if (validationErrors.Any())
+            return;
+        
+        var dto = new CreateJobDto(
+            DispatcherId: dispatcherId,
+            Title: title,
+            Description: description,
+            loadedMiles,
+            weight,
+            TypeOfTrailerNeeded: trailerType,
+            TotalPrice: totalPrice,
+            CargoInfo: cargoInfo,
+            PickupTime: pickupTime,
+            DeliveryTime: deliveryTime,
+            PickupLocationState: pickupState.ToUpper(),
+            PickupLocationZip: pickupZip,
+            DropLocationState: dropState.ToUpper(),
+            DropLocationZip: dropZip
+        );
+
+        try
+        {
+            await JobService.CreateAsync(dto);
+
+            message = "Job created successfully!";
+
+            title = "";
+            description = "";
+            loadedMiles = 0;
+            weight = 0;
+            totalPrice = 0;
+            cargoInfo = "";
+            pickupState = "";
+            pickupZip = 0;
+            dropState = "";
+            dropZip = 0;
+            trailerType = TrailerType.dry_van;
+            pickupTime = default;
+            deliveryTime = default;
+
+
+        }
+        catch (Exception ex)
+        {
+            validationErrors.Add($"Error creating job: {ex.Message}");
+        }
+    }
+}
