@@ -1,0 +1,73 @@
+﻿@page "/manage-account-driver"
+@using ApiContracts.Dtos.Driver
+@using BlazorFleetApp.Services.Driver
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IDriverService DriverService
+@attribute [Authorize]
+
+<h3>Manage Account - Driver</h3>
+
+<div class="mb-3">
+    <label class="form-label">Email</label>
+    <InputText class="form-control" @bind-Value="email"/>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Phone Number</label>
+    <InputText class="form-control" @bind-Value="phoneNumber" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">First Name</label>
+    <InputText class="form-control" @bind-Value="firstName" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Last Name</label>
+    <InputText class="form-control" @bind-Value="lastName" />
+</div>
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private DriverDto? driver;
+    private string email = "";
+    private string phoneNumber = "";
+    private string firstName = "";
+    private string lastName = "";
+
+    private async Task Save()
+    {
+        var updated = driver with
+        {
+            Email = email,
+            PhoneNumber = phoneNumber,
+            FirstName = firstName,
+            LastName = lastName
+        };
+
+        await DriverService.UpdateAsync(updated);
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+            
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                email = user.FindFirst("Email")?.Value ?? "";
+                firstName = user.FindFirst("FirstName")?.Value ?? "";
+                lastName = user.FindFirst("LastName")?.Value ?? "";
+                phoneNumber = user.FindFirst("PhoneNumber")?.Value ?? "";
+            }
+            
+            var driverIdString = user.FindFirst("Id")?.Value;
+            if (!string.IsNullOrEmpty(driverIdString) && int.TryParse(driverIdString, out int driverId))
+            {
+                driver = await DriverService.GetSingleAsync(driverId);
+            }
+        }
+    }
+}
