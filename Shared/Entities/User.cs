@@ -11,7 +11,7 @@ public class User
     public string Email { get; set; } = "first.last@gmail.com";
     public string PhoneNumber { get; set; } = "+4511119111";
     public string Password { get; set; } = "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*";
-    public UserRole Role { get; set; } = UserRole.DRIVER;
+    public UserRole Role { get; set; } = UserRole.Driver;
 
     public User()
     {
@@ -26,7 +26,7 @@ public class User
         private string _email = "first.last@gmail.com";
         private string _phoneNumber = "+4511119111";
         private string _password = "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*";
-        private UserRole _role = UserRole.DRIVER;
+        private UserRole _role = UserRole.Driver;
 
 
         public Builder SetId(int id)

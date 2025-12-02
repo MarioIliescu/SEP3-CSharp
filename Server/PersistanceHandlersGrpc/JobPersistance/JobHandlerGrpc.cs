@@ -44,18 +44,18 @@ public class JobHandlerGrpc : IFleetPersistanceHandler
                 }
                 case ActionType.Delete:
                 {
-                    await _jobService.DeleteAsync(job.jobId);
-                    _logger.LogInformation($"Deleted job {job.jobId}");
+                    await _jobService.DeleteAsync(job.JobId);
+                    _logger.LogInformation($"Deleted job {job.JobId}");
                     break;
                 }
                 case ActionType.Get:
                 {
-                    _logger.LogInformation($"Get job {job.jobId}");
-                    return await _jobService.GetSingleAsync(job.jobId);
+                    _logger.LogInformation($"Get job {job.JobId}");
+                    return await _jobService.GetSingleAsync(job.JobId);
                 }
                 case ActionType.List:
                 {
-                    _logger.LogInformation($"List job {job.jobId}");
+                    _logger.LogInformation($"List job {job.JobId}");
                     return _jobService.GetManyAsync();
                 }
                 default:

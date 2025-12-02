@@ -71,7 +71,7 @@ public class Dispatcher : User
                 Email = baseUser.Email,
                 PhoneNumber = baseUser.PhoneNumber,
                 Password = baseUser.Password,
-                Role = UserRole.DISPATCHER,
+                Role = UserRole.Dispatcher,
                 // dispatcher-specific
                 Current_Rate =  _current_rate
             };

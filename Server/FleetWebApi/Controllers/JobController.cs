@@ -62,23 +62,23 @@ public class JobController : ControllerBase
               return NotFound($"Job with Id {id} not found.");
          }
             var dto = new JobDto(
-                job.jobId,
-                job.dispatcherId,
-                job.driverId,
+                job.JobId,
+                job.DispatcherId,
+                job.DriverId,
                 job.Title,
                 job.Description,
-                job.loaded_miles,
-                job.weight_of_cargo,
-                job.type_of_trailer_needed,
-                job.total_price,
-                job.cargo_info,
-                job.pickup_time,
-                job.delivery_time,
-                job.pickup_location_state,
-                job.pickup_location_zip,
-                job.drop_location_state,
-                job.drop_location_zip,
-                job.current_status
+                job.Loaded_Miles,
+                job.Weight_Of_Cargo,
+                job.Type_Of_Trailer_Needed,
+                job.Total_Price,
+                job.Cargo_Info,
+                job.Pickup_Time,
+                job.Delivery_Time,
+                job.Pickup_Location_State,
+                job.Pickup_Location_Zip,
+                job.Drop_Location_State,
+                job.Drop_Location_Zip,
+                job.Current_Status
             );
             return Ok(dto);
     }
@@ -103,23 +103,23 @@ public class JobController : ControllerBase
         var jobsList = _jobService.GetManyAsync();
         var jobsDto = jobsList
             .Select(j => new JobDto(
-                j.jobId,
-                j.dispatcherId,
-                j.driverId,
+                j.JobId,
+                j.DispatcherId,
+                j.DriverId,
                 j.Title,
                 j.Description,
-                j.loaded_miles,
-                j.weight_of_cargo,
-                j.type_of_trailer_needed,
-                j.total_price,
-                j.cargo_info,
-                j.pickup_time,
-                j.delivery_time,
-                j.pickup_location_state,
-                j.pickup_location_zip,
-                j.drop_location_state,
-                j.drop_location_zip,
-                j.current_status))
+                j.Loaded_Miles,
+                j.Weight_Of_Cargo,
+                j.Type_Of_Trailer_Needed,
+                j.Total_Price,
+                j.Cargo_Info,
+                j.Pickup_Time,
+                j.Delivery_Time,
+                j.Pickup_Location_State,
+                j.Pickup_Location_Zip,
+                j.Drop_Location_State,
+                j.Drop_Location_Zip,
+                j.Current_Status))
             .ToList();
 
         return Ok(jobsDto);

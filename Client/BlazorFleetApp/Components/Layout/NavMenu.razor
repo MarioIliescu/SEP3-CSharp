@@ -31,17 +31,7 @@
                 </NavLink>
             </div>
         }
-
-        @if (userRole.Equals("DRIVER"))
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="manage-account-driver">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Account Driver
-                </NavLink>
-            </div>
-        }
-
-        @if (userRole.Equals("DISPATCHER"))
+        @if (userRole.Equals("Dispatcher"))
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="create-job">

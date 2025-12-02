@@ -22,7 +22,7 @@ public static class ProtoUtils
             .SetFirstName(proto.User.FirstName)
             .SetLastName(proto.User.LastName)
             .SetPassword(proto.User.Password)
-            .SetRole(UserRole.DRIVER)
+            .SetRole(UserRole.Driver)
             .Build();
     }
 
@@ -84,11 +84,11 @@ public static class ProtoUtils
         switch (proto)
         {
             case StatusDriverProto.Available:
-                return DriverStatus.available;
+                return DriverStatus.Available;
             case StatusDriverProto.Busy:
-                return DriverStatus.busy;
+                return DriverStatus.Busy;
             case StatusDriverProto.OffDuty:
-                return DriverStatus.off_duty;
+                return DriverStatus.Off_duty;
             default:
                 throw new InvalidEnumArgumentException("Invalid status driver status");
         }
@@ -98,21 +98,21 @@ public static class ProtoUtils
         switch (proto)
         {
             case JobStatusProto.JobAvailable:
-                return JobStatus.available;
+                return JobStatus.Available;
             case JobStatusProto.JobAssigned:
-                return JobStatus.assigned;
+                return JobStatus.Assigned;
             case JobStatusProto.JobOngoing:
-                return JobStatus.ongoing;
+                return JobStatus.Ongoing;
             case JobStatusProto.JobCompleted:
-                return JobStatus.completed;
+                return JobStatus.Completed;
             case JobStatusProto.JobExpired:
-                return JobStatus.expired;
+                return JobStatus.Expired;
             case JobStatusProto.JobAccepted :
-                return JobStatus.accepted;
+                return JobStatus.Accepted;
             case JobStatusProto.JobLoading:
-                return JobStatus.loading;
+                return JobStatus.Loading;
             case JobStatusProto.JobUnloading:
-                return JobStatus.unloading;
+                return JobStatus.Unloading;
             default:
                 throw new InvalidEnumArgumentException("Invalid job status");
         }
@@ -136,11 +136,11 @@ public static class ProtoUtils
         switch (trailerType)
         {
             case TrailerTypeProto.DryVan:
-                return TrailerType.dry_van;
+                return TrailerType.Dry_van;
             case TrailerTypeProto.Flatbed:
-                return TrailerType.flatbed;
+                return TrailerType.Flatbed;
             case TrailerTypeProto.Reefer:
-                return TrailerType.reefer;
+                return TrailerType.Reefer;
             default:
                 throw new InvalidEnumArgumentException("Unknown trailer type");
         }
@@ -185,7 +185,7 @@ public static class ProtoUtils
             .SetFirstName(proto.User.FirstName)
             .SetLastName(proto.User.LastName)
             .SetPassword(proto.User.Password)
-            .SetRole(UserRole.DISPATCHER)
+            .SetRole(UserRole.Dispatcher)
             .Build();
     }
     public static RequestProto ParseDispatcherRequest(ActionTypeProto action, Dispatcher payload)
@@ -225,11 +225,11 @@ public static class ProtoUtils
     {
         switch (status)
         {
-            case DriverStatus.available:
+            case DriverStatus.Available:
                 return StatusDriverProto.Available;
-            case DriverStatus.busy:
+            case DriverStatus.Busy:
                 return StatusDriverProto.Busy;
-            case DriverStatus.off_duty:
+            case DriverStatus.Off_duty:
                 return StatusDriverProto.OffDuty;
             default:
                 throw new InvalidEnumArgumentException("Status unknown");
@@ -239,21 +239,21 @@ public static class ProtoUtils
     {
         switch (status)
         {
-            case JobStatus.assigned:
+            case JobStatus.Assigned:
                 return JobStatusProto.JobAssigned;
-            case JobStatus.available:
+            case JobStatus.Available:
                 return JobStatusProto.JobAvailable;
-            case JobStatus.ongoing:
+            case JobStatus.Ongoing:
                 return JobStatusProto.JobOngoing;
-            case JobStatus.completed:
+            case JobStatus.Completed:
                 return JobStatusProto.JobCompleted;
-            case JobStatus.expired:
+            case JobStatus.Expired:
                 return JobStatusProto.JobExpired;
-            case JobStatus.loading:
+            case JobStatus.Loading:
                 return JobStatusProto.JobLoading;
-            case JobStatus.unloading:
+            case JobStatus.Unloading:
                 return JobStatusProto.JobUnloading;
-            case JobStatus.accepted:
+            case JobStatus.Accepted:
                 return JobStatusProto.JobAccepted;
             default:
                 throw new InvalidEnumArgumentException("Unknown job status");
@@ -277,11 +277,11 @@ public static class ProtoUtils
     {
         switch (trailerType)
         {
-            case TrailerType.dry_van:
+            case TrailerType.Dry_van:
                 return TrailerTypeProto.DryVan;
-            case TrailerType.flatbed:
+            case TrailerType.Flatbed:
                 return TrailerTypeProto.Flatbed;
-            case TrailerType.reefer:
+            case TrailerType.Reefer:
                 return TrailerTypeProto.Reefer;
             default:
                 throw new InvalidEnumArgumentException("Unknown trailer type");
@@ -301,26 +301,26 @@ public static class ProtoUtils
     {
         return new JobProto()
         {
-            JobId = job.jobId,
-            JobDispatcherId = job.dispatcherId,
-            JobDriverId = job.driverId,
+            JobId = job.JobId,
+            JobDispatcherId = job.DispatcherId,
+            JobDriverId = job.DriverId,
             Title = job.Title,
             Description = job.Description,
-            LoadedMiles = job.loaded_miles,
-            WeightOfCargo = job.weight_of_cargo,
+            LoadedMiles = job.Loaded_Miles,
+            WeightOfCargo = job.Weight_Of_Cargo,
             JobTrailerType =
-                ParseTrailerTypeToProto(job.type_of_trailer_needed),
-            TotalPrice = job.total_price,
-            CargoInfo = job.cargo_info,
+                ParseTrailerTypeToProto(job.Type_Of_Trailer_Needed),
+            TotalPrice = job.Total_Price,
+            CargoInfo = job.Cargo_Info,
             PickUpTime =
-                Timestamp.FromDateTime(job.pickup_time.ToUniversalTime()),
+                Timestamp.FromDateTime(job.Pickup_Time.ToUniversalTime()),
             DeliveryTime =
-                Timestamp.FromDateTime(job.delivery_time.ToUniversalTime()),
-            PickUpLocationState = job.pickup_location_state,
-            PickUpLocationZipCode = job.pickup_location_zip,
-            DropLocationState = job.drop_location_state,
-            DropLocationZipCode = job.drop_location_zip,
-            CurrentJobStatus = ParseJobStatusToProto(job.current_status)
+                Timestamp.FromDateTime(job.Delivery_Time.ToUniversalTime()),
+            PickUpLocationState = job.Pickup_Location_State,
+            PickUpLocationZipCode = job.Pickup_Location_Zip,
+            DropLocationState = job.Drop_Location_State,
+            DropLocationZipCode = job.Drop_Location_Zip,
+            CurrentJobStatus = ParseJobStatusToProto(job.Current_Status)
         };
     }
 
@@ -340,9 +340,9 @@ public static class ProtoUtils
     {
         switch (role)
         {
-            case UserRole.DRIVER:
+            case UserRole.Driver:
                 return UserRoleProto.UserDriver;
-            case UserRole.DISPATCHER:
+            case UserRole.Dispatcher:
                 return UserRoleProto.UserDispatcher;
             default:
                 throw new InvalidEnumArgumentException("Unknown role");
@@ -354,9 +354,9 @@ public static class ProtoUtils
         switch (role)
         {
             case UserRoleProto.UserDriver:
-                return UserRole.DRIVER;
+                return UserRole.Driver;
             case UserRoleProto.UserDispatcher:
-                return UserRole.DISPATCHER;
+                return UserRole.Dispatcher;
             default:
                 throw new InvalidEnumArgumentException("Unknown role");
         }

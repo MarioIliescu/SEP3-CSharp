@@ -6,8 +6,8 @@ namespace Entities;
 public class Driver : User
 {
     public String McNumber { get; private set; } = "Stuffstuff";
-    public DriverStatus Status { get; private set; } = DriverStatus.available;
-    public TrailerType Trailer_type { get; private set; } = TrailerType.dry_van;
+    public DriverStatus Status { get; private set; } = DriverStatus.Available;
+    public TrailerType Trailer_type { get; private set; } = TrailerType.Dry_van;
     public string Location_State { get; private set; } = "AL";
     public int Location_Zip_Code { get; private set; } = 35010;
     public new DriverCompanyRole CompanyRole { get; private set; } = DriverCompanyRole.Driver;
@@ -17,8 +17,8 @@ public class Driver : User
     public class Builder : User.Builder
     {
         private String _mcNumber;
-        private DriverStatus _status = DriverStatus.available;
-        private TrailerType _trailerType = TrailerType.dry_van;
+        private DriverStatus _status = DriverStatus.Available;
+        private TrailerType _trailerType = TrailerType.Dry_van;
         private DriverCompanyRole _companyRole = DriverCompanyRole.Driver;
 
         private string _state = "NA";
