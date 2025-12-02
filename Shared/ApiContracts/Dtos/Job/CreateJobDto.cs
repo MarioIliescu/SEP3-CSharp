@@ -12,6 +12,7 @@ public record CreateJobDto(
     int TotalPrice, 
     string CargoInfo, 
     DateTime PickupTime,
+    DateTime DeliveryTime,
     string PickupLocationState, 
     int PickupLocationZip,
     string DropLocationState, 
