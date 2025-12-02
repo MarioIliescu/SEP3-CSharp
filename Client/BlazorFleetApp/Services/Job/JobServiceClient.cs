@@ -35,5 +35,6 @@ public class JobServiceClient : IJobService
     public async Task DeleteAsync(int id)
     {
         var response = await _http.DeleteAsync($"job/{id}");
-        response.EnsureSuccessStatusCode();    }
+        response.EnsureSuccessStatusCode();
+    }
 }

@@ -8,5 +8,5 @@ public interface IJobService
     public Task UpdateAsync(JobDto dto);
     public Task<JobDto?> GetSingleAsync(int id);
     public Task<List<JobDto>> GetAllAsync();
-    public Task DeleteAsync(int id);   
+    public Task DeleteAsync(int id);
 }
