@@ -10,6 +10,7 @@ enum HandlerTypeProto {
   HANDLER_DISPATCHER = 3;
   HANDLER_AUTH = 4;
   HANDLER_JOB = 5;
+  HANDLER_RECRUIT = 6;
 }
 
 enum ActionTypeProto {
@@ -120,6 +121,10 @@ string dropLocationState = 15;
 int32 dropLocationZipCode = 16;
 JobStatusProto currentJobStatus = 17;
 }
+message RecruitDriverProto{
+  DispatcherProto dispatcher = 1;
+  DriverProto driver = 2;
+ }
 message DriverListProto{
   repeated DriverProto drivers = 1;
 }
