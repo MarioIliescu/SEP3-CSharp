@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using ApiContracts.Dtos.Auth;
 using ApiContracts.Dtos.Authetication;
+using ApiContracts.Enums;
 using Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -45,7 +46,7 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
     private string GenerateJwt(User user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(config["Jwt:Key"] ?? "");
+        var key = Encoding.UTF8.GetBytes(config["Jwt:Key"] ?? "");
 
         List<Claim> claims = GenerateClaims(user);
 
@@ -60,6 +61,23 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+    [HttpPost("refresh")]
+    public ActionResult Refresh()
+    {
+        var user = User; // from current valid JWT
+        if (user.Identity?.IsAuthenticated != true)
+            return Unauthorized();
+
+        // Extract user info from claims
+        var userIdClaim = user.FindFirst("Id")?.Value
+                          ?? throw new UnauthorizedAccessException();
+
+        // Rebuild user from claims (or reload from DB)
+        var rebuiltUser = RebuildUserFromClaims(user);
+
+        var newToken = GenerateJwt(rebuiltUser);
+        return Ok(new { token = newToken });
     }
 
     private List<Claim> GenerateClaims(User user)
@@ -94,6 +112,41 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
         }
 
         return claims;
+    }
+    private User RebuildUserFromClaims(ClaimsPrincipal claims)
+    {
+        var id = int.Parse(claims.FindFirst("Id")?.Value ?? "0");
+        var role = Enum.TryParse<UserRole>(claims.FindFirst("Role")?.Value, out var parsedRole)
+            ? parsedRole
+            : UserRole.DRIVER;
+
+        if (role == UserRole.DRIVER)
+        {
+            return new Driver.Builder()
+                .SetId(id)
+                .SetFirstName(claims.FindFirst("FirstName")?.Value ?? "")
+                .SetLastName(claims.FindFirst("LastName")?.Value ?? "")
+                .SetEmail(claims.FindFirst("Email")?.Value ?? "")
+                .SetPhoneNumber(claims.FindFirst("PhoneNumber")?.Value ?? "")
+                .SetCompanyRole(Enum.TryParse<DriverCompanyRole>(claims.FindFirst("CompanyRole")?.Value, out var cr) ? cr : DriverCompanyRole.Driver)
+                .SetMcNumber(claims.FindFirst("CompanyMC")?.Value ?? "")
+                .SetStatus(Enum.TryParse<DriverStatus>(claims.FindFirst("DriverStatus")?.Value, out var ds) ? ds : DriverStatus.available)
+                .SetTrailerType(Enum.TryParse<TrailerType>(claims.FindFirst("TrailerType")?.Value, out var tt) ? tt : TrailerType.dry_van)
+                .SetLocationState(claims.FindFirst("Location")?.Value ?? "")
+                .SetLocationZip(int.Parse(claims.FindFirst("LocationZip")?.Value ?? "35010"))
+                .Build();
+        }
+        else
+        {
+            return new Dispatcher.Builder()
+                .SetId(id)
+                .SetFirstName(claims.FindFirst("FirstName")?.Value ?? "")
+                .SetLastName(claims.FindFirst("LastName")?.Value ?? "")
+                .SetEmail(claims.FindFirst("Email")?.Value ?? "")
+                .SetPhoneNumber(claims.FindFirst("PhoneNumber")?.Value ?? "")
+                .SetCurrentRate(double.TryParse(claims.FindFirst("CurrentRate")?.Value, out var rate) ? rate : 0)
+                .Build();
+        }
     }
 
 }

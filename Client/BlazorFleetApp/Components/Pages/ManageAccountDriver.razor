@@ -1,10 +1,12 @@
 ﻿@page "/manage-account-driver"
 @using ApiContracts.Dtos.Driver
 @using ApiContracts.Enums
+@using BlazorFleetApp.Services.Auth
 @using BlazorFleetApp.Services.Driver
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IDriverService DriverService
+@inject IAuthService AuthService
 @attribute [Authorize]
 
 <h3>Manage Account - Driver</h3>
@@ -60,50 +62,82 @@
     private string firstName = "";
     private string lastName = "";
     private TrailerType trailerType;
-    
+    private string companyMC = "";
+    private DriverCompanyRole companyRole;
+    private DriverStatus status;
     private string statusMessage = "";
+    private int userId = 0;
+    private int locationZIP = 35010;
+    private string locationState = "AL";
 
     private async Task Save()
     {
-        if (driver == null)
-            return; // Or show an error message
-
-        var updated = driver with
+        try
         {
-            Email = email,
-            PhoneNumber = phoneNumber,
-            FirstName = firstName,
-            LastName = lastName,
-            TrailerType = trailerType
-            
-        };
+            if (driver == null)
+                return; // Or show an error message
 
-        await DriverService.UpdateAsync(updated);
-        
-        statusMessage = "Driver information updated successfully!";
-        StateHasChanged();
+            var updated = driver with
+            {
+                Email = email,
+                PhoneNumber = phoneNumber,
+                FirstName = firstName,
+                LastName = lastName,
+                TrailerType = trailerType,
+                CompanyRole = companyRole,
+                Status = status,
+                Id =  userId,
+                LocationZip = locationZIP,
+                LocationState = locationState
+            };
+
+            await DriverService.UpdateAsync(updated);
+            await AuthService.RefreshTokenAsync();
+            statusMessage = "Driver information updated successfully!";
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            statusMessage = e.Message;
+        }
+
     }
     
     protected override async Task OnInitializedAsync()
     {
-        if (State != null)
+        await LoadDriverDataAsync();
+    }
+    private async Task LoadDriverDataAsync()
+    {
+        if (State == null)
+            return;
+        var authState = await State;
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated ?? false)
         {
-            var authState = await State;
-            var user = authState.User;
-            
-            if (user?.Identity?.IsAuthenticated ?? false)
+            // Get user ID from claims
+            userId = user.FindFirst("Id")?.Value is string idStr && int.TryParse(idStr, out var id) ? id : 0;
+
+            if (userId > 0)
             {
-                email = user.FindFirst("Email")?.Value ?? "";
-                firstName = user.FindFirst("FirstName")?.Value ?? "";
-                lastName = user.FindFirst("LastName")?.Value ?? "";
-                phoneNumber = user.FindFirst("PhoneNumber")?.Value ?? "";
-                trailerType = Enum.Parse<TrailerType>(user.FindFirst("TrailerType")?.Value ?? "dry_van");
-            }
-            
-            var driverIdString = user.FindFirst("Id")?.Value;
-            if (!string.IsNullOrEmpty(driverIdString) && int.TryParse(driverIdString, out int driverId))
-            {
-                driver = await DriverService.GetSingleAsync(driverId);
+                // Fetch the latest driver data from the backend
+                driver = await DriverService.GetSingleAsync(userId);
+
+                if (driver != null)
+                {
+                    // Map backend data to local fields
+                    email = driver.Email;
+                    firstName = driver.FirstName;
+                    lastName = driver.LastName;
+                    phoneNumber = driver.PhoneNumber;
+                    trailerType = driver.TrailerType;
+                    companyRole = driver.CompanyRole;
+                    status = driver.Status;
+                    companyMC = driver.McNumber;
+                    locationState = driver.LocationState ?? "AL";
+                    locationZIP = driver.LocationZip;
+                }
             }
         }
     }

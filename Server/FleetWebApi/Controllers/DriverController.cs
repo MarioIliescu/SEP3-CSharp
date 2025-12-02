@@ -4,7 +4,6 @@ using Entities;
 using FleetWebApi.SecurityUtils;
 using Microsoft.AspNetCore.Mvc;
 using Services.Driver;
-
 namespace FleetWebApi.Controllers;
 
 
@@ -21,7 +20,7 @@ public class DriverController : ControllerBase
     
     
     [HttpPost]
-    public async Task<IActionResult> CreateDriver([FromBody] CreateDriverDto dto)
+    public async Task<IActionResult> CreateDriver([FromBody] DriverDto dto)
     {
         try
         {
@@ -33,10 +32,10 @@ public class DriverController : ControllerBase
                 .SetPassword(PasswordHasher.Hash(dto.Password))
                 .SetMcNumber(dto.McNumber)
                 .SetTrailerType(dto.TrailerType)
-                .SetStatus(dto.StatusType)
+                .SetStatus(dto.Status)
                 .SetCompanyRole(dto.CompanyRole)
                 .SetLocationState(dto.LocationState)
-                .SetLocationZip(dto.LocationZipCode)
+                .SetLocationZip(dto.LocationZip)
                 .Build();
 
            var created = await _driverService.CreateAsync(driver);
@@ -48,7 +47,35 @@ public class DriverController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-    
+
+    [HttpPut]
+    public async Task<IActionResult> UpdateDriverAsync(
+        [FromBody] DriverDto dto)
+    {
+        try
+        {
+            var driver = new Driver.Builder()
+                .SetId(dto.Id)
+                .SetFirstName(dto.FirstName)
+                .SetLastName(dto.LastName)
+                .SetEmail(dto.Email)
+                .SetPhoneNumber(dto.PhoneNumber)
+                .SetMcNumber(dto.McNumber)
+                .SetTrailerType(dto.TrailerType)
+                .SetStatus(dto.Status)
+                .SetCompanyRole(dto.CompanyRole)
+                .SetLocationState(dto.LocationState)
+                .SetLocationZip(dto.LocationZip)
+                .Build();
+            await _driverService.UpdateAsync(driver);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<DriverDto>> GetDriverById(int id)
     {

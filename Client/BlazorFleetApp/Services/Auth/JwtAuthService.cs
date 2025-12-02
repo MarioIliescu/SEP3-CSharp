@@ -35,7 +35,10 @@ public class JwtAuthService(HttpClient client, IJSRuntime jsRuntime) : IAuthServ
             throw new Exception(responseContent);
         }
 
-        string token = responseContent;
+        var json = JsonSerializer.Deserialize<Dictionary<string, string>>(responseContent);
+        if (json == null || !json.TryGetValue("token", out string token))
+            throw new Exception("Invalid login response: missing token");
+
         Jwt = token;
 
         await CacheTokenAsync();
@@ -47,24 +50,20 @@ public class JwtAuthService(HttpClient client, IJSRuntime jsRuntime) : IAuthServ
 
     private async Task<ClaimsPrincipal> CreateClaimsPrincipal()
     {
-        var cachedToken = await GetTokenFromCacheAsync();
-        if (string.IsNullOrEmpty(Jwt) && string.IsNullOrEmpty(cachedToken))
+        if (string.IsNullOrEmpty(Jwt))
         {
+            var cachedToken = await GetTokenFromCacheAsync();
+            if (!string.IsNullOrEmpty(cachedToken))
+                Jwt = cachedToken;
+        }
+        if (string.IsNullOrEmpty(Jwt))
             return new ClaimsPrincipal();
-        }
-        if (!string.IsNullOrEmpty(cachedToken))
-        {
-            Jwt = cachedToken;
-        }
-        if (!client.DefaultRequestHeaders.Contains("Authorization"))
-            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Jwt);
-
+        client.DefaultRequestHeaders.Remove("Authorization");
+        client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Jwt);
         IEnumerable<Claim> claims = ParseClaimsFromJwt(Jwt);
-
         ClaimsIdentity identity = new(claims, "jwt");
 
-        ClaimsPrincipal principal = new(identity);
-        return principal;
+        return new ClaimsPrincipal(identity);
     }
 
     public async Task LogoutAsync()
@@ -136,5 +135,36 @@ public class JwtAuthService(HttpClient client, IJSRuntime jsRuntime) : IAuthServ
     private async Task ClearTokenFromCacheAsync()
     {
         await jsRuntime.InvokeVoidAsync("localStorage.setItem", "jwt", "");
+    }
+    public async Task RefreshTokenAsync()
+    {
+        if (string.IsNullOrEmpty(Jwt))
+        {
+            var cachedToken = await GetTokenFromCacheAsync();
+            if (string.IsNullOrEmpty(cachedToken))
+                throw new InvalidOperationException("No JWT available to refresh.");
+            Jwt = cachedToken;
+        }
+        client.DefaultRequestHeaders.Remove("Authorization");
+        client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Jwt);
+
+        HttpResponseMessage response = await client.PostAsync("/auth/refresh", null);
+        string responseContent = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Token refresh failed: {responseContent}");
+        }
+
+        var json = JsonSerializer.Deserialize<Dictionary<string, string>>(responseContent);
+        if (json == null || !json.TryGetValue("token", out string token))
+            throw new Exception("Invalid refresh response: missing token");
+
+        Jwt = token;
+        await CacheTokenAsync();
+        client.DefaultRequestHeaders.Remove("Authorization");
+        client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Jwt);
+        ClaimsPrincipal principal = await CreateClaimsPrincipal();
+        OnAuthStateChanged.Invoke(principal);
     }
 }
