@@ -85,6 +85,7 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
         if (user is Driver driver)
         {
             claims.Add(new Claim("CompanyRole", driver.CompanyRole.ToString()));
+            claims.Add(new Claim("CompanyMC", driver.McNumber));
             claims.Add(new Claim("DriverStatus", driver.Status.ToString()));
             claims.Add(new Claim("TrailerType", driver.Trailer_type.ToString()));
             claims.Add(new Claim("Location",driver.Location_State));

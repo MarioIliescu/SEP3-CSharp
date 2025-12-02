@@ -78,7 +78,7 @@ public class JwtAuthService(HttpClient client, IJSRuntime jsRuntime) : IAuthServ
 
     public async Task RegisterAsync(User user)
     {
-        string userAsJson = JsonSerializer.Serialize(user);
+        string userAsJson = JsonSerializer.Serialize(user, user.GetType());
         StringContent content = new(userAsJson, Encoding.UTF8, "application/json");
         HttpResponseMessage response = await client.PostAsync("http://localhost:5124/auth/register", content);
         string responseContent = await response.Content.ReadAsStringAsync();
