@@ -24,13 +24,26 @@ public class AuthService : IAuthService
         var fetchedUser = await _authHandler.HandleAsync(request) ?? 
             throw new Exception("User not found, please register");
         _logger.LogDebug("Found user");
-        User returnedUser = fetchedUser as User ?? throw new Exception("User not found, please register");
-        returnedUser.Role = (fetchedUser as User).Role;
-        if (PasswordHasher.Verify(user.Password, returnedUser.Password))
+        var returnedUser = fetchedUser ?? throw new Exception("User not found, please register");
+        if (returnedUser is Entities.Dispatcher dispatcher)
         {
-            return returnedUser;
+            if (PasswordHasher.Verify(user.Password, dispatcher.Password))
+            {
+                return dispatcher;
+            }
+            _logger.LogDebug("Wrong password");
+            throw new Exception("Incorrect password, please try again");
         }
-        _logger.LogDebug("Wrong password");
-        throw new Exception("Incorrect password, please try again");
+        else if (returnedUser is Entities.Driver driver)
+        {
+            if (PasswordHasher.Verify(user.Password, driver.Password))
+            {
+                return driver;
+            }
+            _logger.LogDebug("Wrong password");
+            throw new Exception("Incorrect password, please try again");
+        }
+        _logger.LogDebug("Something when wrong. Try again");
+        throw new Exception("Something when wrong. Try again");
     }
 }

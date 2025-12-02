@@ -19,13 +19,22 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
     {
         try
         {
-            User user = await authService.LoginAsync(new User.Builder()
+            var user = await authService.LoginAsync(new User.Builder()
                 .SetEmail(userLoginDto.Email)
                 .SetPassword(userLoginDto.Password)
-                .Build()) as User ?? throw new InvalidOperationException();
-            string token = GenerateJwt(user);
-
-            return Ok(new{token});
+                .Build()) ?? throw new InvalidOperationException();
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (user is Driver driver)
+            {
+                string token = GenerateJwt(driver);
+                return Ok(new{token});
+            }
+            else if (user is Dispatcher dispatcher)
+            {
+                string token = GenerateJwt(dispatcher);
+                return Ok(new{token});
+            }
+            throw new Exception("Something went wrong. Try again");
         }
         catch (Exception e)
         {
@@ -55,7 +64,7 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
 
     private List<Claim> GenerateClaims(User user)
     {
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, "FleetForward"),      
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -68,8 +77,21 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
             new Claim("PhoneNumber", user.PhoneNumber),
             new Claim("Role", user.Role.ToString())
         };
+        if (user is Dispatcher dispatcher)
+        {
+            claims.Add(new Claim("CurrentRate", dispatcher.Current_Rate.ToString()));
+        }
 
-        return claims.ToList();
+        if (user is Driver driver)
+        {
+            claims.Add(new Claim("CompanyRole", driver.CompanyRole.ToString()));
+            claims.Add(new Claim("DriverStatus", driver.Status.ToString()));
+            claims.Add(new Claim("TrailerType", driver.Trailer_type.ToString()));
+            claims.Add(new Claim("Location",driver.Location_State));
+            claims.Add(new Claim("LocationZip",driver.Location_Zip_Code.ToString()));
+        }
+
+        return claims;
     }
 
 }
