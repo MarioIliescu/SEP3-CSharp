@@ -1,0 +1,126 @@
+@using ApiContracts.Dtos.Driver
+@using Microsoft.AspNetCore.Components.Authorization
+@using ApiContracts.Enums
+@inject IDriverService DriverService
+@inject AuthenticationStateProvider AuthStateProvider
+@using BlazorFleetApp.Services.Driver
+
+@if (driver != null)
+{
+    <div>
+        @if (userRole == UserRole.Driver)
+        {
+            <select class="driver-status" style="background-image: url('@GetStatusImage()');" @bind="status">
+                @foreach (DriverStatus s in Enum.GetValues<DriverStatus>())
+                {
+                    <option value="@s">@s</option>
+                }
+            </select>
+        }
+        @if (userRole == UserRole.Dispatcher)
+        {
+            <div class="driver-status" style="background-image: url('@GetStatusImage()');">
+                <h4>@_status</h4>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div>Loading driver...</div>
+}
+
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    [Parameter] public int? InitialDriverId { get; set; }
+
+    private int userId;
+    private UserRole? userRole;
+    private DriverDto? driver;
+    private DriverStatus _status = DriverStatus.Off_duty;
+    private DriverStatus status
+    {
+        get => _status;
+        set
+        {
+            if (_status != value)
+            {
+                _status = value;
+                _ = ChangeStatusAsync(value); // fire-and-forget
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthStateProvider.AuthenticationStateChanged += OnAuthChanged;
+        await LoadDriverAsync();
+    }
+
+    private async Task LoadDriverAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var roleClaim = user.FindFirst("Role")?.Value;
+            if (!string.IsNullOrEmpty(roleClaim) &&
+                Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole))
+            {
+                userRole = parsedRole;
+            }
+            if (userRole == UserRole.Driver)
+            {
+                var idClaim = user.FindFirst("Id")?.Value;
+                if (!string.IsNullOrEmpty(idClaim))
+                    userId = int.Parse(idClaim);
+
+                driver = await DriverService.GetSingleAsync(userId);
+                if (driver != null) _status = driver.Status;
+            }
+            else if (userRole == UserRole.Dispatcher && InitialDriverId.HasValue)
+            {
+                driver = await DriverService.GetSingleAsync(InitialDriverId.Value);
+                if (driver != null) _status = driver.Status;
+            }
+        }
+    }
+
+    private async void OnAuthChanged(Task<AuthenticationState> task)
+    {
+        var authState = await task;
+        var user = authState.User;
+        var roleClaim = user.FindFirst("Role")?.Value;
+        if (!string.IsNullOrEmpty(roleClaim) &&
+            Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole) &&
+            parsedRole == UserRole.Driver)
+        {
+            await LoadDriverAsync();
+            StateHasChanged();
+        }
+    }
+    private string GetStatusImage()
+    {
+        if (driver == null)
+        {
+            return "/images/reddot.png";
+        }
+
+        return driver.Status switch
+        {
+            DriverStatus.Available => "/images/greendot.png",
+            DriverStatus.Busy => "/images/yellowdot.png",
+            _ => "/images/reddot.png"
+        };
+    }
+    private async Task ChangeStatusAsync(DriverStatus newStatus)
+    {
+        if (driver == null) return;
+        driver = driver with { Status = newStatus };
+        await DriverService.UpdateAsync(driver);
+        await LoadDriverAsync();
+        StateHasChanged();
+    }
+}
