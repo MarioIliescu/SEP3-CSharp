@@ -58,7 +58,7 @@ else
                         <hr />
 
                         <label>Select Driver:</label>
-                        <select @bind="selectedDriverId">
+                        <select @bind="selectedDriverId" @onclick:stopPropagation="true">
                             <option value="0">Select Driver</option>
                             @foreach (var d in drivers)
                             {
