@@ -41,11 +41,10 @@ else
     <div class="job-card-list">
         @foreach (var job in jobs)
         {
-            <div class="job-card @(job.Id == assigningJobId ? "selected" : "")"
-                 @onclick="() => SelectJob(job.Id)">
-                <h4>@job.Title</h4>
-                <p>@job.PickupLocationState @job.PickupLocationZip → @job.DropLocationState @job.DropLocationZip</p>
-                <p>@job.PickupTime.ToString("MM/dd/yyyy HH:mm")</p>
+            <div class="job-card @(job.Id == assigningJobId ? "selected" : "")">
+                <h4 @onclick="() => SelectJob(job.Id)">@job.Title</h4>
+                <p @onclick="() => SelectJob(job.Id)">@job.PickupLocationState @job.PickupLocationZip → @job.DropLocationState @job.DropLocationZip</p>
+                <p @onclick="() => SelectJob(job.Id)">@job.PickupTime.ToString("MM/dd/yyyy HH:mm")</p>
 
                 @if (job.Id == assigningJobId)
                 {
@@ -58,11 +57,11 @@ else
                         <hr />
 
                         <label>Select Driver:</label>
-                        <select @bind="selectedDriverId" @onclick:stopPropagation="true">
+                        <select>
                             <option value="0">Select Driver</option>
                             @foreach (var d in drivers)
                             {
-                                <option value="@d.Id">@d.FirstName @d.LastName</option>
+                                <option value="@d.Id" @onclick="() => SelectDriver(d.Id)">@d.FirstName @d.LastName</option>
                             }
                         </select>
 
@@ -106,14 +105,13 @@ else
 
     private void SelectJob(int jobId)
     {
-        if (assigningJobId == jobId)
-            assigningJobId = 0;
-        else
-            assigningJobId = jobId;
-
-        selectedDriverId = 0;
+        assigningJobId = jobId;
         message = "";
         validationErrors.Clear();
+    }
+    private void SelectDriver(int driverId)
+    {
+        selectedDriverId = driverId;
     }
 
     private async Task ConfirmAssignDriver()
