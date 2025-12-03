@@ -1,0 +1,87 @@
+﻿.nav-bar
+{
+    width: 100vw;
+    display: inline-flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    align-content: center;
+}
+
+.logo-container
+{
+    width:16vw;
+    overflow: hidden;
+}
+
+.logo
+{
+    height: auto;
+    width: 100%;
+    object-fit: contain;
+}
+
+.nav-links
+{
+    width: fit-content;
+    display: inline-flex;
+    gap: 1rem;
+    background-color: #f3f3f3;
+    border-radius: 5px;
+    padding:0 0.5rem;
+}
+
+.link
+{
+    width: fit-content;
+    cursor: pointer;
+}
+
+.link .selected-bar
+{
+    width: 0;
+    background-color: #145F74;
+    height: 10%;
+    transition: 0.3s;
+}
+
+.link:hover .selected-bar
+{
+    width: 100%;
+}
+
+.right-side
+{
+    display: inline-flex;
+    gap: 1rem;
+}
+
+.notification-button
+{
+    width: 2.5vw;
+    height: 2.5vw;
+    background-color: #f3f3f3;
+    justify-content: center;
+    align-content: center;
+}
+
+.notification-vector
+{
+    height: auto;
+    width: 90%;
+    object-fit: contain;
+}
+
+.profile-button
+{
+    width: 3vw;
+    height: 3vw;
+    background-color: #f3f3f3;
+}
+
+.profile-picture
+{
+    height: auto;
+    width: 100%;
+    object-fit: contain;
+}
+
