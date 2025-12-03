@@ -58,10 +58,10 @@ else
 
                         <label>Select Driver:</label>
                         <select>
-                            <option value="0">Select Driver</option>
+                            <option value="0" @onchange="OnDriverChanged" @onclick:stopPropagation="true">Select Driver</option>
                             @foreach (var d in drivers)
                             {
-                                <option value="@d.Id" @onclick="() => SelectDriver(d.Id)">@d.FirstName @d.LastName</option>
+                                <option value="@d.Id">@d.FirstName @d.LastName</option>
                             }
                         </select>
 
@@ -110,11 +110,11 @@ else
         message = "";
         validationErrors.Clear();
     }
-    private void SelectDriver(int driverId)
-    {
-        message = $"select driver{driverId}";
-        selectedDriverId = driverId;
-    }
+        private void OnDriverChanged(ChangeEventArgs e)
+        {
+            selectedDriverId = int.Parse(e.Value?.ToString() ?? "0");
+            message = $"select driver {selectedDriverId}";
+        }
 
     private async Task ConfirmAssignDriver()
     {
