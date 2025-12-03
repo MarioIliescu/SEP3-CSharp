@@ -11,8 +11,11 @@
 @inject AuthenticationStateProvider AuthProvider
 
 @attribute [Authorize]
-
 <h2>Assign Job</h2>
+
+<AuthorizeView>
+    <Authorized>
+
 
 @if (!string.IsNullOrWhiteSpace(message))
 {
@@ -72,6 +75,12 @@ else
         }
     </div>
 }
+    </Authorized>
+
+    <NotAuthorized>
+        <h3>Access denied — dispatchers only.</h3>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private List<JobDto>? jobs;
