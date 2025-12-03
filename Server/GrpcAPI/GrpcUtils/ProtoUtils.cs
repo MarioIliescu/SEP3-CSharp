@@ -361,4 +361,32 @@ public static class ProtoUtils
                 throw new InvalidEnumArgumentException("Unknown role");
         }
     }
+
+    public static RecruitDriverProto ParseRecruitDriverToProto(RecruitDriver recruitDriver)
+    {
+        return new RecruitDriverProto()
+        {
+            Driver = ParseDriverToProto(recruitDriver.Driver),
+            Dispatcher = ParseDispatcherToProto(recruitDriver.Dispatcher)
+        };
+    }
+
+    public static RequestProto ParseRecruitDriverRequest(ActionTypeProto action, RecruitDriver recruitDriver)
+    {
+        return new RequestProto()
+        {
+            Handler = HandlerTypeProto.HandlerRecruit,
+            Action = action,
+            Payload = Any.Pack(ParseRecruitDriverToProto(recruitDriver))
+        };
+    }
+
+    public static RecruitDriver ParseFromProtoToRecruitDriver(RecruitDriverProto proto)
+    {
+        return new RecruitDriver()
+        {
+            Driver = ParseFromProtoToDriver(proto.Driver),
+            Dispatcher = ParseFromProtoToDispatcher(proto.Dispatcher)
+        };
+    }
 }
