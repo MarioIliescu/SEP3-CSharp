@@ -20,7 +20,7 @@ public class DriverController : ControllerBase
     
     
     [HttpPost]
-    public async Task<IActionResult> CreateDriver([FromBody] DriverDto dto)
+    public async Task<IActionResult> CreateDriver([FromBody] CreateDriverDto dto)
     {
         try
         {
@@ -32,14 +32,14 @@ public class DriverController : ControllerBase
                 .SetPassword(PasswordHasher.Hash(dto.Password))
                 .SetMcNumber(dto.McNumber)
                 .SetTrailerType(dto.TrailerType)
-                .SetStatus(dto.Status)
+                .SetStatus(dto.StatusType)
                 .SetCompanyRole(dto.CompanyRole)
                 .SetLocationState(dto.LocationState)
-                .SetLocationZip(dto.LocationZip)
+                .SetLocationZip(dto.LocationZipCode)
                 .Build();
-
-           var created = await _driverService.CreateAsync(driver);
-
+            
+            var created = await _driverService.CreateAsync(driver);
+            
             return Created();
         }
         catch (ArgumentException ex)
