@@ -6,8 +6,8 @@
 @using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@inject JobServiceClient JobServiceClient
-@inject DriverServiceClient DriverServiceClient
+@inject IJobService JobServiceClient
+@inject IDriverService DriverServiceClient
 @inject AuthenticationStateProvider AuthProvider
 
 @attribute [Authorize]
