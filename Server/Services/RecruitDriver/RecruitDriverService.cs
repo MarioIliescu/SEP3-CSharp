@@ -1,32 +1,34 @@
-﻿using ApiContracts.Enums;
+using ApiContracts.Enums;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PersistanceContracts;
-using Entities.Driver;
+using Repositories;
+
 namespace Services.RecruitDriver;
-
-
-public class RecruitDriverService : IRecruitDriverService
+using Entities;
+public class RecruitDriverService(
+    ILogger<RecruitDriverService> logger,
+    [FromKeyedServices(HandlerType.Recruit)] IFleetPersistanceHandler handler)
+    : IRecruitDriverService
 {
-    private readonly IFleetPersistanceHandler _handler;
-    
-    public RecruitDriverService(
-        [FromKeyedServices(HandlerType.Job)] IFleetPersistanceHandler handler)
+    private readonly ILogger<RecruitDriverService> _logger = logger;
+    private readonly IFleetPersistanceHandler _handler = handler;
+
+    public async Task<Driver> RecruitDriverAsync(Driver driver, Dispatcher dispatcher)
     {
-        _handler = handler;
+        throw new NotImplementedException();
     }
 
-    public Task<Driver> RecruitDriverAsync(Driver driver, Dispatcher dispatcher)
+    public async Task FireDriverAsync(Driver driver, Dispatcher dispatcher)
     {
         throw new NotImplementedException();
     }
-    public Task FireDriverAsync(Driver driver, Dispatcher dispatcher)
-    {
-        throw new NotImplementedException();
-    }
+
     public IQueryable<Driver> GetDispatcherDriversListAsync(int id)
     {
         throw new NotImplementedException();
     }
+
     public IQueryable<Driver> GetDriverListWoDispatcherAsync()
     {
         throw new NotImplementedException();
