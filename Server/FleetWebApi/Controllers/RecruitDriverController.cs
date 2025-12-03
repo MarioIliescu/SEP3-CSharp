@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Services.Driver;
 using Services.RecruitDriver;
 
 namespace FleetWebApi.Controllers;
@@ -15,6 +14,5 @@ public class RecruitDriverController : ControllerBase
     {
         _recruitDriverService = recruitDriverService;
     }
-    
     
 }
