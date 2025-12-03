@@ -183,8 +183,9 @@
             var allJobs = await JobService.GetAllAsync();
 
             jobs = allJobs
-                .Where(j => j.DispatcherId == dispatcherId)
+                .Where(j => j.DispatcherId == dispatcherId && j.CurrentStatus == JobStatus.Available)
                 .ToList();
+
 
             message = "";
         }
