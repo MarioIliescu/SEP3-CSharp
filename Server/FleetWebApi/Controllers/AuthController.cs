@@ -118,9 +118,9 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
         var id = int.Parse(claims.FindFirst("Id")?.Value ?? "0");
         var role = Enum.TryParse<UserRole>(claims.FindFirst("Role")?.Value, out var parsedRole)
             ? parsedRole
-            : UserRole.DRIVER;
+            : UserRole.Driver;
 
-        if (role == UserRole.DRIVER)
+        if (role == UserRole.Driver)
         {
             return new Driver.Builder()
                 .SetId(id)
@@ -130,8 +130,8 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
                 .SetPhoneNumber(claims.FindFirst("PhoneNumber")?.Value ?? "")
                 .SetCompanyRole(Enum.TryParse<DriverCompanyRole>(claims.FindFirst("CompanyRole")?.Value, out var cr) ? cr : DriverCompanyRole.Driver)
                 .SetMcNumber(claims.FindFirst("CompanyMC")?.Value ?? "")
-                .SetStatus(Enum.TryParse<DriverStatus>(claims.FindFirst("DriverStatus")?.Value, out var ds) ? ds : DriverStatus.available)
-                .SetTrailerType(Enum.TryParse<TrailerType>(claims.FindFirst("TrailerType")?.Value, out var tt) ? tt : TrailerType.dry_van)
+                .SetStatus(Enum.TryParse<DriverStatus>(claims.FindFirst("DriverStatus")?.Value, out var ds) ? ds : DriverStatus.Available)
+                .SetTrailerType(Enum.TryParse<TrailerType>(claims.FindFirst("TrailerType")?.Value, out var tt) ? tt : TrailerType.Dry_van)
                 .SetLocationState(claims.FindFirst("Location")?.Value ?? "")
                 .SetLocationZip(int.Parse(claims.FindFirst("LocationZip")?.Value ?? "35010"))
                 .Build();
