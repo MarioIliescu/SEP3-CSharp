@@ -37,4 +37,14 @@ public class JobServiceClient : IJobService
         var response = await _http.DeleteAsync($"job/{id}");
         response.EnsureSuccessStatusCode();
     }
+
+    public async Task AssignDriverDispatcherAsync(int id, int driverId, int dispatcherId)
+    {
+        UpdateAsync(new UpdateJobDto
+        {
+            Id = id,
+            DriverId = driverId,
+            DispatcherId = dispatcherId
+        });
+    }
 }

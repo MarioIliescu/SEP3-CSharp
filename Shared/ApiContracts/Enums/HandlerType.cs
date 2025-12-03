@@ -7,5 +7,6 @@ public enum HandlerType
     Driver,
     Dispatcher,
     Auth,
-    Job
+    Job,
+    Recruit
 }
