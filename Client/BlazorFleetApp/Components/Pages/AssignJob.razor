@@ -106,11 +106,13 @@ else
     private void SelectJob(int jobId)
     {
         assigningJobId = jobId;
+        selectedDriverId = 0;
         message = "";
         validationErrors.Clear();
     }
     private void SelectDriver(int driverId)
     {
+        message = $"select driver{driverId}";
         selectedDriverId = driverId;
     }
 
