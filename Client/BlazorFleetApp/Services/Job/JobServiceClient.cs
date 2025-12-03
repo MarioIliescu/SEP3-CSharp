@@ -1,4 +1,5 @@
 ﻿using ApiContracts.Dtos.Job;
+using ApiContracts.Enums;
 
 namespace BlazorFleetApp.Services.Job;
 
@@ -44,7 +45,8 @@ public class JobServiceClient : IJobService
         {
             Id = id,
             DriverId = driverId,
-            DispatcherId = dispatcherId
+            DispatcherId = dispatcherId,
+            CurrentStatus = JobStatus.Assigned
         });
     }
 }
