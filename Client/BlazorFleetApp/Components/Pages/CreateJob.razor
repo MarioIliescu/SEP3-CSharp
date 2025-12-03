@@ -11,6 +11,9 @@
 @inject AuthenticationStateProvider AuthProvider
 
 @attribute [Authorize]
+
+<link rel="stylesheet" href="css/createJob.css">
+
 <h2>Create Job</h2>
 
 <AuthorizeView>
@@ -18,55 +21,54 @@
 
         @if (!string.IsNullOrWhiteSpace(message))
         {
-            <div class="alert alert-success">@message</div>
+            <div class="alert alert-success text-center">@message</div>
         }
-            
         else
         {
-            <div class="job-form">
+            <div class="job-form-container">
+                <div class="job-form">
 
-                <div class="error-popup">
-                    @foreach (var e in validationErrors)
-                    {
-                        <p>@e</p>
-                    }
-                </div>
+                    <div class="error-popup">
+                        @foreach (var e in validationErrors)
+                        {
+                            <p>@e</p>
+                        }
+                    </div>
 
-                <input type="text" placeholder="Title" @bind="title" />
+                    <input type="text" placeholder="Title" @bind="title" />
 
-                <textarea placeholder="Description"
-                          maxlength="300"
-                          @bind="description"></textarea>
+                    <textarea placeholder="Description"
+                              maxlength="300"
+                              @bind="description"></textarea>
 
-                <input type="number" placeholder="Loaded Miles" @bind="loadedMiles" />
-                <input type="number" placeholder="Weight of Cargo" @bind="weight" />
+                    <input type="number" placeholder="Loaded Miles" @bind="loadedMiles" />
+                    <input type="number" placeholder="Weight of Cargo" @bind="weight" />
 
-                <select @bind="trailerType">
-                    @foreach (TrailerType t in Enum.GetValues(typeof(TrailerType)))
-                    {
-                        <option value="@t">@t</option>
-                    }
-                </select>
+                    <select @bind="trailerType">
+                        @foreach (TrailerType t in Enum.GetValues(typeof(TrailerType)))
+                        {
+                            <option value="@t">@t</option>
+                        }
+                    </select>
 
-                <input type="number" placeholder="Total Price" @bind="totalPrice" />
+                    <input type="number" placeholder="Total Price" @bind="totalPrice" />
 
-                <input type="text" placeholder="Cargo Info" maxlength="30" @bind="cargoInfo" />
+                    <input type="text" placeholder="Cargo Info" maxlength="30" @bind="cargoInfo" />
 
-                <label>Pickup Time:</label>
-                <input type="datetime-local" @bind="pickupTime" />
-                
-                <label>Delivery Time:</label>
-                <input type="datetime-local" @bind="deliveryTime" />
+                    <label>Pickup Time:</label>
+                    <input type="datetime-local" @bind="pickupTime" />
 
-                <div class="location-fields">
+                    <label>Delivery Time:</label>
+                    <input type="datetime-local" @bind="deliveryTime" />
+
                     <input type="text" placeholder="Pickup State (2 letters)" maxlength="2" @bind="pickupState" />
                     <input type="number" placeholder="Pickup ZIP" @bind="pickupZip" />
 
                     <input type="text" placeholder="Drop State (2 letters)" maxlength="2" @bind="dropState" />
                     <input type="number" placeholder="Drop ZIP" @bind="dropZip" />
-                </div>
 
-                <button @onclick="CreateJobBlazor">Create Job</button>
+                    <button class="btn-create" @onclick="CreateJobBlazor">Create Job</button>
+                </div>
             </div>
         }
 
@@ -76,6 +78,7 @@
         <h3>Access denied — dispatchers only.</h3>
     </NotAuthorized>
 </AuthorizeView>
+
 
 
 @code {
