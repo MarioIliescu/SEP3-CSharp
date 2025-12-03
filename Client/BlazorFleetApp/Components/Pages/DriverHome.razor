@@ -1,0 +1,42 @@
+﻿@page "/driver-home"
+@using ApiContracts.Enums
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+
+<PageTitle>Home</PageTitle>
+<h1>
+    Hello, @firstName @lastName <br/>
+    @if (userRole != null)
+    {
+        @userRole
+    }
+</h1>
+Welcome to Fleet Forward.
+@code
+{
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private string firstName = "User";
+    private string lastName = "User";
+    private UserRole? userRole;
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                firstName = user.Claims.FirstOrDefault(c => c.Type == "FirstName")?.Value ?? "User";
+                lastName = user.Claims.FirstOrDefault(c => c.Type == "LastName")?.Value ?? "user";
+                var roleClaim = user.FindFirst("Role")?.Value;
+                if (!string.IsNullOrEmpty(roleClaim) &&
+                    Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole))
+                {
+                    userRole = parsedRole;
+                }
+            }
+        }
+    }
+}
