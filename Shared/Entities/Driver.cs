@@ -59,8 +59,7 @@ public class Driver : User
         {
               if (zip <= 0 || zip >= 100000)
                 throw new ArgumentException("ZIP code must be between 1 and 99999.");
-
-            _zip = zip;
+              _zip = zip;
             return this;
         }
         public new Builder SetCompanyRole(DriverCompanyRole role)
