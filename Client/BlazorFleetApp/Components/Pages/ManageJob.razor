@@ -1,0 +1,277 @@
+﻿@page "/manage-job"
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+@inject IJobService JobService
+
+@using ApiContracts.Dtos.Job
+@using ApiContracts.Enums
+
+<h3 class="mb-3">Manage Jobs</h3>
+
+<div class="row">
+
+    <div class="col-4">
+        <button class="btn btn-primary w-100 mb-2" @onclick="LoadJobsAsync">Load Jobs</button>
+
+        @if (jobs.Count == 0)
+        {
+            <p>No jobs found.</p>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var job in jobs)
+                {
+                    <li class="list-group-item list-group-item-action"
+                        style="cursor:pointer"
+                        @onclick="() => SelectJob(job)">
+                        <strong>@job.Title</strong><br />
+                        Miles: @job.loadedMiles<br />
+                        Cargo: @job.CargoInfo<br />
+                        Pickup: @job.PickupTime.ToShortDateString()<br />
+                        Delivery: @job.DeliveryTime.ToShortDateString()<br />
+                        @job.PickupLocationState → @job.DropLocationState
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <div class="col-8">
+
+        @if (selectedJob == null)
+        {
+            <p>Select a job to edit.</p>
+        }
+        else
+        {
+            <EditForm Model="@this" OnValidSubmit="SaveChangesAsync">
+                <div class="row">
+
+                    <div class="col-6">
+                        <label>Title</label>
+                        <input class="form-control" @bind="title" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Description</label>
+                        <input class="form-control" @bind="description" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Loaded Miles</label>
+                        <input type="number" class="form-control" @bind="loadedMiles" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Weight</label>
+                        <input type="number" class="form-control" @bind="weight" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Cargo Info</label>
+                        <input class="form-control" @bind="cargoInfo" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Total Price</label>
+                        <input type="number" class="form-control" @bind="totalPrice" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Trailer Type</label>
+                        <select class="form-control" @bind="trailerType">
+                            @foreach (var t in Enum.GetValues<TrailerType>())
+                            {
+                                <option value="@t">@t</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-6">
+                        <label>Pickup Time</label>
+                        <input type="datetime-local" class="form-control" @bind="pickupTime" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Delivery Time</label>
+                        <input type="datetime-local" class="form-control" @bind="deliveryTime" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Pickup State</label>
+                        <input class="form-control" @bind="pickupState" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Pickup Zip</label>
+                        <input type="number" class="form-control" @bind="pickupZip" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Drop State</label>
+                        <input class="form-control" @bind="dropState" />
+                    </div>
+
+                    <div class="col-6">
+                        <label>Drop Zip</label>
+                        <input type="number" class="form-control" @bind="dropZip" />
+                    </div>
+
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                    <button type="button" class="btn btn-danger ms-2" @onclick="DeleteJobAsync">Delete Job</button>
+                </div>
+
+                <p class="mt-2 text-info">@message</p>
+            </EditForm>
+        }
+    </div>
+
+</div>
+
+@code {
+
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+
+    private List<JobDto> jobs = new();
+    private JobDto? selectedJob;
+
+    private int dispatcherId = 0;
+    private string message = "";
+
+    // Form fields
+    private string title = "";
+    private string description = "";
+    private int loadedMiles;
+    private int weight;
+    private TrailerType trailerType;
+    private int totalPrice;
+    private string cargoInfo = "";
+    private DateTime pickupTime;
+    private DateTime deliveryTime;
+    private string pickupState = "";
+    private int pickupZip;
+    private string dropState = "";
+    private int dropZip;
+    private int driverId = 0;
+    private JobStatus jobStatus = JobStatus.Available;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated ?? false)
+            {
+                dispatcherId = int.Parse(user.Claims.First(c => c.Type == "Id").Value);
+                await LoadJobsAsync();
+            }
+        }
+    }
+
+    private async Task LoadJobsAsync()
+    {
+        try
+        {
+            var allJobs = await JobService.GetAllAsync();
+
+            jobs = allJobs
+                .Where(j => j.DispatcherId == dispatcherId)
+                .ToList();
+
+            message = "";
+        }
+        catch (Exception ex)
+        {
+            message = "Error loading jobs: " + ex.Message;
+        }
+    }
+
+    private void SelectJob(JobDto job)
+    {
+        selectedJob = job;
+
+        title = job.Title;
+        description = job.Description;
+        loadedMiles = job.loadedMiles;
+        weight = job.weightOfCargo;
+        trailerType = job.TypeOfTrailerNeeded;
+        cargoInfo = job.CargoInfo;
+        totalPrice = job.TotalPrice;
+
+        pickupTime = job.PickupTime;
+        deliveryTime = job.DeliveryTime;
+
+        pickupState = job.PickupLocationState;
+        pickupZip = job.PickupLocationZip;
+        dropState = job.DropLocationState;
+        dropZip = job.DropLocationZip;
+
+        message = "";
+    }
+
+    private async Task SaveChangesAsync()
+    {
+        if (selectedJob == null)
+            return;
+
+        try
+        {
+            var update = new UpdateJobDto()
+            {
+                Id = selectedJob.Id,
+                DispatcherId = dispatcherId,
+                DriverId = driverId,
+                Title = title,
+                Description = description,
+                LoadedMiles = loadedMiles,
+                WeightOfCargo = weight,
+                TypeOfTrailerNeeded = trailerType,
+                TotalPrice = totalPrice,
+                CargoInfo = cargoInfo,
+                PickupTime = pickupTime,
+                DeliveryTime = deliveryTime,
+                PickupLocationState = pickupState,
+                PickupLocationZip = pickupZip,
+                DropLocationState = dropState,
+                DropLocationZip = dropZip,
+                CurrentStatus = jobStatus
+            };
+
+            await JobService.UpdateAsync(update);
+
+            message = "Changes saved!";
+        }
+        catch (Exception ex)
+        {
+            message = "Error saving job: " + ex.Message;
+        }
+    }
+
+
+    private async Task DeleteJobAsync()
+    {
+        if (selectedJob == null)
+            return;
+
+        try
+        {
+            await JobService.DeleteAsync(selectedJob.Id);
+            message = "Job deleted.";
+
+            selectedJob = null;
+            await LoadJobsAsync();
+        }
+        catch (Exception ex)
+        {
+            message = "Error deleting job: " + ex.Message;
+        }
+    }
+}

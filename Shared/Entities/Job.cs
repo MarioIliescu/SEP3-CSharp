@@ -36,8 +36,8 @@ public class Job
     // ------------------------- BUILDER -------------------------
     public class Builder
     {
-        private int _jobId = 1;
-        private int _dispatcherId = 2;
+        private int _jobId = 0;
+        private int _dispatcherId = 0;
         private int _driverId = 0;
 
         private string _title = "Title";
@@ -73,6 +73,7 @@ public class Job
             if (id <= 0)
                 throw new ArgumentException("Dispatcher ID must be positive.");
             _dispatcherId = id;
+            Console.WriteLine($"Dispatcher ID set to {_dispatcherId}");
             return this;
         }
 

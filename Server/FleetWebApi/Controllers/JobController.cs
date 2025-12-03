@@ -96,6 +96,47 @@ public class JobController : ControllerBase
         return NoContent();
     }
     
+    // PUT /job
+    [HttpPut]
+    public async Task<ActionResult> UpdateJobAsync([FromBody] UpdateJobDto dto)
+    {
+        try
+        {
+            var existingJob = await _jobService.GetSingleAsync(dto.Id);
+            if (existingJob == null)
+            {
+                return NotFound($"Job with ID {dto.Id} not found.");
+            }
+
+            var updatedJob = new Job.Builder()
+                .SetId(dto.Id)
+                .SetDispatcherId(dto.DispatcherId)
+                .SetDriverId(dto.DriverId)
+                .SetTitle(dto.Title)
+                .SetDescription(dto.Description)
+                .SetLoadedMiles(dto.LoadedMiles)
+                .SetWeight(dto.WeightOfCargo)
+                .SetTrailerType(dto.TypeOfTrailerNeeded)
+                .SetTotalPrice(dto.TotalPrice)
+                .SetCargoInfo(dto.CargoInfo)
+                .SetPickupTime(dto.PickupTime)
+                .SetDeliveryTime(dto.DeliveryTime)
+                .SetPickupState(dto.PickupLocationState)
+                .SetPickupZip(dto.PickupLocationZip)
+                .SetDropState(dto.DropLocationState)
+                .SetDropZip(dto.DropLocationZip)
+                .SetStatus(dto.CurrentStatus)
+                .Build();
+
+            await _jobService.UpdateAsync(updatedJob);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpGet]
     public async Task<ActionResult> GetAllJobs()
     {
