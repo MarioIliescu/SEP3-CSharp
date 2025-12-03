@@ -4,8 +4,8 @@ namespace Repositories;
 
 public interface IRecruitDriverRepository
 {
-    Driver RecruitDriver(Driver driver, Dispatcher dispatcher);
-    void FireDriver(Driver driver, Dispatcher dispatcher);
-    IQueryable<Driver> GetDispatcherDriversList(int id);
-    IQueryable<Driver> GetDriverListWoDispatcher();
+    Driver RecruitDriverAsync(Driver driver, Dispatcher dispatcher);
+    void FireDriverAsync(Driver driver, Dispatcher dispatcher);
+    IQueryable<Driver> GetDispatcherDriversListAsync(int id);
+    IQueryable<Driver> GetDriverListWoDispatcherAsync();
 }
