@@ -1,11 +1,11 @@
 ﻿@page "/create-job"
-@using System.Security.Claims
+@using System.Text.RegularExpressions
 @using ApiContracts.Enums
 @using ApiContracts.Dtos.Job
-@using System.Text.RegularExpressions
 @using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+
 @inject NavigationManager Nav
 @inject IJobService JobService
 @inject AuthenticationStateProvider AuthProvider
@@ -14,76 +14,99 @@
 
 <link rel="stylesheet" href="css/createJob.css">
 
-<h2>Create Job</h2>
+<div class="logo-container">
+    <img src="images/LogoDrive.png" alt="logo">
+</div>
 
-<AuthorizeView>
-    <Authorized>
+<h2 class="page-title">CREATE A NEW JOB</h2>
 
-        @if (!string.IsNullOrWhiteSpace(message))
+<div class="form-card">
+
+    <div class="message-panel @successClass">
+        @foreach (var e in validationErrors.Take(5))
         {
-            <div class="alert alert-success text-center">@message</div>
+            <p>@e</p>
         }
-        else
+        @if (validationErrors.Count > 5)
         {
-            <div class="job-form-container">
-                <div class="job-form">
-
-                    <div class="error-popup">
-                        @foreach (var e in validationErrors)
-                        {
-                            <p>@e</p>
-                        }
-                    </div>
-
-                    <input type="text" placeholder="Title" @bind="title" />
-
-                    <textarea placeholder="Description"
-                              maxlength="300"
-                              @bind="description"></textarea>
-
-                    <input type="number" placeholder="Loaded Miles" @bind="loadedMiles" />
-                    <input type="number" placeholder="Weight of Cargo" @bind="weight" />
-
-                    <select @bind="trailerType">
-                        @foreach (TrailerType t in Enum.GetValues(typeof(TrailerType)))
-                        {
-                            <option value="@t">@t</option>
-                        }
-                    </select>
-
-                    <input type="number" placeholder="Total Price" @bind="totalPrice" />
-
-                    <input type="text" placeholder="Cargo Info" maxlength="30" @bind="cargoInfo" />
-
-                    <label>Pickup Time:</label>
-                    <input type="datetime-local" @bind="pickupTime" />
-
-                    <label>Delivery Time:</label>
-                    <input type="datetime-local" @bind="deliveryTime" />
-
-                    <input type="text" placeholder="Pickup State (2 letters)" maxlength="2" @bind="pickupState" />
-                    <input type="number" placeholder="Pickup ZIP" @bind="pickupZip" />
-
-                    <input type="text" placeholder="Drop State (2 letters)" maxlength="2" @bind="dropState" />
-                    <input type="number" placeholder="Drop ZIP" @bind="dropZip" />
-
-                    <button class="btn-create" @onclick="CreateJobBlazor">Create Job</button>
-                </div>
-            </div>
+            <p>...</p>
         }
+    </div>
 
-    </Authorized>
+    <label class="form-label">Job Title</label>
+    <input class="form-input" type="text" placeholder="Title" @bind="title" />
 
-    <NotAuthorized>
-        <h3>Access denied — dispatchers only.</h3>
-    </NotAuthorized>
-</AuthorizeView>
+    <label class="form-label">Description</label>
+    <textarea class="form-textarea"
+              placeholder="Description (max 300 chars)"
+              maxlength="300"
+              @bind="description"></textarea>
 
+    <div class="two-column">
+        <div class="column">
+            <label class="form-label">Loaded Miles</label>
+            <input class="form-input" type="number" placeholder="Loaded Miles" @bind="loadedMiles" />
+        </div>
 
+        <div class="column">
+            <label class="form-label">Cargo Weight (lbs)</label>
+            <input class="form-input" type="number" placeholder="Weight" @bind="weight" />
+        </div>
+    </div>
+
+    <label class="form-label">Trailer Type</label>
+    <select class="form-input" @bind="trailerType">
+        @foreach (TrailerType t in Enum.GetValues(typeof(TrailerType)))
+        {
+            <option value="@t">@t</option>
+        }
+    </select>
+
+    <label class="form-label">Total Price ($)</label>
+    <input class="form-input" type="number" placeholder="Total Price" @bind="totalPrice" />
+
+    <label class="form-label">Cargo Info</label>
+    <input class="form-input" type="text" placeholder="Short cargo description" maxlength="30" @bind="cargoInfo" />
+
+    <label class="form-label">Pickup Time</label>
+    <input class="form-input" type="datetime-local" @bind="pickupTime" />
+
+    <label class="form-label">Delivery Time</label>
+    <input class="form-input" type="datetime-local" @bind="deliveryTime" />
+
+    <label class="form-label">Pickup Location</label>
+    <div class="two-column">
+        <div class="column">
+            <label class="form-label small">State</label>
+            <input class="form-input" type="text" maxlength="2" placeholder="NY" @bind="pickupState" />
+        </div>
+
+        <div class="column">
+            <label class="form-label small">ZIP</label>
+            <input class="form-input" type="number" placeholder="ZIP" @bind="pickupZip" />
+        </div>
+    </div>
+
+    <!-- DROP LOCATION -->
+    <label class="form-label">Drop Location</label>
+    <div class="two-column">
+        <div class="column">
+            <label class="form-label small">State</label>
+            <input class="form-input" type="text" maxlength="2" placeholder="CA" @bind="dropState" />
+        </div>
+
+        <div class="column">
+            <label class="form-label small">ZIP</label>
+            <input class="form-input" type="number" placeholder="ZIP" @bind="dropZip" />
+        </div>
+    </div>
+
+    <button class="primary-button" @onclick="CreateJobBlazor">Create Job</button>
+</div>
 
 @code {
-
     private string message = "";
+    private string successClass = "";
 
     private string title = "";
     private string description = "";
@@ -93,8 +116,8 @@
     private int totalPrice;
     private string cargoInfo = "";
 
-    private DateTime pickupTime;
-    private DateTime deliveryTime;
+    private DateTime pickupTime = DateTime.Now;
+    private DateTime deliveryTime = DateTime.Now;
 
     private string pickupState = "";
     private int pickupZip;
@@ -104,11 +127,8 @@
     private int dispatcherId = 0;
 
     private List<string> validationErrors = new();
+
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
-
-
-
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -124,12 +144,10 @@
         }
     }
 
-
-
     private async Task CreateJobBlazor()
     {
         validationErrors.Clear();
-        message = "";
+        successClass = "";
 
         if (dispatcherId <= 0)
             validationErrors.Add("Dispatcher ID must be positive.");
@@ -160,21 +178,17 @@
 
         if (pickupTime <= DateTime.Now)
             validationErrors.Add("Pickup time must be in the future.");
+
         if (deliveryTime <= pickupTime)
             validationErrors.Add("Delivery time must be after pickup.");
 
-
-        if (string.IsNullOrWhiteSpace(pickupState))
-            validationErrors.Add("Pickup state is required.");
-        else if (!Regex.IsMatch(pickupState, "^[A-Za-z]{2}$"))
+        if (string.IsNullOrWhiteSpace(pickupState) || !Regex.IsMatch(pickupState, "^[A-Za-z]{2}$"))
             validationErrors.Add("Pickup state must be exactly 2 letters.");
 
         if (pickupZip <= 0 || pickupZip >= 100000)
             validationErrors.Add("Pickup ZIP must be between 1 and 99999.");
 
-        if (string.IsNullOrWhiteSpace(dropState))
-            validationErrors.Add("Drop state is required.");
-        else if (!Regex.IsMatch(dropState, "^[A-Za-z]{2}$"))
+        if (string.IsNullOrWhiteSpace(dropState) || !Regex.IsMatch(dropState, "^[A-Za-z]{2}$"))
             validationErrors.Add("Drop state must be exactly 2 letters.");
 
         if (dropZip <= 0 || dropZip >= 100000)
@@ -182,7 +196,7 @@
 
         if (validationErrors.Any())
             return;
-        
+
         var dto = new CreateJobDto(
             DispatcherId: dispatcherId,
             Title: title,
@@ -204,27 +218,32 @@
         {
             await JobService.CreateAsync(dto);
 
-            message = "Job created successfully!";
+            successClass = "success";
+            validationErrors.Add("Job created successfully!");
 
+            // Reset fields
             title = "";
             description = "";
             loadedMiles = 0;
             weight = 0;
             totalPrice = 0;
             cargoInfo = "";
+            pickupTime = DateTime.Now;
+            deliveryTime = DateTime.Now;
             pickupState = "";
             pickupZip = 0;
             dropState = "";
             dropZip = 0;
             trailerType = TrailerType.Dry_van;
-            pickupTime = default;
-            deliveryTime = default;
 
+            StateHasChanged();
+            await Task.Delay(3000);
 
+            successClass = "";
         }
         catch (Exception ex)
         {
-            validationErrors.Add($"Error creating job: {ex.Message}");
+            validationErrors.Add($"Error: {ex.Message}");
         }
     }
 }
