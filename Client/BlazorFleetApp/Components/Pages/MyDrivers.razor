@@ -1,0 +1,84 @@
+﻿@page "/MyDrivers"
+@using ApiContracts.Dtos.Driver
+@using ApiContracts.Dtos.Job
+@using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Job
+@using BlazorFleetApp.Services.RecruitDriver
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRecruitService RecruitService
+@inject RefreshDriversEvent RefreshDriversEvent
+@inject IJobService JobService
+
+<h3>My Drivers - Dispatcher</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (drivers == null || !drivers.Any())
+{
+    <p>No drivers available.</p>
+}
+else
+{
+    @foreach (var driver in drivers)
+    {
+        <DriverComponent InitialDriverId="id">
+            <Component>
+                <AssignJobComponent InitialDriverId="id" InitialDispatcherId="id" InitialJobs="jobs"></AssignJobComponent>
+            </Component>
+        </DriverComponent>
+    }
+}
+
+@code {
+    private List<DriverDto>? drivers;
+    private bool isLoading;
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private int id;
+    private List<JobDto> jobs = new List<JobDto>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
+            }
+        }
+        RefreshDriversEvent.OnDriversChanged += () => _ = RefreshDriversAsync();
+        await LoadDriversAsync();
+    }
+    
+    private async Task LoadDriversAsync()
+    {
+        isLoading = true;
+        await InvokeAsync(StateHasChanged);
+        drivers = await RecruitService.GetDrivers();
+
+        isLoading = false;
+        await InvokeAsync(StateHasChanged);
+
+        await LoadJobsAsync();
+    }
+
+    private async Task LoadJobsAsync()
+    {
+        var allJobs = await JobService.GetAllAsync();
+        foreach (var job in allJobs)
+        {
+            if (job.DispatcherId == id)
+            {
+                jobs.Add(job);
+            }
+        }
+    }
+    private async Task RefreshDriversAsync()
+    {
+        await LoadDriversAsync();
+    }
+}
