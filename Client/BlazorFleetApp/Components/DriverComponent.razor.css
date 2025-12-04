@@ -1,0 +1,104 @@
+/* General reset for elements */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Container for the whole box */
+.box-container {
+  width: 100%;
+  padding: 20px;
+  border-radius: 8px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for better contrast */
+}
+
+/* Flexbox for layout */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+
+/* Heading styles for names and company */
+h4 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #00aaff; /* Light blue for the names */
+  margin-bottom: 8px;
+}
+
+/* Placeholder and job status text */
+.placeholder-text {
+  font-size: 1rem;
+  color: #ccc; /* Lighter gray for placeholder text */
+  margin-top: 10px;
+}
+
+.status {
+  font-size: 1.1rem;
+  color: #66cc66; /* Green for available status */
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.status span {
+  margin-left: 5px;
+  font-size: 1rem;
+}
+
+.no-job {
+  font-size: 1rem;
+  color: #ffcc00; /* Yellow for No Job Assigned */
+  font-weight: bold;
+}
+
+/* Buttons and interactions */
+button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Styles for the job information section */
+.job-info {
+  background-color: #333;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.job-info h4 {
+  font-size: 1rem;
+  font-weight: normal;
+  color: #ffcc00;
+}
+
+/* Style for status badge (Available, etc.) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  background-color: #66cc66;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  color: white;
+  font-weight: bold;
+}
+
+.expired-status {
+  background-color: #ff5733; /* Red for expired or inactive */
+}

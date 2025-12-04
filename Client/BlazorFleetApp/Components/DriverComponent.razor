@@ -1,0 +1,73 @@
+@using System.Diagnostics
+@using ApiContracts.Company
+@using ApiContracts.Dtos.Driver
+@using ApiContracts.Dtos.Job
+@using BlazorFleetApp.Services
+@using BlazorFleetApp.Services.Driver
+@using BlazorFleetApp.Services.Job
+@inject IDriverService DriverService
+@inject ICompanyService CompanyService
+@inject IJobService JobService
+<div class="box-container">
+    <div class="row">
+        <div class="col-xl-3 col-md-6 col-sm-12">
+            <h4>@_driver?.FirstName @_driver?.LastName</h4>
+            <h4>@_company?.CompanyName</h4>
+            <DriverStatusComponent InitialDriverId="_driver?.Id"></DriverStatusComponent>
+        </div>
+        <div class="col-xl-3 col-md-6 col-sm-12">
+            @if (_job != null)
+            {
+                <h4>@_job.PickupLocationZip , @_job.PickupLocationState -> @_job.DropLocationZip , @_job.DropLocationState</h4>
+                <div>@_job.CurrentStatus</div>
+            }
+            else
+            {
+                <h4>NO JOB ASSIGNED AT THE MOMENT</h4>
+            }
+        </div>
+        <div class="col-xl-3 col-md-6 col-sm-12">
+            <!--TODO fix later -->
+            @* <div class="job-info"> *@
+            @*     <h4>@_job?.Title</h4> *@
+            @*     <button>Details</button> *@
+            @* </div> *@
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] public int? InitialDriverId { get; set; }
+    [Parameter] public DriverDto? InitialDriver { get; set; }
+    [Parameter] public JobDto? InitialJob { get; set; }
+    [Parameter] public int? InitialJobId { get; set; }
+    DriverDto? _driver;
+    CompanyDto? _company;
+    JobDto? _job;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDriverAsync();
+        await LoadCompanyAsync(_driver);
+        await LoadJobAsync();
+    }
+
+    private async Task LoadDriverAsync()
+    {
+        if (InitialDriverId != null) _driver = await DriverService.GetSingleAsync((int)InitialDriverId);
+        else if (InitialDriver != null) _driver = InitialDriver;
+    }
+
+    private async Task LoadCompanyAsync(DriverDto? driver)
+    {
+        if (driver != null) _company = await CompanyService.GetSingleAsync(driver.McNumber);
+    }
+
+    private async Task LoadJobAsync()
+    {
+        if (InitialJobId != null) _job = await JobService.GetSingleAsync((int)InitialJobId);
+        else if (InitialJob != null) _job = InitialJob;
+    }
+
+}

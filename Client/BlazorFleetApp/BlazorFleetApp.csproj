@@ -26,6 +26,9 @@
       <None Update="Components\DriverStatusComponent.razor.css">
         <DependentUpon>DriverStatusComponent.razor</DependentUpon>
       </None>
+      <None Update="Components\DriverComponent.razor.css">
+        <DependentUpon>DriverComponent.razor</DependentUpon>
+      </None>
     </ItemGroup>
 
 </Project>
