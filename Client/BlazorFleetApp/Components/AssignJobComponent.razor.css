@@ -1,0 +1,108 @@
+/* ========== JOB DETAILS CARD ========== */
+.job-details-card {
+  background: #ffffff;
+  padding: 22px;
+  border-radius: 14px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
+  text-align: left;
+  max-width: 550px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.job-details-card h4 {
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.job-details-card p {
+  margin: 6px 0;
+  font-size: 16px;
+}
+
+/* Fade-in animation when job is selected */
+.fade-in {
+  animation: fadeIn 0.35s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== PRIMARY BUTTON (MERGED + CLEANED) ========== */
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+
+  background: linear-gradient(135deg, #6ec3ff, #3a8dff);
+  color: #ffffff;
+
+  border: none;
+  border-radius: 999px; /* fully rounded pill */
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(58, 141, 255, 0.25);
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(58, 141, 255, 0.35);
+  background: linear-gradient(135deg, #7bd2ff, #4b97ff);
+}
+
+.primary-button:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(58, 141, 255, 0.2);
+}
+
+/* ========== ERROR MESSAGE ========== */
+.error-message {
+  margin-top: 10px;
+  color: #d9534f;
+  font-size: 15px;
+  text-align: left;
+}
+/* Center wrapper */
+.select-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* Modern select */
+.select-wrapper select {
+  width: 100%;
+  max-width: 320px;    /* centers nicely, prevents huge dropdown */
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 2px solid #0f6b78;
+  background: #e8f6f8;
+  color: #0f6b78;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  outline: none;
+  cursor: pointer;
+
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover & focus effects */
+.select-wrapper select:hover {
+  border-color: #0f8b94;
+}
+
+.select-wrapper select:focus {
+  border-color: #0f8b94;
+  box-shadow: 0 0 0 3px rgba(15, 139, 148, 0.25);
+}

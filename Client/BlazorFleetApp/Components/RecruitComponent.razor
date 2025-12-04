@@ -62,7 +62,7 @@
             {
                 await RecruitService.RecruitDriver(dto);
                 _errorMessage = "";
-                RefreshDriversEvent.NotifyDriversChanged();
+                await RefreshDriversEvent.NotifyDriversChangedAsync();
             }
             else
             {

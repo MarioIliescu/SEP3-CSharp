@@ -1,7 +1,10 @@
 ﻿@page "/driver-home"
+@using ApiContracts.Dtos.Job
 @using ApiContracts.Enums
+@using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@inject IJobService JobService
 @attribute [Authorize]
 
 <PageTitle>Home</PageTitle>
@@ -12,11 +15,6 @@
         @userRole
     }
 </h1>
-<DriverComponent InitialDriverId="id">
-    <Component>
-        <RecruitComponent InitialDriverId="id"></RecruitComponent>
-    </Component>
-</DriverComponent>
 Welcome to Fleet Forward.
 @code
 {
@@ -24,7 +22,7 @@ Welcome to Fleet Forward.
     private string firstName = "User";
     private string lastName = "User";
     private UserRole? userRole;
-    private int id;
+
     protected override async Task OnInitializedAsync()
     {
         if (State != null)
@@ -36,7 +34,6 @@ Welcome to Fleet Forward.
             {
                 firstName = user.Claims.FirstOrDefault(c => c.Type == "FirstName")?.Value ?? "User";
                 lastName = user.Claims.FirstOrDefault(c => c.Type == "LastName")?.Value ?? "user";
-                id = int.Parse( user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "21");
                 var roleClaim = user.FindFirst("Role")?.Value;
                 if (!string.IsNullOrEmpty(roleClaim) &&
                     Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole))

@@ -2,10 +2,16 @@ namespace BlazorFleetApp.Services.Events;
 
 public class RefreshDriversEvent
 {
-    public event Action? OnDriversChanged;
+    public event Func<Task>? OnDriversChanged;
 
-    public void NotifyDriversChanged()
+    public async Task NotifyDriversChangedAsync()
     {
-        OnDriversChanged?.Invoke();
+        if (OnDriversChanged != null)
+        {
+            foreach (var handler in OnDriversChanged.GetInvocationList())
+            {
+                await ((Func<Task>)handler)();
+            }
+        }
     }
 }
