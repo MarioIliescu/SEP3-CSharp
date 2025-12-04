@@ -43,6 +43,14 @@
         @if (userRole == UserRole.Dispatcher)
         {
             <div class="nav-item px-3">
+                <NavLink class="nav-link" href="manage-account-dispatcher">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Account
+                </NavLink>
+            </div>
+        }
+        @if (userRole == UserRole.Dispatcher)
+        {
+            <div class="nav-item px-3">
                 <NavLink class="nav-link" href="create-job">
                     <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Create Job
                 </NavLink>

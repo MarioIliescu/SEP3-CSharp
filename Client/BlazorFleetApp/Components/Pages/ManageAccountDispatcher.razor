@@ -1,6 +1,130 @@
 @page "/manage-account-dispatcher"
+@using ApiContracts.Dtos.Dispatcher
+@using ApiContracts.Enums
+@using BlazorFleetApp.Services.Auth
+@using BlazorFleetApp.Services.Dispatcher
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IDispatcherService DispatcherService
+@inject IAuthService AuthService
+@attribute [Authorize]
+
 <h3>Manage Account Dispatcher</h3>
 
-@code {
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div class="alert alert-success" role="alert">
+        @statusMessage
+    </div>
+}
 
+<div class="mb-3">
+    <label class="form-label">Email</label>
+    <InputText class="form-control" @bind-Value="email"/>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Phone Number</label>
+    <InputText class="form-control" @bind-Value="phoneNumber" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">First Name</label>
+    <InputText class="form-control" @bind-Value="firstName" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Last Name</label>
+    <InputText class="form-control" @bind-Value="lastName" />
+</div>
+<div class="mb-3">
+    <label class="form-label">Current rate</label>
+    <input class="form-control" type="number" step="0.01" placeholder="Current rate"
+           @bind="currentRate" />
+</div>
+<button class="btn btn-primary mt-3" @onclick="Save">
+    Save Changes
+</button>
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    
+    private DispatcherDto? dispatcher;
+    private string email = "";
+    private string phoneNumber = "";
+    private string firstName = "";
+    private string lastName = "";
+    private string statusMessage = "";
+    private int userId = 0;
+    private double currentRate = 0.0;
+    
+    
+    private async Task Save()
+    {
+        try
+        {
+            if (dispatcher == null)
+                return; 
+
+            var updated = dispatcher with
+            {
+                Email = email,
+                PhoneNumber = phoneNumber,
+                FirstName = firstName,
+                LastName = lastName,
+                Id =  userId,
+                CurrentRate = currentRate
+            };
+
+            await DispatcherService.UpdateAsync(updated);
+            //await AuthService.RefreshTokenAsync();
+            
+            dispatcher = await DispatcherService.GetSingleAsync(userId);
+
+            email = dispatcher.Email;
+            phoneNumber = dispatcher.PhoneNumber;
+            firstName = dispatcher.FirstName;
+            lastName = dispatcher.LastName;
+            currentRate = dispatcher.CurrentRate;
+
+            statusMessage = "Dispatcher information updated successfully!";
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            statusMessage = e.Message;
+        }
+
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDriverDataAsync();
+    }
+    private async Task LoadDriverDataAsync()
+    {
+        if (State == null)
+            return;
+        var authState = await State;
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated ?? false)
+        {
+            userId = user.FindFirst("Id")?.Value is string idStr && int.TryParse(idStr, out var id) ? id : 0;
+
+            if (userId > 0)
+            {
+                dispatcher = await DispatcherService.GetSingleAsync(userId);
+
+                if (dispatcher != null)
+                {
+                    email = dispatcher.Email;
+                    firstName = dispatcher.FirstName;
+                    lastName = dispatcher.LastName;
+                    phoneNumber = dispatcher.PhoneNumber;
+                    currentRate = dispatcher.CurrentRate;
+                }
+            }
+        }
+    }
 }

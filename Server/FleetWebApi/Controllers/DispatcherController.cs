@@ -44,6 +44,28 @@ public class DispatcherController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+    [HttpPut]
+    public async Task<IActionResult> UpdateDispatcherAsync(
+        [FromBody] DispatcherDto dto)
+    {
+        try
+        {
+            var dispatcher = new Dispatcher.Builder()
+                .SetId(dto.Id)
+                .SetFirstName(dto.FirstName)
+                .SetLastName(dto.LastName)
+                .SetEmail(dto.Email)
+                .SetPhoneNumber(dto.PhoneNumber)
+                .SetCurrentRate(dto.CurrentRate)
+                .Build();
+            await _dispatcherService.UpdateAsync(dispatcher);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
     
     [HttpGet("{id:int}")]
     public async Task<ActionResult<DispatcherDto>> GetDispatcherById(int id)
