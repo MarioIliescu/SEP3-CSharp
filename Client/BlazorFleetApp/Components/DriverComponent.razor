@@ -1,12 +1,15 @@
 @using ApiContracts.Company
+@implements IDisposable
 @using ApiContracts.Dtos.Driver
 @using ApiContracts.Dtos.Job
 @using BlazorFleetApp.Services
 @using BlazorFleetApp.Services.Driver
+@using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Job
 @inject IDriverService DriverService
 @inject ICompanyService CompanyService
 @inject IJobService JobService
+@inject RefreshDriversEvent RefreshDriversEvent
 <div class="box-container p-3">
     <div class="row g-4">
 
@@ -56,6 +59,7 @@
         await LoadDriverAsync();
         await LoadCompanyAsync(_driver);
         await LoadJobAsync();
+        RefreshDriversEvent.OnDriversChanged += RefreshDriversAsync;
     }
 
     private async Task LoadDriverAsync()
@@ -73,6 +77,17 @@
     {
         if (InitialJobId != null) _job = await JobService.GetSingleAsync((int)InitialJobId);
         else if (InitialJob != null) _job = InitialJob;
+    }
+
+    private async Task RefreshDriversAsync()
+    {
+        await LoadJobAsync();
+        await LoadDriverAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+    public void Dispose()
+    {
+        RefreshDriversEvent.OnDriversChanged -= RefreshDriversAsync;
     }
 
 }

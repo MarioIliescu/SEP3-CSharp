@@ -38,9 +38,12 @@
                     @selectedJob.PickupLocationState → @selectedJob.DropLocationState
                 </p>
 
-                <button class="primary-button" @onclick="AssignJobAsync">Assign Job</button>
+                <button class="primary-button" @onclick="AssignJobAsync">Assign
+                    Job
+                </button>
 
                 <div class="error-message">@errorMessage</div>
+                <div class="error-message">@message</div>
             </div>
         }
     </div>
@@ -56,6 +59,7 @@
     private List<JobDto?> jobs = new List<JobDto?>();
     private DispatcherDto? dispatcher;
     private string errorMessage = "";
+    private string message = "";
     private JobDto? selectedJob;
 
     protected override async Task OnInitializedAsync()
@@ -89,42 +93,67 @@
         {
             selectedJob = jobs.FirstOrDefault(x => x?.Id == id);
         }
+
         return InvokeAsync(StateHasChanged);
     }
+
     private async Task AssignJobAsync()
     {
-        try
+        if (driver?.Status == DriverStatus.Available)
         {
-            if (selectedJob != null)
+            try
             {
-                UpdateJobDto dto = new()
+                if (selectedJob != null)
                 {
-                    Title = selectedJob.Title,
-                    CargoInfo = selectedJob.CargoInfo,
-                    CurrentStatus = JobStatus.Assigned,
-                    DeliveryTime = selectedJob.DeliveryTime,
-                    Description = selectedJob.Description,
-                    DispatcherId = selectedJob.DispatcherId,
-                    DriverId = driver.Id,
-                    DropLocationState = selectedJob.DropLocationState,
-                    DropLocationZip = selectedJob.DropLocationZip,
-                    Id = selectedJob.Id,
-                    LoadedMiles = selectedJob.loadedMiles,
-                    WeightOfCargo = selectedJob.weightOfCargo,
-                    TypeOfTrailerNeeded = selectedJob.TypeOfTrailerNeeded,
-                    TotalPrice = selectedJob.TotalPrice,
-                    PickupTime = selectedJob.PickupTime,
-                    PickupLocationZip = selectedJob.PickupLocationZip,
-                    PickupLocationState = selectedJob.PickupLocationState,
-                };
-                await JobService.UpdateAsync(dto);
-                errorMessage = "";
-                RefreshDriversEvent.NotifyDriversChanged();
+                    UpdateJobDto dto = new()
+                    {
+                        Title = selectedJob.Title,
+                        CargoInfo = selectedJob.CargoInfo,
+                        CurrentStatus = JobStatus.Assigned,
+                        DeliveryTime = selectedJob.DeliveryTime,
+                        Description = selectedJob.Description,
+                        DispatcherId = selectedJob.DispatcherId,
+                        DriverId = driver.Id,
+                        DropLocationState = selectedJob.DropLocationState,
+                        DropLocationZip = selectedJob.DropLocationZip,
+                        Id = selectedJob.Id,
+                        LoadedMiles = selectedJob.loadedMiles,
+                        WeightOfCargo = selectedJob.weightOfCargo,
+                        TypeOfTrailerNeeded = selectedJob.TypeOfTrailerNeeded,
+                        TotalPrice = selectedJob.TotalPrice,
+                        PickupTime = selectedJob.PickupTime,
+                        PickupLocationZip = selectedJob.PickupLocationZip,
+                        PickupLocationState = selectedJob.PickupLocationState,
+                    };
+                    await JobService.UpdateAsync(dto);
+                    errorMessage = "";
+                    await ChangeStatusAsync(DriverStatus.Busy);
+                    message = "Job has been assigned successfully";
+                    selectedJob = null;
+                    await RefreshDriversEvent.NotifyDriversChangedAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                errorMessage = e.Message;
             }
         }
-        catch (Exception e)
+        else
         {
-            errorMessage = e.Message;
+            errorMessage = "Cannot assign a job to a busy or off duty driver";
         }
+    }
+    private async Task ChangeStatusAsync(DriverStatus newStatus)
+    {
+        if (driver == null) return;
+        driver = await DriverService.GetSingleAsync(driver.Id);
+        if (driver != null)
+        {
+            driver = driver with { Status = newStatus};
+            await DriverService.UpdateAsync(driver);
+        }
+
+        await LoadDriverAsync();
+        StateHasChanged();
     }
 }

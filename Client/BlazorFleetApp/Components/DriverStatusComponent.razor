@@ -1,10 +1,12 @@
 @using ApiContracts.Dtos.Driver
+@implements IDisposable
 @using Microsoft.AspNetCore.Components.Authorization
 @using ApiContracts.Enums
 @inject IDriverService DriverService
 @inject AuthenticationStateProvider AuthStateProvider
 @using BlazorFleetApp.Services.Driver
-
+@using BlazorFleetApp.Services.Events
+@inject RefreshDriversEvent RefreshDriversEvent
 @if (driver != null)
 {
     <div>
@@ -55,6 +57,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         AuthStateProvider.AuthenticationStateChanged += OnAuthChanged;
+        RefreshDriversEvent.OnDriversChanged += RefreshDriverAsync;
         await LoadDriverAsync();
     }
 
@@ -122,5 +125,20 @@ else
         await DriverService.UpdateAsync(driver);
         await LoadDriverAsync();
         StateHasChanged();
+    }
+    private async Task RefreshDriverAsync()
+    {
+        if (driver != null)
+        {
+            // Reload the driver from the service
+            driver = await DriverService.GetSingleAsync(driver.Id);
+            _status = driver.Status;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthChanged;
+        RefreshDriversEvent.OnDriversChanged -= RefreshDriverAsync;
     }
 }
