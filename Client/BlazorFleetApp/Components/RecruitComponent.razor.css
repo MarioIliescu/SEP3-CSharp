@@ -1,0 +1,54 @@
+/* Wrapper: stack button + error vertically */
+.recruit-button-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+  padding-left: 0; /* remove Bootstrap ps-0 conflicts */
+}
+
+/* Button styling */
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(180deg, #0f8b94 0%, #0b6b73 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+/* Hover / active effects */
+.primary-button:hover { transform: translateY(-2px); }
+.primary-button:active { transform: translateY(0); }
+
+/* Error message */
+.error-message {
+  display: block;
+  width: 100%;
+  color: #b32b2b;
+  font-size: 14px;
+  text-align: left;
+  line-height: 1.4;
+  word-wrap: break-word;
+  min-height: 18px;
+}
+
+
+/* Small screens: full-width button */
+@media (max-width: 480px) {
+  .primary-button {
+    width: 100%;
+  }
+  .error-message {
+    white-space: normal;
+  }
+}

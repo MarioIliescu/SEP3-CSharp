@@ -1,0 +1,72 @@
+@using ApiContracts.Dtos.Dispatcher
+@using ApiContracts.Dtos.Driver
+@using ApiContracts.Dtos.RecruitDriver
+@using BlazorFleetApp.Services.Dispatcher
+@using BlazorFleetApp.Services.Driver
+@using BlazorFleetApp.Services.RecruitDriver
+@inject IDriverService DriverService
+@inject IDispatcherService DispatcherService
+@inject IRecruitService RecruitService
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-3 d-none d-lg-block"></div>
+        <div class="col-lg-9 col-md-12 recruit-button-wrapper">
+            <button class="primary-button" @onclick="RecruitDriverAsync">Recruit Driver</button>
+            <span class="error-message">@(_errorMessage ?? "\u00A0")</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int? InitialDriverId { get; set; }
+    [Parameter] public int? InitialDispatcherId { get; set; }
+    [Parameter] public DriverDto? InitialDriver { get; set; }
+    [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
+    private DriverDto? _driver;
+    private DispatcherDto? _dispatcherDto;
+    private string _errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDriverAsync();
+        await LoadDispatcherAsync();
+    }
+
+    private async Task LoadDriverAsync()
+    {
+        if (InitialDriverId != null) _driver = await DriverService.GetSingleAsync((int)InitialDriverId);
+        else if (InitialDriver != null) _driver = InitialDriver;
+    }
+
+    private async Task LoadDispatcherAsync()
+    {
+        if (InitialDispatcherId != null) _dispatcherDto = await DispatcherService.GetSingleAsync((int)InitialDispatcherId);
+        else if (InitialDispatcher != null) _dispatcherDto = InitialDispatcher;
+    }
+
+    private async Task RecruitDriverAsync()
+    {
+        try
+        {
+            RecruitDriverDto? dto = null;
+            if (_dispatcherDto != null && _driver != null)
+            {
+                dto = new RecruitDriverDto(_driver.Id, _dispatcherDto.Id);
+            }
+
+            if (dto != null)
+            {
+                await RecruitService.RecruitDriver(dto);
+                _errorMessage = "";
+            }
+            else
+            {
+                _errorMessage = "Driver could not be found, try again later";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+}

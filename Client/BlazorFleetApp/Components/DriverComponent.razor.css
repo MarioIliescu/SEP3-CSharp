@@ -1,104 +1,104 @@
-/* General reset for elements */
+/* ===== RESET ===== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Container for the whole box */
+/* Page background (optional) */
+body {
+  background: #f5f7f8;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+  sans-serif;
+}
+
+/* ===== DRIVER ROW (CARD) ===== */
 .box-container {
   width: 100%;
-  padding: 20px;
-  border-radius: 8px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for better contrast */
+  padding: 16px 24px;
+  margin-bottom: 10px;
+
+  background: #f9fbfc;                /* light interior */
+  border-radius: 10px;
+  border: 3px solid #0f6b78;          /* teal border like screenshot */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+
+  /* this makes the whole thing feel like a single horizontal bar */
 }
 
-/* Flexbox for layout */
-.row {
+/* Flex layout for content */
+.box-container .row {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
 }
 
-
-/* Heading styles for names and company */
-h4 {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #00aaff; /* Light blue for the names */
-  margin-bottom: 8px;
-}
-
-/* Placeholder and job status text */
-.placeholder-text {
-  font-size: 1rem;
-  color: #ccc; /* Lighter gray for placeholder text */
-  margin-top: 10px;
-}
-
-.status {
-  font-size: 1.1rem;
-  color: #66cc66; /* Green for available status */
-  font-weight: bold;
+/* columns keep bootstrap widths but we tweak behaviour a bit */
+.box-container .col-xl-3,
+.box-container .col-md-6,
+.box-container .col-sm-12 {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.status span {
-  margin-left: 5px;
-  font-size: 1rem;
-}
+/* ===== TYPOGRAPHY ===== */
 
-.no-job {
-  font-size: 1rem;
-  color: #ffcc00; /* Yellow for No Job Assigned */
-  font-weight: bold;
-}
-
-/* Buttons and interactions */
-button {
-  background-color: #007bff;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-/* Styles for the job information section */
-.job-info {
-  background-color: #333;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 15px;
-}
-
-.job-info h4 {
-  font-size: 1rem;
-  font-weight: normal;
-  color: #ffcc00;
-}
-
-/* Style for status badge (Available, etc.) */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 10px;
-  background-color: #66cc66;
-  border-radius: 5px;
+.box-container h4 {
   font-size: 0.9rem;
-  color: white;
-  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #24333b;
 }
 
-.expired-status {
-  background-color: #ff5733; /* Red for expired or inactive */
+/* Driver name (first h4 in first column) */
+.box-container .col-xl-3:first-child h4:first-child {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
+
+/* Company name (second h4 in first column) */
+.box-container .col-xl-3:first-child h4:last-child {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #5d6a72;
+}
+
+/* Middle column (route / NO JOB ASSIGNED text) */
+.box-container .col-xl-3:nth-child(2) {
+  align-items: center;
+  text-align: center;
+}
+
+.box-container .col-xl-3:nth-child(2) h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Style for NO JOB ASSIGNED AT THE MOMENT */
+.box-container .col-xl-3:nth-child(2) {
+  color: #b04527; /* muted orange-red similar to “expired” tone */
+}
+
+/* Optional: style for the small status text under the route */
+.box-container .col-xl-3:nth-child(2) > div {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7a8a92;
+}
+
+/* Right column reserved for price/button later */
+.box-container .col-xl-3:nth-child(3) {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* You can later add price text/button here without changing layout */
+
+/* Remove old styles you no longer need
+   (status, job-info, generic button etc.) or keep them if you use them
+   elsewhere, but they’re not required for this look. */
