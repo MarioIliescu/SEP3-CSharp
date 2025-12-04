@@ -1,0 +1,68 @@
+﻿@page "/recruit-driver"
+@using ApiContracts.Dtos.Driver
+@using BlazorFleetApp.Services.Events
+@using Microsoft.AspNetCore.Components.Authorization
+@using Services.RecruitDriver
+@inject IRecruitService RecruitService
+@inject RefreshDriversEvent RefreshDriversEvent
+
+<h3>Recruit Driver - Dispatcher</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (drivers == null || !drivers.Any())
+{
+    <p>No drivers available.</p>
+}
+else
+{
+    @foreach (var driver in drivers)
+    {
+        <DriverComponent InitialDriver="driver">
+            <Component>
+                <RecruitComponent InitialDriver="driver" InitialDispatcherId="id"></RecruitComponent>
+            </Component>
+        </DriverComponent>
+    }
+}
+
+@code {
+    private List<DriverDto>? drivers;
+    private bool isLoading;
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private int id;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
+            }
+        }
+        RefreshDriversEvent.OnDriversChanged += () => _ = RefreshDriversAsync();
+        await LoadDriversAsync();
+    }
+
+
+    private async Task LoadDriversAsync()
+    {
+        isLoading = true;
+        await InvokeAsync(StateHasChanged);
+        drivers = await RecruitService.GetDrivers();
+
+        isLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RefreshDriversAsync()
+    {
+        await LoadDriversAsync();
+    }
+}

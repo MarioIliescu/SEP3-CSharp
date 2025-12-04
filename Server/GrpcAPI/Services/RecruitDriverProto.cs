@@ -32,10 +32,9 @@ public class RecruitDriverProto : IRecruitDriverRepository
             var response =
                 await _handler.SendRequestAsync(
                     ProtoUtils.ParseRecruitDriverRequest(ActionTypeProto.ActionCreate, payload));
-            Protos.RecruitDriverProto received = response.Payload.Unpack<Protos.RecruitDriverProto>();
-            Protos.DriverProto receivedDriver = received.Driver;
-            _logger.LogInformation($"Recruited driver {received.Driver.User.Id} for dispatcher {received.Dispatcher.User.Id}");
-            return await Task.FromResult(ProtoUtils.ParseFromProtoToDriver(receivedDriver));
+            DriverProto received = response.Payload.Unpack<DriverProto>();
+            _logger.LogInformation($"Recruited driver {received.User.Id}");
+            return await Task.FromResult(ProtoUtils.ParseFromProtoToDriver(received));
         }
         catch (Exception ex)
         {
