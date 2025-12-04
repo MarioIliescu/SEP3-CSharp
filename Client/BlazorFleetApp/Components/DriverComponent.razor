@@ -7,34 +7,38 @@
 @inject IDriverService DriverService
 @inject ICompanyService CompanyService
 @inject IJobService JobService
-<div class="box-container">
-    <div class="row">
+<div class="box-container p-3">
+    <div class="row g-4">
+
         <div class="col-xl-3 col-md-6 col-sm-12">
             <h4>@_driver?.FirstName @_driver?.LastName</h4>
             <h4>@_company?.CompanyName</h4>
+
             <DriverStatusComponent InitialDriverId="_driver?.Id"></DriverStatusComponent>
         </div>
+
         <div class="col-xl-3 col-md-6 col-sm-12">
             @if (_job != null)
             {
-                <h4>@_job.PickupLocationZip , @_job.PickupLocationState -> @_job.DropLocationZip , @_job.DropLocationState</h4>
-                <div>@_job.CurrentStatus</div>
+                <h4>@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
+                <div class="job-status">@_job.CurrentStatus</div>
             }
             else
             {
-                <h4>NO JOB ASSIGNED AT THE MOMENT</h4>
+                <h4 class="text-muted">NO JOB ASSIGNED AT THE MOMENT</h4>
             }
         </div>
-        <div class="col-xl-3 col-md-6 col-sm-12 ">
-            <div>
-                @if (Component != null)
-                {
-                    @Component
-                }
-            </div>
+
+        <div class="col-xl-3 col-md-6 col-sm-12">
+            @if (Component != null)
+            {
+                <div>@Component</div>
+            }
         </div>
+
     </div>
 </div>
+
 
 
 @code {

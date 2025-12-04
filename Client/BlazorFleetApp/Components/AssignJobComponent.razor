@@ -4,46 +4,44 @@
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Job
-
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
-@using BlazorFleetApp.Services.RecruitDriver
-@using Entities
 @inject IDriverService DriverService
 @inject IDispatcherService DispatcherService
-@inject IRecruitService RecruitService
 @inject IJobService JobService
 @inject RefreshDriversEvent RefreshDriversEvent
-<h3>AssignJobComponent</h3>
-
-
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-12">
+        <div class="col-12 select-wrapper">
             <select @onchange="OnJobSelectedObject">
                 <option value="">Select Job</option>
                 @foreach (var j in jobs)
                 {
-                    <option value="@j">@j?.Title</option>
+                    if (j != null)
+                    {
+                        <option value="@j.Id">@j.Title</option>
+                    }
                 }
             </select>
         </div>
         @if (selectedJob != null)
         {
-            <div class="col-12">
-                <span>@selectedJob.Title</span>
-                <span>@selectedJob.Description</span>
-                <span>@selectedJob.CargoInfo</span>
-                <span>@selectedJob.PickupLocationState, @selectedJob.DropLocationState</span>
-            </div>
-            <div class="col-lg-3 d-md-none d-lg-block"></div>
-            <div class="col-lg-6 col-md-12">
+            <div class=" col-12 job-details-card fade-in w-100">
+                <h4>@selectedJob.Title</h4>
+
+                <p>@selectedJob.Description</p>
+                <p><strong>Cargo:</strong> @selectedJob.CargoInfo</p>
+
+                <p>
+                    <strong>Route:</strong>
+                    @selectedJob.PickupLocationState → @selectedJob.DropLocationState
+                </p>
+
                 <button class="primary-button" @onclick="AssignJobAsync">Assign Job</button>
-                <br/>
-                @errorMessage
+
+                <div class="error-message">@errorMessage</div>
             </div>
-            <div class="col-lg-3 d-md-none d-lg-block"></div>
         }
     </div>
 </div>
@@ -55,7 +53,7 @@
     [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
     [Parameter] public List<JobDto?> InitialJobs { get; set; }
     private DriverDto? driver;
-    private List<JobDto?> jobs;
+    private List<JobDto?> jobs = new List<JobDto?>();
     private DispatcherDto? dispatcher;
     private string errorMessage = "";
     private JobDto? selectedJob;
@@ -81,14 +79,17 @@
 
     private async Task LoadJobsAsync()
     {
-          jobs = InitialJobs;
-          await Task.CompletedTask;
+        jobs = InitialJobs;
+        await Task.CompletedTask;
     }
 
-    private async Task OnJobSelectedObject(ChangeEventArgs e)
+    private Task OnJobSelectedObject(ChangeEventArgs e)
     {
-        selectedJob = e.Value as JobDto;
-        await InvokeAsync(StateHasChanged);
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            selectedJob = jobs.FirstOrDefault(x => x?.Id == id);
+        }
+        return InvokeAsync(StateHasChanged);
     }
     private async Task AssignJobAsync()
     {
