@@ -9,4 +9,5 @@ public interface IJobService
     public Task<JobDto?> GetSingleAsync(int id);
     public Task<List<JobDto>> GetAllAsync();
     public Task DeleteAsync(int id);
+    public Task AssignDriverDispatcherAsync(int id, int driverId, int dispatcherId);
 }

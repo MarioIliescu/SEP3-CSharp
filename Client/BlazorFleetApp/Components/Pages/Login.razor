@@ -67,12 +67,12 @@
     {
         switch (role)
         {
-           // case "DISPATCHER":
-                // NavMgr.NavigateTo("/dispatch-home");
-                //break;
-            //   case "DRIVER":
-                // NavMgr.NavigateTo("/driver-home");
-             //   break;
+            case "Dispatcher":
+                 NavMgr.NavigateTo("/dispatcher-home");
+                break;
+               case "Driver":
+                 NavMgr.NavigateTo("/driver-home");
+                break;
             default:
                 InvokeAsync(() => NavMgr.NavigateTo("/home")); 
                 break;

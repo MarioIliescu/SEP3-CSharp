@@ -1,37 +1,16 @@
-﻿@page "/home"
+@page "/home"
+@using ApiContracts.Enums
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @attribute [Authorize]
 
 <PageTitle>Home</PageTitle>
 <h1>
-    Hello, @firstName
-    <br/>
-    Company role @companyRole
-    <br/>
-    Company MC @companyName
-    <br/>
+    Hello, User
 </h1>
 Welcome to Fleet Forward.
 @code
 {
-    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     private string firstName = "User";
-    private string companyRole = "your company role";
-    private string companyName = "your company name";
-    protected override async Task OnInitializedAsync()
-    {
-        if (State != null)
-        {
-            var authState = await State;
-            var user = authState.User;
-
-            if (user?.Identity?.IsAuthenticated ?? false)
-            {
-                firstName = user.Claims.FirstOrDefault(c => c.Type == "FirstName")?.Value ?? "User";
-                companyRole = user.Claims.FirstOrDefault(c => c.Type == "CompanyRole")?.Value ?? "your company role";
-                companyName = user.Claims.FirstOrDefault(c => c.Type == "CompanyMC")?.Value ?? "your company";
-            }
-        }
-    }
+    private string lastName = "User";
 }

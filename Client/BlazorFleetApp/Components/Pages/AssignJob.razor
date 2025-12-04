@@ -6,13 +6,16 @@
 @using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@inject JobServiceClient JobServiceClient
-@inject DriverServiceClient DriverServiceClient
+@inject IJobService JobServiceClient
+@inject IDriverService DriverServiceClient
 @inject AuthenticationStateProvider AuthProvider
 
 @attribute [Authorize]
-
 <h2>Assign Job</h2>
+
+<AuthorizeView>
+    <Authorized>
+
 
 @if (!string.IsNullOrWhiteSpace(message))
 {
@@ -38,11 +41,10 @@ else
     <div class="job-card-list">
         @foreach (var job in jobs)
         {
-            <div class="job-card @(job.Id == assigningJobId ? "selected" : "")"
-                 @onclick="() => SelectJob(job.Id)">
-                <h4>@job.Title</h4>
-                <p>@job.PickupLocationState @job.PickupLocationZip → @job.DropLocationState @job.DropLocationZip</p>
-                <p>@job.PickupTime.ToString("MM/dd/yyyy HH:mm")</p>
+            <div class="job-card @(job.Id == assigningJobId ? "selected" : "")">
+                <h4 @onclick="() => SelectJob(job.Id)">@job.Title</h4>
+                <p @onclick="() => SelectJob(job.Id)">@job.PickupLocationState @job.PickupLocationZip → @job.DropLocationState @job.DropLocationZip</p>
+                <p @onclick="() => SelectJob(job.Id)">@job.PickupTime.ToString("MM/dd/yyyy HH:mm")</p>
 
                 @if (job.Id == assigningJobId)
                 {
@@ -55,8 +57,8 @@ else
                         <hr />
 
                         <label>Select Driver:</label>
-                        <select @bind="selectedDriverId">
-                            <option value="0">Select Driver</option>
+                        <select>
+                            <option value="0" @onchange="OnDriverChanged" @onclick:stopPropagation="true">Select Driver</option>
                             @foreach (var d in drivers)
                             {
                                 <option value="@d.Id">@d.FirstName @d.LastName</option>
@@ -72,6 +74,12 @@ else
         }
     </div>
 }
+    </Authorized>
+
+    <NotAuthorized>
+        <h3>Access denied — dispatchers only.</h3>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private List<JobDto>? jobs;
@@ -97,15 +105,16 @@ else
 
     private void SelectJob(int jobId)
     {
-        if (assigningJobId == jobId)
-            assigningJobId = 0;
-        else
-            assigningJobId = jobId;
-
+        assigningJobId = jobId;
         selectedDriverId = 0;
         message = "";
         validationErrors.Clear();
     }
+        private void OnDriverChanged(ChangeEventArgs e)
+        {
+            selectedDriverId = int.Parse(e.Value?.ToString() ?? "0");
+            message = $"select driver {selectedDriverId}";
+        }
 
     private async Task ConfirmAssignDriver()
     {
