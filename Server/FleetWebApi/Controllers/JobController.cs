@@ -42,8 +42,6 @@ public class JobController : ControllerBase
             var created = await _jobService.CreateAsync(job);
 
             return Created();
-
-
         }
         catch (ArgumentException ex)
         {

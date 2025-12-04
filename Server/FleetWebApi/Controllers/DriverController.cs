@@ -141,7 +141,4 @@ public class DriverController : ControllerBase
 
         return Ok(driversDto);
     }
-    
-    
-
 }
