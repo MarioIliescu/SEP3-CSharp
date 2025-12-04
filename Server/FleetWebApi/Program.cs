@@ -9,6 +9,7 @@ using PersistanceContracts;
 using PersistanceHandlersGrpc.AuthPersistance;
 using PersistanceHandlersGrpc.CompanyPersistance;
 using PersistanceHandlersGrpc.JobPersistance;
+using PersistanceHandlersGrpc.RecruitPersistance;
 using PersistanceHandlersGrpc.UserPersistance;
 using Repositories;
 using Services.Auth;
@@ -16,6 +17,7 @@ using Services.Company;
 using Services.Dispatcher;
 using Services.Driver;
 using Services.Job;
+using Services.RecruitDriver;
 
 var builder = WebApplication.CreateBuilder(args);
 //Add controllers to the container 
@@ -26,6 +28,7 @@ builder.Services.AddKeyedScoped<ICompanyRepository, CompanyServiceProto>(Handler
 builder.Services.AddKeyedScoped<IAuthRepository, AuthServiceProto>(HandlerType.Auth);
 builder.Services.AddKeyedScoped<IFleetPersistanceHandler, CompanyHandlerGrpc>(HandlerType.Company);
 builder.Services.AddKeyedScoped<IFleetPersistanceHandler, AuthHandlerGrpc>(HandlerType.Auth);
+builder.Services.AddKeyedScoped<IFleetPersistanceHandler, RecruitDriverHandlerGrpc>(HandlerType.Recruit);
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IDispatcherService, DispatcherService>();
@@ -35,9 +38,11 @@ builder.Services.AddKeyedScoped<IFleetPersistanceHandler, DispatcherHandlerGrpc>
 builder.Services.AddKeyedScoped<IFleetPersistanceHandler, JobHandlerGrpc>(HandlerType.Job);
 builder.Services.AddKeyedScoped<IDriverRepository, DriverServiceProto>(HandlerType.Driver);
 builder.Services.AddKeyedScoped<IDispatcherRepository, DispatcherServiceProto>(HandlerType.Dispatcher);
+builder.Services.AddKeyedScoped<IRecruitDriverRepository, RecruitDriverProto>(HandlerType.Recruit);
 builder.Services.AddKeyedScoped<IJobRepository, JobServiceProto>(
     HandlerType.Job);
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRecruitDriverService, RecruitDriverService>();
 builder.Services.AddSingleton<FleetMainGrpcHandler>(sp =>
 {
     var channel =

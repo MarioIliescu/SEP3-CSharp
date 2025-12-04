@@ -5,6 +5,7 @@ using BlazorFleetApp.Services.Auth;
 using BlazorFleetApp.Services.Dispatcher;
 using BlazorFleetApp.Services.Driver;
 using BlazorFleetApp.Services.Job;
+using BlazorFleetApp.Services.RecruitDriver;
 using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,7 @@ builder.Services.AddScoped<IDriverService, DriverServiceClient>();
 builder.Services.AddScoped<ICompanyService, CompanyServiceClient>();
 builder.Services.AddScoped<IDispatcherService, DispatcherServiceClient>();
 builder.Services.AddScoped<IJobService, JobServiceClient>();
+builder.Services.AddScoped<IRecruitService, RecruitService>();
 builder.Services.AddScoped<IAuthService, JwtAuthService>();
 if (builder.Environment.IsDevelopment())
 {
