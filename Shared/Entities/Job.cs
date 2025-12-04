@@ -32,8 +32,7 @@ public class Job
     public JobStatus Current_Status { get; private set; } = JobStatus.Available;
 
     public Job() { }
-
-    // ------------------------- BUILDER -------------------------
+    
     public class Builder
     {
         private int _jobId = 0;

@@ -1,53 +1,202 @@
-.job-form-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
+@font-face {
+  font-family: 'LemonMilk';
+  src: url('../fonts/LEMONMILK-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
 }
 
-.job-form {
-  width: 350px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px;
+@font-face {
+  font-family: 'Ausion';
+  src: url('../fonts/AusionPersonalUse.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #FFFFFF, #DEEDF1, #9CBEC7, #145F74);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  overflow-y: auto;
+  font-family: 'LemonMilk', sans-serif;
+  padding-bottom: 30px;
+}
+
+
+.centered-content-container {
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.logo-container {
+  width: 100%; 
+  position: relative;
+  overflow: hidden;
+  margin-top: 5vh;
+  text-align: center;
+}
+
+.logo-container img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  max-width: 430px;
+}
+
+
+
+.page-title {
+  font-size: 20px;
+  font-family: 'LemonMilk';
+  font-weight: normal;
+  text-align: center;
+  color: #145F74;
+  margin: 2vh 0 1vh; 
+}
+
+.form-card {
+  width: 100%;
+  max-width: 430px;
+  margin-top: 1vh;
+  margin-bottom: 3vh; 
+  background: rgba(255,255,255,0.9);
   border-radius: 12px;
-  background: #f7f7f7;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  padding: 14px;
 }
 
-.job-form input,
-.job-form textarea,
-.job-form select {
+
+.two-column {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.column {
+  flex: 1;
+}
+
+.form-label {
+  display: block;
+  font-family: 'LemonMilk';
+  font-size: 14px;
+  color: #145F74;
+  margin-bottom: 4px;
+  margin-top: 15px;
+}
+
+.form-label.small {
+  font-size: 12px;
+  color: #3C616A;
+  margin-top: 0;
+}
+
+.form-input,
+.form-textarea,
+select.form-input {
+  display: block;
   width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  height: 40px;
+  border-radius: 5px;
+  border: 3px solid #145F74;
+  background: transparent;
+  font-family: 'Ausion', sans-serif;
+  font-weight: normal;
+  font-size: 1.05rem;
+  color: #3C616A;
+  padding: 0 0.75rem;
+  margin-bottom: 15px;
 }
 
-.job-form label {
-  font-weight: bold;
-  margin-top: 6px;
+.form-textarea {
+  height: 110px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  resize: none;
 }
 
-.btn-create {
-  margin-top: 10px;
+.form-input:focus,
+.form-textarea:focus,
+select.form-input:focus {
+  outline: none;
+  border-color: #145F74;
+  color: #145F74;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  font-family: 'LemonMilk', sans-serif;
+  font-size: 12px;
+  color: #3C616A;
+}
+
+.message-panel {
+  width: 100%;
+  margin: 0 auto 10px;
+  color: #6d151e;
+  font-family: 'LemonMilk', sans-serif;
+  font-size: 12px;
+  text-align: left;
   padding: 10px;
-  background: #4caf50;
-  color: white;
+  border-radius: 5px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid #6d151e;
+}
+
+.message-panel.success {
+  color: #1a5e27;
+  background-color: rgba(0, 255, 0, 0.1);
+  border: 1px solid #1a5e27;
+}
+
+.message-panel p {
+  margin: 0;
+  text-align: center;
+}
+
+.primary-button {
+  display: block;
+  width: 100%;
+  height: 40px;
+  border-radius: 5px;
+  margin-top: 20px; 
+  margin-bottom: 10px; 
   border: none;
-  border-radius: 6px;
+  background: #145F74;
+  color: #FFFFFF;
+  font-family: 'LemonMilk', sans-serif;
+  font-size: 14px;
+  transition: 0.5s;
   cursor: pointer;
 }
 
-.btn-create:hover {
-  background: #45a049;
+.primary-button:hover {
+  background: #071F25;
 }
 
-.error-popup p {
-  background: #ffdddd;
-  color: #a00;
-  padding: 6px;
-  border-radius: 4px;
-  margin: 0;
+
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 18px;
+  }
+
+  .form-input::placeholder,
+  .form-textarea::placeholder {
+    font-size: 11px;
+  }
 }
