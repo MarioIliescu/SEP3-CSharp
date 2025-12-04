@@ -1,4 +1,5 @@
 ﻿@page "/manage-job"
+@using System.Text.RegularExpressions
 @using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
@@ -218,43 +219,97 @@
         message = "";
     }
 
-    private async Task SaveChangesAsync()
+   private async Task SaveChangesAsync()
+{
+    if (selectedJob == null)
+        return;
+
+    message = "";
+    List<string> errors = new();
+
+
+    if (string.IsNullOrWhiteSpace(title))
+        errors.Add("Title is required.");
+    else if (title.Length > 20)
+        errors.Add("Title cannot exceed 20 characters.");
+
+    if (string.IsNullOrWhiteSpace(description))
+        errors.Add("Description is required.");
+    else if (description.Length > 300)
+        errors.Add("Description cannot exceed 300 characters.");
+
+    if (loadedMiles <= 0)
+        errors.Add("Loaded miles must be greater than 0.");
+
+    if (weight <= 0)
+        errors.Add("Weight must be greater than 0.");
+
+    if (totalPrice <= 0)
+        errors.Add("Total price must be greater than 0.");
+
+    if (string.IsNullOrWhiteSpace(cargoInfo))
+        errors.Add("Cargo info is required.");
+    else if (cargoInfo.Length > 30)
+        errors.Add("Cargo info cannot exceed 30 characters.");
+
+    if (pickupTime <= DateTime.Now)
+        errors.Add("Pickup time must be in the future.");
+
+    if (deliveryTime <= pickupTime)
+        errors.Add("Delivery time must be after pickup time.");
+
+    if (string.IsNullOrWhiteSpace(pickupState) || !Regex.IsMatch(pickupState, "^[A-Za-z]{2}$"))
+        errors.Add("Pickup state must be exactly 2 letters.");
+
+    if (pickupZip <= 0 || pickupZip >= 100000)
+        errors.Add("Pickup ZIP must be between 1 and 99999.");
+
+    if (string.IsNullOrWhiteSpace(dropState) || !Regex.IsMatch(dropState, "^[A-Za-z]{2}$"))
+        errors.Add("Drop state must be exactly 2 letters.");
+
+    if (dropZip <= 0 || dropZip >= 100000)
+        errors.Add("Drop ZIP must be between 1 and 99999.");
+
+    if (errors.Any())
     {
-        if (selectedJob == null)
-            return;
-
-        try
-        {
-            var update = new UpdateJobDto()
-            {
-                Id = selectedJob.Id,
-                DispatcherId = dispatcherId,
-                DriverId = driverId,
-                Title = title,
-                Description = description,
-                LoadedMiles = loadedMiles,
-                WeightOfCargo = weight,
-                TypeOfTrailerNeeded = trailerType,
-                TotalPrice = totalPrice,
-                CargoInfo = cargoInfo,
-                PickupTime = pickupTime,
-                DeliveryTime = deliveryTime,
-                PickupLocationState = pickupState,
-                PickupLocationZip = pickupZip,
-                DropLocationState = dropState,
-                DropLocationZip = dropZip,
-                CurrentStatus = jobStatus
-            };
-
-            await JobService.UpdateAsync(update);
-
-            message = "Changes saved!";
-        }
-        catch (Exception ex)
-        {
-            message = "Error saving job: " + ex.Message;
-        }
+        message = string.Join("\n", errors);
+        return;
     }
+
+    try
+    {
+        var update = new UpdateJobDto()
+        {
+            Id = selectedJob.Id,
+            DispatcherId = dispatcherId,
+            DriverId = driverId,
+            Title = title,
+            Description = description,
+            LoadedMiles = loadedMiles,
+            WeightOfCargo = weight,
+            TypeOfTrailerNeeded = trailerType,
+            TotalPrice = totalPrice,
+            CargoInfo = cargoInfo,
+            PickupTime = pickupTime,
+            DeliveryTime = deliveryTime,
+            PickupLocationState = pickupState.ToUpper(),
+            PickupLocationZip = pickupZip,
+            DropLocationState = dropState.ToUpper(),
+            DropLocationZip = dropZip,
+            CurrentStatus = jobStatus
+        };
+
+        await JobService.UpdateAsync(update);
+
+        message = "Changes saved!";
+        await LoadJobsAsync();
+    }
+    catch (Exception ex)
+    {
+        message = "Error saving job: " + ex.Message;
+    }
+}
+
 
 
     private async Task DeleteJobAsync()
