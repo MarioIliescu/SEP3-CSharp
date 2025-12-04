@@ -14,96 +14,98 @@
 
 <link rel="stylesheet" href="css/createJob.css">
 
-<div class="logo-container">
-    <img src="images/LogoDrive.png" alt="logo">
+<div class="centered-content-container"> 
+
+    <div class="logo-container">
+        <img src="images/LogoDrive.png" alt="logo">
+    </div>
+
+    <h2 class="page-title">CREATE A NEW JOB</h2>
+
+    <div class="form-card">
+
+        <div class="message-panel @successClass">
+            @foreach (var e in validationErrors.Take(5))
+            {
+                <p>@e</p>
+            }
+            @if (validationErrors.Count > 5)
+            {
+                <p>...</p>
+            }
+        </div>
+
+        <label class="form-label">Job Title</label>
+        <input class="form-input" type="text" placeholder="Title" @bind="title" />
+
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea"
+                  placeholder="Description (max 300 chars)"
+                  maxlength="300"
+                  @bind="description"></textarea>
+
+        <div class="two-column">
+            <div class="column">
+                <label class="form-label">Loaded Miles</label>
+                <input class="form-input" type="number" placeholder="Loaded Miles" @bind="loadedMiles" />
+            </div>
+
+            <div class="column">
+                <label class="form-label">Cargo Weight </label>
+                <input class="form-input" type="number" placeholder="Weight" @bind="weight" />
+            </div>
+        </div>
+
+        <label class="form-label">Trailer Type</label>
+        <select class="form-input" @bind="trailerType">
+            @foreach (TrailerType t in Enum.GetValues(typeof(TrailerType)))
+            {
+                <option value="@t">@t</option>
+            }
+        </select>
+
+        <label class="form-label">Total Price </label>
+        <input class="form-input" type="number" placeholder="Total Price" @bind="totalPrice" />
+
+        <label class="form-label">Cargo Info</label>
+        <input class="form-input" type="text" placeholder="Short cargo description" maxlength="30" @bind="cargoInfo" />
+
+        <label class="form-label">Pickup Time</label>
+        <input class="form-input" type="datetime-local" @bind="pickupTime" />
+
+        <label class="form-label">Delivery Time</label>
+        <input class="form-input" type="datetime-local" @bind="deliveryTime" />
+
+        <label class="form-label">Pickup Location</label>
+        <div class="two-column">
+            <div class="column">
+                <label class="form-label small">State</label>
+                <input class="form-input" type="text" maxlength="2" placeholder="State" @bind="pickupState" />
+            </div>
+
+            <div class="column">
+                <label class="form-label small">ZIP</label>
+                <input class="form-input" type="number" placeholder="ZIP" @bind="pickupZip" />
+            </div>
+        </div>
+
+        <label class="form-label">Drop Location</label>
+        <div class="two-column">
+            <div class="column">
+                <label class="form-label small">State</label>
+                <input class="form-input" type="text" maxlength="2" placeholder="State" @bind="dropState" />
+            </div>
+
+            <div class="column">
+                <label class="form-label small">ZIP</label>
+                <input class="form-input" type="number" placeholder="ZIP" @bind="dropZip" />
+            </div>
+        </div>
+
+        <button class="primary-button" @onclick="CreateJobBlazor">Create Job</button>
+    </div>
+
 </div>
-
-<h2 class="page-title">CREATE A NEW JOB</h2>
-
-<div class="form-card">
-
-    <div class="message-panel @successClass">
-        @foreach (var e in validationErrors.Take(5))
-        {
-            <p>@e</p>
-        }
-        @if (validationErrors.Count > 5)
-        {
-            <p>...</p>
-        }
-    </div>
-
-    <label class="form-label">Job Title</label>
-    <input class="form-input" type="text" placeholder="Title" @bind="title" />
-
-    <label class="form-label">Description</label>
-    <textarea class="form-textarea"
-              placeholder="Description (max 300 chars)"
-              maxlength="300"
-              @bind="description"></textarea>
-
-    <div class="two-column">
-        <div class="column">
-            <label class="form-label">Loaded Miles</label>
-            <input class="form-input" type="number" placeholder="Loaded Miles" @bind="loadedMiles" />
-        </div>
-
-        <div class="column">
-            <label class="form-label">Cargo Weight (lbs)</label>
-            <input class="form-input" type="number" placeholder="Weight" @bind="weight" />
-        </div>
-    </div>
-
-    <label class="form-label">Trailer Type</label>
-    <select class="form-input" @bind="trailerType">
-        @foreach (TrailerType t in Enum.GetValues(typeof(TrailerType)))
-        {
-            <option value="@t">@t</option>
-        }
-    </select>
-
-    <label class="form-label">Total Price ($)</label>
-    <input class="form-input" type="number" placeholder="Total Price" @bind="totalPrice" />
-
-    <label class="form-label">Cargo Info</label>
-    <input class="form-input" type="text" placeholder="Short cargo description" maxlength="30" @bind="cargoInfo" />
-
-    <label class="form-label">Pickup Time</label>
-    <input class="form-input" type="datetime-local" @bind="pickupTime" />
-
-    <label class="form-label">Delivery Time</label>
-    <input class="form-input" type="datetime-local" @bind="deliveryTime" />
-
-    <label class="form-label">Pickup Location</label>
-    <div class="two-column">
-        <div class="column">
-            <label class="form-label small">State</label>
-            <input class="form-input" type="text" maxlength="2" placeholder="NY" @bind="pickupState" />
-        </div>
-
-        <div class="column">
-            <label class="form-label small">ZIP</label>
-            <input class="form-input" type="number" placeholder="ZIP" @bind="pickupZip" />
-        </div>
-    </div>
-
-    <!-- DROP LOCATION -->
-    <label class="form-label">Drop Location</label>
-    <div class="two-column">
-        <div class="column">
-            <label class="form-label small">State</label>
-            <input class="form-input" type="text" maxlength="2" placeholder="CA" @bind="dropState" />
-        </div>
-
-        <div class="column">
-            <label class="form-label small">ZIP</label>
-            <input class="form-input" type="number" placeholder="ZIP" @bind="dropZip" />
-        </div>
-    </div>
-
-    <button class="primary-button" @onclick="CreateJobBlazor">Create Job</button>
-</div>
-
 @code {
     private string message = "";
     private string successClass = "";
@@ -157,9 +159,8 @@
         else if (title.Length > 20)
             validationErrors.Add("Title cannot exceed 20 characters.");
 
-        if (string.IsNullOrWhiteSpace(description))
-            validationErrors.Add("Description is required.");
-        else if (description.Length > 300)
+        
+            if (description.Length > 300)
             validationErrors.Add("Description cannot exceed 300 characters.");
 
         if (loadedMiles <= 0)

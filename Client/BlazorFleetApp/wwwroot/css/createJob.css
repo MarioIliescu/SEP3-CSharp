@@ -18,10 +18,7 @@
   box-sizing: border-box;
 }
 
-html {
-  /* Set the html height to 100% to ensure body's 100vh works correctly */
-  height: 100%;
-}
+
 
 html, body {
   margin: 0;
@@ -31,17 +28,25 @@ html, body {
 body {
   min-height: 100vh;
   background: linear-gradient(to bottom, #FFFFFF, #DEEDF1, #9CBEC7, #145F74);
-  background-attachment: fixed; 
+  background-attachment: fixed;
   background-repeat: no-repeat;
-  overflow: auto;
+  overflow-y: auto;
   font-family: 'LemonMilk', sans-serif;
+  padding-bottom: 30px;
+}
+
+
+.centered-content-container {
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
 }
 
 .logo-container {
-  width: min(80vw, 430px);
+  width: 100%; 
   position: relative;
   overflow: hidden;
-  margin: 5vh auto 0;
+  margin-top: 5vh;
   text-align: center;
 }
 
@@ -49,63 +54,72 @@ body {
   width: 100%;
   height: auto;
   object-fit: contain;
+  max-width: 430px;
 }
 
 
-#catch-phrase {
+
+.page-title {
   font-size: 20px;
   font-family: 'LemonMilk';
   font-weight: normal;
-  width: fit-content;
-  margin: 2vh auto 0;
   text-align: center;
+  color: #145F74;
+  margin: 2vh 0 1vh; 
 }
 
-.job-card {
+.form-card {
   width: 100%;
   max-width: 430px;
-  margin: 1vh auto 3vh;
+  margin-top: 1vh;
+  margin-bottom: 3vh; 
   background: rgba(255,255,255,0.9);
   border-radius: 12px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.12);
   padding: 14px;
 }
 
-.job-card-body {
+
+.two-column {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 15px;
+  margin-bottom: 15px;
 }
 
-.input-block {
-  width: 100%;
+.column {
+  flex: 1;
 }
 
+.form-label {
+  display: block;
+  font-family: 'LemonMilk';
+  font-size: 14px;
+  color: #145F74;
+  margin-bottom: 4px;
+  margin-top: 15px;
+}
 
-.name-fields {
-  width: 100%;
-  max-width: 430px;
-  margin: 0 auto;
-  display:flex;
-  justify-content: space-between;
-  gap: 8px;
+.form-label.small {
+  font-size: 12px;
+  color: #3C616A;
+  margin-top: 0;
 }
 
 .form-input,
 .form-textarea,
-.company-select {
+select.form-input {
   display: block;
   width: 100%;
-  max-width: 430px;
   height: 40px;
   border-radius: 5px;
   border: 3px solid #145F74;
   background: transparent;
-  font-family: 'Ausion';
+  font-family: 'Ausion', sans-serif;
   font-weight: normal;
   font-size: 1.05rem;
   color: #3C616A;
   padding: 0 0.75rem;
+  margin-bottom: 15px;
 }
 
 .form-textarea {
@@ -117,99 +131,68 @@ body {
 
 .form-input:focus,
 .form-textarea:focus,
-.company-select:focus {
+select.form-input:focus {
   outline: none;
   border-color: #145F74;
   color: #145F74;
 }
 
-
 .form-input::placeholder,
 .form-textarea::placeholder {
-  font-family: 'LemonMilk';
+  font-family: 'LemonMilk', sans-serif;
   font-size: 12px;
   color: #3C616A;
 }
 
-.small-label {
-  display: block;
-  font-family: 'LemonMilk';
-  font-size: 12px;
-  color: #3C616A;
-  margin-bottom: 6px;
-}
-
-
-.company-select {
-  flex: 1;
-  height: 40px;
-  border-radius: 5px;
-  border: 3px solid #145F74;
-  background: transparent;
-  font-family: 'LemonMilk';
-  font-weight: normal;
-  font-size: 0.95rem;
-  color: #3C616A;
-  padding: 0 0.75rem;
-  appearance: none;
-}
-
-
-.error-message-popup {
+.message-panel {
   width: 100%;
-  max-width: 430px;
-  margin: 0 auto;
+  margin: 0 auto 10px;
   color: #6d151e;
-  font-family: 'LemonMilk';
+  font-family: 'LemonMilk', sans-serif;
   font-size: 12px;
   text-align: left;
-}
-.error-message-popup.success
-{
-  color: #26b050;
-}
-.error-message-popup p
-{
-  margin-top: 0;
-  width: fit-content;
-  margin: auto;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid #6d151e;
 }
 
+.message-panel.success {
+  color: #1a5e27;
+  background-color: rgba(0, 255, 0, 0.1);
+  border: 1px solid #1a5e27;
+}
 
-.register-button {
+.message-panel p {
+  margin: 0;
+  text-align: center;
+}
+
+.primary-button {
   display: block;
   width: 100%;
-  max-width: 430px;
   height: 40px;
   border-radius: 5px;
-  margin: 1vh auto 0;
+  margin-top: 20px; 
+  margin-bottom: 10px; 
   border: none;
   background: #145F74;
   color: #FFFFFF;
-  font-family: 'LemonMilk';
+  font-family: 'LemonMilk', sans-serif;
   font-size: 14px;
   transition: 0.5s;
   cursor: pointer;
 }
 
-.register-button:hover {
+.primary-button:hover {
   background: #071F25;
 }
 
-@media (max-width: 768px) {
-  .name-fields {
-    flex-direction: column;
-  }
-  .form-input,
-  .form-textarea,
-  .company-select {
-    max-width: 100%;
-  }
-}
+
 
 @media (max-width: 480px) {
-  #catch-phrase {
-    font-size: 16px;
+  .page-title {
+    font-size: 18px;
   }
 
   .form-input::placeholder,
