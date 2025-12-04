@@ -1,0 +1,94 @@
+﻿@page "/my-drivers"
+@implements IDisposable
+@using ApiContracts.Dtos.Driver
+@using ApiContracts.Dtos.Job
+@using ApiContracts.Enums
+@using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Job
+@using BlazorFleetApp.Services.RecruitDriver
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRecruitService RecruitService
+@inject RefreshDriversEvent RefreshDriversEvent
+@inject IJobService JobService
+
+<h3>My Drivers - Dispatcher</h3>
+
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (drivers == null || !drivers.Any())
+{
+    <p>No drivers available.</p>
+}
+else
+{
+    @foreach (var driver in drivers)
+    {
+        // Single job assigned to this driver, or null
+        var assignedJob = jobs.FirstOrDefault(j => j.DriverId == driver.Id);
+
+        <DriverComponent InitialDriver="driver" InitialJobId="assignedJob?.Id">
+            <Component>
+                <AssignJobComponent
+                    InitialDriver="driver"
+                    InitialDispatcherId="id"
+                    InitialJobs="unassignedJobs">
+                </AssignJobComponent>
+            </Component>
+        </DriverComponent>
+    }
+}
+
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private List<DriverDto>? drivers;
+    private bool isLoading;
+    private List<JobDto> unassignedJobs = new();
+    private int id;
+    private List<JobDto> jobs = new List<JobDto>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
+            }
+        }
+        RefreshDriversEvent.OnDriversChanged += RefreshDriversAsync;
+        await LoadDriversAsync();
+        await LoadJobsAsync();
+        isLoading = false;
+    }
+
+    private async Task LoadDriversAsync()
+    {
+        drivers = await RecruitService.GetDriversForDispatcher(id);
+    }
+
+    private async Task LoadJobsAsync()
+    {
+        var allJobs = await JobService.GetAllAsync();
+        jobs = allJobs.Where(j => j.DispatcherId == id).ToList();
+        unassignedJobs = jobs.Where(j => j.CurrentStatus == JobStatus.Available).ToList();
+    }
+    public void Dispose()
+    {
+        RefreshDriversEvent.OnDriversChanged -= RefreshDriversAsync;
+    }
+    private async Task RefreshDriversAsync()
+    {
+        await LoadDriversAsync();
+        await LoadJobsAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+}
