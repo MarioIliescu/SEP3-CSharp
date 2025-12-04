@@ -182,6 +182,7 @@ public static class ProtoUtils
             .SetId(proto.User.Id)
             .SetCurrentRate(proto.CurrentRate)
             .SetEmail(proto.User.Email)
+            .SetPhoneNumber(proto.User.PhoneNumber)
             .SetFirstName(proto.User.FirstName)
             .SetLastName(proto.User.LastName)
             .SetPassword(proto.User.Password)
