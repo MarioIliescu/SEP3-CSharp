@@ -1,5 +1,129 @@
+@using ApiContracts.Dtos.Dispatcher
+@using ApiContracts.Dtos.Driver
+@using ApiContracts.Dtos.Job
+@using ApiContracts.Enums
+@using BlazorFleetApp.Services.Dispatcher
+@using BlazorFleetApp.Services.Job
+
+@using BlazorFleetApp.Services.Driver
+@using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.RecruitDriver
+@using Entities
+@inject IDriverService DriverService
+@inject IDispatcherService DispatcherService
+@inject IRecruitService RecruitService
+@inject IJobService JobService
+@inject RefreshDriversEvent RefreshDriversEvent
 <h3>AssignJobComponent</h3>
 
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <select @onchange="OnJobSelectedObject">
+                <option value="">Select Job</option>
+                @foreach (var j in jobs)
+                {
+                    <option value="@j">@j?.Title</option>
+                }
+            </select>
+        </div>
+        @if (selectedJob != null)
+        {
+            <div class="col-12">
+                <span>@selectedJob.Title</span>
+                <span>@selectedJob.Description</span>
+                <span>@selectedJob.CargoInfo</span>
+                <span>@selectedJob.PickupLocationState, @selectedJob.DropLocationState</span>
+            </div>
+            <div class="col-lg-3 d-md-none d-lg-block"></div>
+            <div class="col-lg-6 col-md-12">
+                <button class="primary-button" @onclick="AssignJobAsync">Assign Job</button>
+                <br/>
+                @errorMessage
+            </div>
+            <div class="col-lg-3 d-md-none d-lg-block"></div>
+        }
+    </div>
+</div>
+
 @code {
-    
+    [Parameter] public int? InitialDriverId { get; set; }
+    [Parameter] public int? InitialDispatcherId { get; set; }
+    [Parameter] public DriverDto? InitialDriver { get; set; }
+    [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
+    [Parameter] public List<JobDto?> InitialJobs { get; set; }
+    private DriverDto? driver;
+    private List<JobDto?> jobs;
+    private DispatcherDto? dispatcher;
+    private string errorMessage = "";
+    private JobDto? selectedJob;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDriverAsync();
+        await LoadDispatcherAsync();
+        await LoadJobsAsync();
+    }
+
+    private async Task LoadDriverAsync()
+    {
+        if (InitialDriverId != null) driver = await DriverService.GetSingleAsync((int)InitialDriverId);
+        else if (InitialDriver != null) driver = InitialDriver;
+    }
+
+    private async Task LoadDispatcherAsync()
+    {
+        if (InitialDispatcherId != null) dispatcher = await DispatcherService.GetSingleAsync((int)InitialDispatcherId);
+        else if (InitialDispatcher != null) dispatcher = InitialDispatcher;
+    }
+
+    private async Task LoadJobsAsync()
+    {
+          jobs = InitialJobs;
+          await Task.CompletedTask;
+    }
+
+    private async Task OnJobSelectedObject(ChangeEventArgs e)
+    {
+        selectedJob = e.Value as JobDto;
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task AssignJobAsync()
+    {
+        try
+        {
+            if (selectedJob != null)
+            {
+                UpdateJobDto dto = new()
+                {
+                    Title = selectedJob.Title,
+                    CargoInfo = selectedJob.CargoInfo,
+                    CurrentStatus = JobStatus.Assigned,
+                    DeliveryTime = selectedJob.DeliveryTime,
+                    Description = selectedJob.Description,
+                    DispatcherId = selectedJob.DispatcherId,
+                    DriverId = driver.Id,
+                    DropLocationState = selectedJob.DropLocationState,
+                    DropLocationZip = selectedJob.DropLocationZip,
+                    Id = selectedJob.Id,
+                    LoadedMiles = selectedJob.loadedMiles,
+                    WeightOfCargo = selectedJob.weightOfCargo,
+                    TypeOfTrailerNeeded = selectedJob.TypeOfTrailerNeeded,
+                    TotalPrice = selectedJob.TotalPrice,
+                    PickupTime = selectedJob.PickupTime,
+                    PickupLocationZip = selectedJob.PickupLocationZip,
+                    PickupLocationState = selectedJob.PickupLocationState,
+                };
+                await JobService.UpdateAsync(dto);
+                errorMessage = "";
+                RefreshDriversEvent.NotifyDriversChanged();
+            }
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+    }
 }
