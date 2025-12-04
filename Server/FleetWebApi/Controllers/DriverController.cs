@@ -1,5 +1,4 @@
 ﻿using ApiContracts.Dtos.Driver;
-using ApiContracts.Enums;
 using Entities;
 using FleetWebApi.SecurityUtils;
 using Microsoft.AspNetCore.Mvc;
@@ -142,7 +141,4 @@ public class DriverController : ControllerBase
 
         return Ok(driversDto);
     }
-    
-    
-
 }
