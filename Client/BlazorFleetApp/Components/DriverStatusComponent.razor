@@ -19,8 +19,8 @@
         }
         @if (userRole == UserRole.Dispatcher)
         {
-            <div class="driver-status" style="background-image: url('@GetStatusImage()');">
-                <h4>@_status</h4>
+            <div class="driver-status-text" style="background-image: url('@GetStatusImage()');">
+                <span>@_status</span>
             </div>
         }
     </div>

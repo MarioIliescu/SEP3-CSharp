@@ -29,6 +29,15 @@
       <None Update="Components\DriverComponent.razor.css">
         <DependentUpon>DriverComponent.razor</DependentUpon>
       </None>
+      <None Update="Components\Pages\ManageAccountDispatcher.razor.css">
+        <DependentUpon>ManageAccountDispatcher.razor</DependentUpon>
+      </None>
+      <None Update="Components\RecruitComponent.razor.css">
+        <DependentUpon>RecruitComponent.razor</DependentUpon>
+      </None>
+      <None Update="Components\AssignJobComponent.razor.css">
+        <DependentUpon>AssignJobComponent.razor</DependentUpon>
+      </None>
     </ItemGroup>
 
 </Project>
