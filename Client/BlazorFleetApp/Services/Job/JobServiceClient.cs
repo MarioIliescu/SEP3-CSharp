@@ -16,7 +16,8 @@ public class JobServiceClient : IJobService
         var response = await _http
             .PostAsJsonAsync("job", dto);
         
-        response.EnsureSuccessStatusCode();    }
+        response.EnsureSuccessStatusCode();
+    }
 
     public async Task UpdateAsync(UpdateJobDto dto)
     {

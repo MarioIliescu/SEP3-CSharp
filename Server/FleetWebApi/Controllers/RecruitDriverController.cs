@@ -8,15 +8,9 @@ namespace FleetWebApi.Controllers;
 
 [ApiController]
 [Route("recruit-driver")]
-public class RecruitDriverController : ControllerBase
+public class RecruitDriverController(IRecruitDriverService recruitDriverService)
+    : ControllerBase
 {
-    private readonly IRecruitDriverService _recruitDriverService;
-    
-    public RecruitDriverController(IRecruitDriverService recruitDriverService)
-    {
-        _recruitDriverService = recruitDriverService;
-    }
-
     // POST recruit
     [HttpPost]
     public async Task<IActionResult> RecruitDriver([FromBody] RecruitDriverDto dto)
@@ -24,18 +18,19 @@ public class RecruitDriverController : ControllerBase
         var driver = new Driver.Builder().SetId(dto.DriverId).Build();
         var dispatcher = new Dispatcher.Builder().SetId(dto.DispatcherId).Build();
 
-        var created = await _recruitDriverService.RecruitDriverAsync(driver, dispatcher);
+        var created = await recruitDriverService.RecruitDriverAsync(driver, dispatcher);
 
         return Ok(created);
     }
     
     // DELETE fire driver
+    [HttpDelete ("delete")]
     public async Task<IActionResult> FireDriver([FromBody] RecruitDriverDto dto)
     {
         var driver = new Driver.Builder().SetId(dto.DriverId).Build();
         var dispatcher = new Dispatcher.Builder().SetId(dto.DispatcherId).Build();
         
-        await _recruitDriverService.FireDriverAsync(driver, dispatcher);
+        await recruitDriverService.FireDriverAsync(driver, dispatcher);
 
         return NoContent();
     }
@@ -44,7 +39,7 @@ public class RecruitDriverController : ControllerBase
     [HttpGet("dispatcher/{id:int}")]
     public async Task<IActionResult> GetDriversForDispatcher(int id)
     {
-        var drivers = _recruitDriverService.GetDispatcherDriversListAsync(id);
+        var drivers = recruitDriverService.GetDispatcherDriversListAsync(id);
         return Ok(drivers);
     }
     
@@ -52,7 +47,7 @@ public class RecruitDriverController : ControllerBase
     [HttpGet("unassigned")]
     public IActionResult GetUnassignedDrivers()
     {
-        var drivers = _recruitDriverService.GetDriverListWoDispatcherAsync();
+        var drivers = recruitDriverService.GetDriverListWoDispatcherAsync();
         return Ok(drivers);
     }
 }
