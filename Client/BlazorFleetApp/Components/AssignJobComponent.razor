@@ -67,6 +67,7 @@
         await LoadDriverAsync();
         await LoadDispatcherAsync();
         await LoadJobsAsync();
+        RefreshDriversEvent.OnDriversChanged += RefreshDriversAsync;
     }
 
     private async Task LoadDriverAsync()
@@ -152,8 +153,12 @@
             driver = driver with { Status = newStatus};
             await DriverService.UpdateAsync(driver);
         }
-
-        await LoadDriverAsync();
         StateHasChanged();
+    }
+
+    private async Task RefreshDriversAsync()
+    {
+        await LoadJobsAsync();
+        await LoadDriverAsync();
     }
 }
