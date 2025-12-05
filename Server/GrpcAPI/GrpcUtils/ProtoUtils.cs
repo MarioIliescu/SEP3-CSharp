@@ -23,6 +23,7 @@ public static class ProtoUtils
             .SetLastName(proto.User.LastName)
             .SetPassword(proto.User.Password)
             .SetRole(UserRole.Driver)
+            .SetPhoneNumber(proto.User.PhoneNumber)
             .Build();
     }
 
