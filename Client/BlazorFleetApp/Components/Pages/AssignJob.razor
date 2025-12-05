@@ -16,64 +16,67 @@
 <AuthorizeView>
     <Authorized>
 
-
-@if (!string.IsNullOrWhiteSpace(message))
-{
-    <div class="alert alert-success">@message</div>
-}
-
-@if (validationErrors.Any())
-{
-    <div class="alert alert-danger">
-        @foreach (var e in validationErrors)
+        @if (!string.IsNullOrWhiteSpace(message))
         {
-            <p>@e</p>
+            <div class="alert alert-success">@message</div>
         }
-    </div>
-}
 
-@if (jobs == null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <div class="job-card-list">
-        @foreach (var job in jobs)
+        @if (validationErrors.Any())
         {
-            <div class="job-card @(job.Id == assigningJobId ? "selected" : "")">
-                <h4 @onclick="() => SelectJob(job.Id)">@job.Title</h4>
-                <p @onclick="() => SelectJob(job.Id)">@job.PickupLocationState @job.PickupLocationZip → @job.DropLocationState @job.DropLocationZip</p>
-                <p @onclick="() => SelectJob(job.Id)">@job.PickupTime.ToString("MM/dd/yyyy HH:mm")</p>
-
-                @if (job.Id == assigningJobId)
+            <div class="alert alert-danger">
+                @foreach (var e in validationErrors)
                 {
-                    <div class="expanded-details">
-                        <p><strong>Description:</strong> @job.Description</p>
-                        <p><strong>Cargo:</strong> @job.CargoInfo</p>
-                        <p><strong>Trailer:</strong> @job.TypeOfTrailerNeeded</p>
-                        <p><strong>Status:</strong> @job.CurrentStatus</p>
+                    <p>@e</p>
+                }
+            </div>
+        }
 
-                        <hr />
+        @if (jobs == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <div class="job-card-list">
+                @foreach (var job in jobs)
+                {
+                    <div class="job-card @(job.Id == assigningJobId ? "selected" : "")">
+                        <h4 @onclick="() => SelectJob(job.Id)">@job.Title</h4>
+                        <p @onclick="() => SelectJob(job.Id)">
+                            @job.PickupLocationState @job.PickupLocationZip → @job.DropLocationState @job.DropLocationZip
+                        </p>
+                        <p @onclick="() => SelectJob(job.Id)">
+                            @job.PickupTime.ToString("MM/dd/yyyy HH:mm")
+                        </p>
 
-                        <label>Select Driver:</label>
-                        <select>
-                            <option value="0" @onchange="OnDriverChanged" @onclick:stopPropagation="true">Select Driver</option>
-                            @foreach (var d in drivers)
-                            {
-                                <option value="@d.Id">@d.FirstName @d.LastName</option>
-                            }
-                        </select>
+                        @if (job.Id == assigningJobId)
+                        {
+                            <div class="expanded-details">
+                                <p><strong>Description:</strong> @job.Description</p>
+                                <p><strong>Cargo:</strong> @job.CargoInfo</p>
+                                <p><strong>Trailer:</strong> @job.TypeOfTrailerNeeded</p>
+                                <p><strong>Status:</strong> @job.CurrentStatus</p>
 
-                        <button class="btn btn-primary" @onclick="ConfirmAssignDriver">
-                            Assign Driver
-                        </button>
+                                <hr />
+
+                                <label>Select Driver:</label>
+                                <select @bind="selectedDriverId" @onclick:stopPropagation="true">
+                                    <option value="0">Select Driver</option>
+                                    @foreach (var d in drivers)
+                                    {
+                                        <option value="@d.Id">@d.FirstName @d.LastName</option>
+                                    }
+                                </select>
+
+                                <button class="btn btn-primary" @onclick="ConfirmAssignDriver">
+                                    Assign Driver
+                                </button>
+                            </div>
+                        }
                     </div>
                 }
             </div>
         }
-    </div>
-}
     </Authorized>
 
     <NotAuthorized>
@@ -106,15 +109,10 @@ else
     private void SelectJob(int jobId)
     {
         assigningJobId = jobId;
-        selectedDriverId = 0;
+        selectedDriverId = 0;     
         message = "";
         validationErrors.Clear();
     }
-        private void OnDriverChanged(ChangeEventArgs e)
-        {
-            selectedDriverId = int.Parse(e.Value?.ToString() ?? "0");
-            message = $"select driver {selectedDriverId}";
-        }
 
     private async Task ConfirmAssignDriver()
     {
