@@ -16,8 +16,10 @@ builder.Services.AddRazorPages();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddScoped(sp => new HttpClient()
-    { BaseAddress = new Uri(builder.Configuration["FleetWebApi:BaseAddress"] ?? "") });
+builder.Services.AddSingleton(new HttpClient
+{
+    BaseAddress = new Uri(builder.Configuration["FleetWebApi:BaseAddress"] ?? "")
+});
 builder.Services.AddAuthentication().AddCookie(options => { options.LoginPath = "/login"; });
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();

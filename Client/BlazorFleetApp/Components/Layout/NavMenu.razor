@@ -108,6 +108,8 @@
     [Inject] private NavigationManager NavMgr { get; set; }
     [Inject] private IAuthService AuthService { get; set; }
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private bool isLoading = true;
+
     private string companyRole= "your company role";
     private UserRole userRole;
     private async Task LogoutAsync()
@@ -125,6 +127,7 @@
             if (user?.Identity?.IsAuthenticated ?? false)
             {
                 companyRole = user.Claims.FirstOrDefault(c => c.Type == "CompanyRole")?.Value ?? "your company role";
+
                 var roleClaim = user.FindFirst("Role")?.Value;
                 if (!string.IsNullOrEmpty(roleClaim) &&
                     Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole))
@@ -133,5 +136,8 @@
                 }
             }
         }
+
+        isLoading = false;
     }
+
 }

@@ -54,6 +54,11 @@
         try
         {
             await AuthService.LoginAsync(email, password);
+            var authState = await State;
+            var user = authState.User;
+
+            role = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role || c.Type == "Role" || c.Type == "role")?.Value;
+
             NavigateByRole();
         }
         catch (Exception e)
