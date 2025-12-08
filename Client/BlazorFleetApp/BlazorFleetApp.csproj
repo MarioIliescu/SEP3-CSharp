@@ -13,6 +13,8 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.App.Internal.Assets" Version="10.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="10.0.0" />
     </ItemGroup>
 
     <ItemGroup>

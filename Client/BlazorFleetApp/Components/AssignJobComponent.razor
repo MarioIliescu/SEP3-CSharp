@@ -6,10 +6,12 @@
 @using BlazorFleetApp.Services.Job
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavMgr
 @inject IDriverService DriverService
 @inject IDispatcherService DispatcherService
 @inject IJobService JobService
-@inject RefreshDriversEvent RefreshDriversEvent
+@implements IAsyncDisposable
 
 <div class="container-fluid">
     <div class="row">
@@ -61,13 +63,58 @@
     private string errorMessage = "";
     private string message = "";
     private JobDto? selectedJob;
+    private HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadDriverAsync();
         await LoadDispatcherAsync();
         await LoadJobsAsync();
-        RefreshDriversEvent.OnDriversChanged += RefreshDriversAsync;
+        await SetupHubAsync();
+    }
+
+    private async Task SetupHubAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<FleetEventType>("FleetEvent", (eventType) =>
+        {
+            return InvokeAsync(async () =>
+            {
+                if (eventType == FleetEventType.DriverStatusChanged ||
+                    eventType == FleetEventType.DriversUpdated)
+                {
+                    // Fetch latest driver status
+                    if (driver?.Id != null)
+                        driver = await DriverService.GetSingleAsync(driver.Id);
+
+                    await StateHasChangedAsyncSafely();
+                }
+
+                if (eventType == FleetEventType.JobAssigned || eventType == FleetEventType.JobsUpdated)
+                {
+                    // Optionally refresh jobs
+                    jobs = InitialJobs; // or fetch latest from DB
+                    if (selectedJob != null)
+                    {
+                        selectedJob = jobs.FirstOrDefault(j => j?.Id == selectedJob.Id);
+                    }
+
+                    await StateHasChangedAsyncSafely();
+                }
+            });
+        });
+
+
+        await hubConnection.StartAsync();
+
+        // Join dispatcher group
+        var groupId = dispatcher?.Id.ToString();
+        if (groupId != null)
+            await hubConnection.InvokeAsync("JoinGroup", groupId);
     }
 
     private async Task LoadDriverAsync()
@@ -82,11 +129,14 @@
         else if (InitialDispatcher != null) dispatcher = InitialDispatcher;
     }
 
-    private async Task LoadJobsAsync()
+    private Task LoadJobsAsync()
     {
-        jobs = InitialJobs;
-        await Task.CompletedTask;
+        jobs = InitialJobs ?? new List<JobDto?>();
+        return Task.CompletedTask;
     }
+
+
+
 
     private Task OnJobSelectedObject(ChangeEventArgs e)
     {
@@ -99,66 +149,96 @@
     }
 
     private async Task AssignJobAsync()
+{
+    if (driver == null)
     {
-        if (driver?.Status == DriverStatus.Available)
+        errorMessage = "Driver not loaded.";
+        return;
+    }
+
+    // Refresh the latest status from DB
+    driver = await DriverService.GetSingleAsync(driver.Id);
+
+    if (driver.Status != DriverStatus.Available)
+    {
+        errorMessage = "Cannot assign a job to a busy or off duty driver";
+        return;
+    }
+
+    if (selectedJob == null)
+    {
+        errorMessage = "No job selected.";
+        return;
+    }
+
+    try
+    {
+        var dto = new UpdateJobDto
         {
-            try
-            {
-                if (selectedJob != null)
-                {
-                    UpdateJobDto dto = new()
-                    {
-                        Title = selectedJob.Title,
-                        CargoInfo = selectedJob.CargoInfo,
-                        CurrentStatus = JobStatus.Assigned,
-                        DeliveryTime = selectedJob.DeliveryTime,
-                        Description = selectedJob.Description,
-                        DispatcherId = selectedJob.DispatcherId,
-                        DriverId = driver.Id,
-                        DropLocationState = selectedJob.DropLocationState,
-                        DropLocationZip = selectedJob.DropLocationZip,
-                        Id = selectedJob.Id,
-                        LoadedMiles = selectedJob.loadedMiles,
-                        WeightOfCargo = selectedJob.weightOfCargo,
-                        TypeOfTrailerNeeded = selectedJob.TypeOfTrailerNeeded,
-                        TotalPrice = selectedJob.TotalPrice,
-                        PickupTime = selectedJob.PickupTime,
-                        PickupLocationZip = selectedJob.PickupLocationZip,
-                        PickupLocationState = selectedJob.PickupLocationState,
-                    };
-                    await JobService.UpdateAsync(dto);
-                    errorMessage = "";
-                    await ChangeStatusAsync(DriverStatus.Busy);
-                    message = "Job has been assigned successfully";
-                    selectedJob = null;
-                    await RefreshDriversEvent.NotifyDriversChangedAsync();
-                }
-            }
-            catch (Exception e)
-            {
-                errorMessage = e.Message;
-            }
-        }
-        else
+            Title = selectedJob.Title,
+            CargoInfo = selectedJob.CargoInfo,
+            CurrentStatus = JobStatus.Assigned,
+            DeliveryTime = selectedJob.DeliveryTime,
+            Description = selectedJob.Description,
+            DispatcherId = selectedJob.DispatcherId,
+            DriverId = driver.Id,
+            DropLocationState = selectedJob.DropLocationState,
+            DropLocationZip = selectedJob.DropLocationZip,
+            Id = selectedJob.Id,
+            LoadedMiles = selectedJob.loadedMiles,
+            WeightOfCargo = selectedJob.weightOfCargo,
+            TypeOfTrailerNeeded = selectedJob.TypeOfTrailerNeeded,
+            TotalPrice = selectedJob.TotalPrice,
+            PickupTime = selectedJob.PickupTime,
+            PickupLocationZip = selectedJob.PickupLocationZip,
+            PickupLocationState = selectedJob.PickupLocationState,
+        };
+
+        await JobService.UpdateAsync(dto);
+        await ChangeStatusAsync(DriverStatus.Busy);
+
+        message = "Job has been assigned successfully";
+        selectedJob = null;
+        errorMessage = "";
+        if (hubConnection != null)
         {
-            errorMessage = "Cannot assign a job to a busy or off duty driver";
+            await hubConnection.InvokeAsync("NotifyEvent", FleetEventType.DriversUpdated);
+            await hubConnection.InvokeAsync("NotifyEvent", FleetEventType.JobsUpdated);
+            await hubConnection.InvokeAsync("NotifyEvent", FleetEventType.JobAssigned);
         }
     }
+    catch (Exception e)
+    {
+        errorMessage = e.Message;
+    }
+}
+
+
     private async Task ChangeStatusAsync(DriverStatus newStatus)
     {
         if (driver == null) return;
         driver = await DriverService.GetSingleAsync(driver.Id);
         if (driver != null)
         {
-            driver = driver with { Status = newStatus};
+            driver = driver with { Status = newStatus };
             await DriverService.UpdateAsync(driver);
         }
+
         StateHasChanged();
     }
 
-    private async Task RefreshDriversAsync()
+    public async ValueTask DisposeAsync()
     {
-        await LoadJobsAsync();
-        await LoadDriverAsync();
+        if (hubConnection != null && dispatcher != null)
+        {
+            await hubConnection.InvokeAsync("LeaveGroup", dispatcher.Id.ToString());
+            await hubConnection.DisposeAsync();
+        }
     }
+
+    private Task StateHasChangedAsyncSafely()
+    {
+        return InvokeAsync(StateHasChanged);
+    }
+
 }

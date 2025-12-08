@@ -1,11 +1,13 @@
 using ApiContracts.Dtos.Driver;
 using ApiContracts.Dtos.RecruitDriver;
+using BlazorFleetApp.Hubs;
+using BlazorFleetApp.Services.Events;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BlazorFleetApp.Services.RecruitDriver;
 
 public class RecruitService(HttpClient http) : IRecruitService
 {
-
     private readonly HttpClient _http = http;
     public async Task RecruitDriver(RecruitDriverDto dto)
     {
