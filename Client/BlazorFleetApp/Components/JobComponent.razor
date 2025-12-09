@@ -1,0 +1,132 @@
+﻿@using ApiContracts.Company
+@using ApiContracts.Dtos.Dispatcher
+@implements IAsyncDisposable
+@using ApiContracts.Dtos.Driver
+@using ApiContracts.Dtos.Job
+@using ApiContracts.Enums
+@using BlazorFleetApp.Services
+@using BlazorFleetApp.Services.Dispatcher
+@using BlazorFleetApp.Services.Driver
+@using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavMgr
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IDispatcherService DispatcherService
+@inject IDriverService DriverService
+@inject ICompanyService CompanyService
+@inject IJobService JobService
+@if (isLoading)
+{
+    <p> Loading component</p>
+}
+else
+{
+    <div class="box-container p-3">
+        <div class="row g-4">
+            <div class="col-xl-3 col-md-6 col-sm-12">
+                @if (_job != null)
+                {
+                    <h4>@_job.Title</h4>
+                    <h4>@_job.PickupTime → @_job.DeliveryTime</h4>
+                }
+            </div>
+            <div class="col-xl-3 col-md-6 col-sm-12">
+                <JobStatusComponent JobDto="_job"></JobStatusComponent>
+            </div>
+
+            <div class="col-xl-3 col-md-6 col-sm-12">
+                @if (Component != null)
+                {
+                    <div>@Component</div>
+                }
+            </div>
+
+        </div>
+    </div>
+}
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    [Parameter] public int? InitialDriverId { get; set; }
+    [Parameter] public DriverDto? InitialDriver { get; set; }
+    [Parameter] public JobDto? InitialJob { get; set; }
+    [Parameter] public int? InitialJobId { get; set; }
+    [Parameter] public RenderFragment? Component { get; set; }
+    [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
+    [Parameter] public int? InitialDispatcherId { get; set; }
+    private bool isLoading = true;
+    private HubConnection? hubConnection;
+    DispatcherDto? _dispatcher;
+    DriverDto? _driver;
+    CompanyDto? _company;
+    JobDto? _job;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+    private async Task LoadJobAsync()
+    {
+        if (InitialJob != null)
+        {
+            _job = InitialJob;
+        }
+        else if (InitialJobId.HasValue)
+        {
+            _job = await JobService.GetSingleAsync(InitialJobId.Value);
+        }
+        else
+        {
+            _job = null;
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFromClaims();
+        await LoadJobAsync();
+        // Initialize hub connection
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Subscribe to events
+        hubConnection.On<FleetEventType>("FleetEvent", (eventType) =>
+        {
+            return InvokeAsync(async () =>
+            {
+                switch (eventType)
+                {
+                    case FleetEventType.JobAssigned:
+                    case FleetEventType.JobsUpdated:
+                    case FleetEventType.JobStatusChanged:
+                        await RefreshJobAsync();
+                        break;
+                }
+            });
+        });
+        await hubConnection.StartAsync();
+        isLoading = false;
+    }
+    private async Task LoadFromClaims()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+        }
+    }
+    private async Task RefreshJobAsync()
+    {
+        if (_job != null)
+        {
+            _job = await JobService.GetSingleAsync(_job.Id);
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}

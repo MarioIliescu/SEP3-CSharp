@@ -1,48 +1,56 @@
 @using ApiContracts.Company
-@implements IDisposable
+@using ApiContracts.Dtos.Dispatcher
+@implements IAsyncDisposable
 @using ApiContracts.Dtos.Driver
 @using ApiContracts.Dtos.Job
+@using ApiContracts.Enums
 @using BlazorFleetApp.Services
+@using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavMgr
+@inject IDispatcherService DispatcherService
 @inject IDriverService DriverService
 @inject ICompanyService CompanyService
 @inject IJobService JobService
-@inject RefreshDriversEvent RefreshDriversEvent
-<div class="box-container p-3">
-    <div class="row g-4">
+@if (isLoading)
+{
+    <p> Loading component</p>
+}
+else
+{
+    <div class="box-container p-3">
+        <div class="row g-4">
+            <div class="col-xl-3 col-md-6 col-sm-12">
+                <h4>@_driver?.FirstName @_driver?.LastName</h4>
+                <h4>@_company?.CompanyName</h4>
+                    <DriverStatusComponent InitialDriverId="@_driver?.Id"></DriverStatusComponent>
+            </div>
 
-        <div class="col-xl-3 col-md-6 col-sm-12">
-            <h4>@_driver?.FirstName @_driver?.LastName</h4>
-            <h4>@_company?.CompanyName</h4>
+            <div class="col-xl-3 col-md-6 col-sm-12">
+                @if (_job != null)
+                {
+                    <h4>@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
+                    <JobStatusComponent JobDto="_job"></JobStatusComponent>
+                }
+                else
+                {
+                    <h4 class="text-muted">NO JOB ASSIGNED AT THE MOMENT</h4>
+                }
+            </div>
 
-            <DriverStatusComponent InitialDriverId="_driver?.Id"></DriverStatusComponent>
+            <div class="col-xl-3 col-md-6 col-sm-12">
+                @if (Component != null)
+                {
+                    <div>@Component</div>
+                }
+            </div>
+
         </div>
-
-        <div class="col-xl-3 col-md-6 col-sm-12">
-            @if (_job != null)
-            {
-                <h4>@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
-                <div class="job-status">@_job.CurrentStatus</div>
-            }
-            else
-            {
-                <h4 class="text-muted">NO JOB ASSIGNED AT THE MOMENT</h4>
-            }
-        </div>
-
-        <div class="col-xl-3 col-md-6 col-sm-12">
-            @if (Component != null)
-            {
-                <div>@Component</div>
-            }
-        </div>
-
     </div>
-</div>
-
-
+}
 
 @code {
     [Parameter] public int? InitialDriverId { get; set; }
@@ -50,17 +58,58 @@
     [Parameter] public JobDto? InitialJob { get; set; }
     [Parameter] public int? InitialJobId { get; set; }
     [Parameter] public RenderFragment? Component { get; set; }
+    [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
+    [Parameter] public int? InitialDispatcherId { get; set; }
+    private bool isLoading = true;
+    private HubConnection? hubConnection;
+    DispatcherDto? _dispatcher;
     DriverDto? _driver;
     CompanyDto? _company;
     JobDto? _job;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadDriverAsync();
-        await LoadCompanyAsync(_driver);
-        await LoadJobAsync();
-        RefreshDriversEvent.OnDriversChanged += RefreshDriversAsync;
+        try
+        {
+            await LoadDispatcherAsync();
+            await LoadDriverAsync();
+            await LoadCompanyAsync(_driver);
+            await LoadJobAsync();
+
+            if (_dispatcher != null || _driver != null)
+                await SetupHubAsync();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
+
+    private async Task SetupHubAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
+        {
+            if (eventType == FleetEventType.DriversUpdated || eventType == FleetEventType.DriverStatusChanged || eventType == FleetEventType.JobsUpdated || eventType == FleetEventType.JobAssigned)
+            {
+                await RefreshDriverJobAsync();
+            }
+        });
+
+        await hubConnection.StartAsync();
+
+        if (_dispatcher?.Id != null)
+            await hubConnection.InvokeAsync("JoinGroup", _dispatcher.Id.ToString());
+
+        if (_driver?.Id != null)
+            await hubConnection.InvokeAsync("JoinGroup", _driver.Id.ToString());
+    }
+
 
     private async Task LoadDriverAsync()
     {
@@ -70,24 +119,73 @@
 
     private async Task LoadCompanyAsync(DriverDto? driver)
     {
-        if (driver != null) _company = await CompanyService.GetSingleAsync(driver.McNumber);
+        if (driver?.McNumber != null)
+            _company = await CompanyService.GetSingleAsync(driver.McNumber);
+        else
+            _company = null;
     }
 
     private async Task LoadJobAsync()
     {
-        if (InitialJobId != null) _job = await JobService.GetSingleAsync((int)InitialJobId);
-        else if (InitialJob != null) _job = InitialJob;
+        if (InitialJob != null)
+        {
+            _job = InitialJob;
+        }
+        else if (InitialJobId.HasValue)
+        {
+            _job = await JobService.GetSingleAsync(InitialJobId.Value);
+        }
+        else
+        {
+            _job = null;
+        }
     }
 
-    private async Task RefreshDriversAsync()
+    private async Task RefreshDriverJobAsync(List<JobDto>? allJobs = null)
     {
-        await LoadJobAsync();
-        await LoadDriverAsync();
+        if (_driver == null) return;
+        if (allJobs != null)
+        {
+            _job = allJobs
+                .FirstOrDefault(j => j.DriverId == _driver.Id
+                                     && (j.CurrentStatus == JobStatus.Assigned || j.CurrentStatus == JobStatus.Accepted));
+        }
+        if (_job == null && InitialJobId.HasValue)
+        {
+            _job = await JobService.GetSingleAsync(InitialJobId.Value);
+        }
+
         await InvokeAsync(StateHasChanged);
     }
-    public void Dispose()
+
+
+    private async Task LoadDispatcherAsync()
     {
-        RefreshDriversEvent.OnDriversChanged -= RefreshDriversAsync;
+        if (InitialDispatcher != null)
+            _dispatcher = InitialDispatcher;
+        else if (InitialDispatcherId.HasValue)
+            _dispatcher = await DispatcherService.GetSingleAsync(InitialDispatcherId.Value);
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            if (_dispatcher?.Id != null)
+                await hubConnection.InvokeAsync("LeaveGroup", _dispatcher.Id.ToString());
+            if (_driver?.Id != null)
+                await hubConnection.InvokeAsync("LeaveGroup", _driver.Id.ToString());
+
+            await hubConnection.StopAsync();
+            await hubConnection.DisposeAsync();
+        }
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        if (InitialJob != _job)
+        {
+            _job = InitialJob;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
 }

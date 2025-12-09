@@ -5,9 +5,12 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @attribute [Authorize]
 @inject IJobService JobService
+@inject IDispatcherService DispatcherService
+
 
 @using ApiContracts.Dtos.Job
 @using ApiContracts.Enums
+@using BlazorFleetApp.Services.Dispatcher
 
 <h3 class="mb-3">Manage Jobs</h3>
 
@@ -77,9 +80,18 @@
                     </div>
 
                     <div class="col-6">
-                        <label>Total Price</label>
-                        <input type="number" class="form-control" @bind="totalPrice" />
+                        <label>Base Price (without rate)</label>
+                        <input type="number"
+                               class="form-control"
+                               @bind-value="basePrice"
+                               @bind-value:event="oninput" />
                     </div>
+
+                    <div class="col-6">
+                        <label>Total Price (with rate)</label>
+                        <input type="number" class="form-control" @bind="totalPrice" readonly />
+                    </div>
+
 
                     <div class="col-6">
                         <label>Trailer Type</label>
@@ -145,7 +157,6 @@
     private int dispatcherId = 0;
     private string message = "";
 
-    // Form fields
     private string title = "";
     private string description = "";
     private int loadedMiles;
@@ -161,6 +172,19 @@
     private int dropZip;
     private int driverId = 0;
     private JobStatus jobStatus = JobStatus.Available;
+    private int _basePrice;
+    private int basePrice
+    {
+        get => _basePrice;
+        set
+        {
+            _basePrice = value;
+            RecalculatePrice();
+        }
+    }
+
+    private decimal dispatcherRatePercent;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -172,6 +196,11 @@
             if (user.Identity?.IsAuthenticated ?? false)
             {
                 dispatcherId = int.Parse(user.Claims.First(c => c.Type == "Id").Value);
+                var dispatcher = await DispatcherService.GetSingleAsync(dispatcherId);
+                if (dispatcher != null)
+                {
+                    dispatcherRatePercent = (decimal)dispatcher.CurrentRate; // e.g. 20
+                }
                 await LoadJobsAsync();
             }
         }
@@ -195,6 +224,17 @@
             message = "Error loading jobs: " + ex.Message;
         }
     }
+    private void RecalculatePrice()
+    {
+        if (dispatcherRatePercent <= 0)
+        {
+            totalPrice = basePrice;
+            return;
+        }
+
+        decimal rate = dispatcherRatePercent / 100m;
+        totalPrice = (int)(basePrice * (1 + rate));
+    }
 
     private void SelectJob(JobDto job)
     {
@@ -207,6 +247,15 @@
         trailerType = job.TypeOfTrailerNeeded;
         cargoInfo = job.CargoInfo;
         totalPrice = job.TotalPrice;
+        if (dispatcherRatePercent > 0)
+        {
+            decimal rate = dispatcherRatePercent / 100m;
+            basePrice = (int)(totalPrice / (1 + rate));
+        }
+        else
+        {
+            basePrice = totalPrice;
+        }
 
         pickupTime = job.PickupTime;
         deliveryTime = job.DeliveryTime;
@@ -243,7 +292,8 @@
 
     if (weight <= 0)
         errors.Add("Weight must be greater than 0.");
-
+    if (basePrice <= 0)
+        errors.Add("Base price must be greater than 0.");
     if (totalPrice <= 0)
         errors.Add("Total price must be greater than 0.");
 

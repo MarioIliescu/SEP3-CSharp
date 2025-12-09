@@ -1,16 +1,18 @@
 ﻿@page "/my-drivers"
-@implements IDisposable
+@implements IAsyncDisposable
 @using ApiContracts.Dtos.Driver
 @using ApiContracts.Dtos.Job
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Job
 @using BlazorFleetApp.Services.RecruitDriver
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavMgr
 @inject IRecruitService RecruitService
-@inject RefreshDriversEvent RefreshDriversEvent
 @inject IJobService JobService
-
+@attribute [Authorize]
 <h3>My Drivers - Dispatcher</h3>
 
 
@@ -26,33 +28,42 @@ else
 {
     @foreach (var driver in drivers)
     {
-        // Single job assigned to this driver, or null
-        var assignedJob = jobs.FirstOrDefault(j => j.DriverId == driver.Id);
+        var currentJob = jobs.FirstOrDefault(j => j.DriverId == driver.Id
+                                                  && (j.CurrentStatus == JobStatus.Assigned || j.CurrentStatus == JobStatus.Accepted));
 
-        <DriverComponent InitialDriver="driver" InitialJobId="assignedJob?.Id">
+        <DriverComponent InitialDriver="driver"
+                         InitialJob="currentJob"
+                         InitialDispatcherId="id">
             <Component>
                 <AssignJobComponent
                     InitialDriver="driver"
-                    InitialDispatcherId="id"
+                    InitialDispatcherId="@id"
+                    DriverCurrentJob="currentJob"
                     InitialJobs="unassignedJobs">
                 </AssignJobComponent>
             </Component>
         </DriverComponent>
     }
+
+
 }
 
 
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private HubConnection? hubConnection;
     private List<DriverDto>? drivers;
     private bool isLoading;
     private List<JobDto> unassignedJobs = new();
     private int id;
     private List<JobDto> jobs = new List<JobDto>();
-    
+
+
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
+
         if (State != null)
         {
             var authState = await State;
@@ -63,11 +74,40 @@ else
                 id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
             }
         }
-        RefreshDriversEvent.OnDriversChanged += RefreshDriversAsync;
+
+        await SetupHubAsync();
         await LoadDriversAsync();
         await LoadJobsAsync();
         isLoading = false;
     }
+    private async Task SetupHubAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
+        {
+                switch (eventType)
+                {
+                    case FleetEventType.DriverStatusChanged:
+                    case FleetEventType.DriversUpdated:
+                    case FleetEventType.JobsUpdated:
+                    case FleetEventType.JobAssigned:
+                        await RefreshDriversAndJobsAsync();
+                        break;
+                }
+        });
+
+        await hubConnection.StartAsync();
+
+        if (id != 0)
+        {
+            await hubConnection.InvokeAsync("JoinGroup", id.ToString());
+        }
+    }
+
 
     private async Task LoadDriversAsync()
     {
@@ -80,15 +120,25 @@ else
         jobs = allJobs.Where(j => j.DispatcherId == id).ToList();
         unassignedJobs = jobs.Where(j => j.CurrentStatus == JobStatus.Available).ToList();
     }
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        RefreshDriversEvent.OnDriversChanged -= RefreshDriversAsync;
-    }
-    private async Task RefreshDriversAsync()
-    {
-        await LoadDriversAsync();
-        await LoadJobsAsync();
-        await InvokeAsync(StateHasChanged);
+        if (hubConnection != null)
+        {
+            if (id != 0)
+                await hubConnection.InvokeAsync("LeaveGroup", id.ToString());
+
+            await hubConnection.StopAsync();
+            await hubConnection.DisposeAsync();
+        }
     }
 
+    private async Task RefreshDriversAndJobsAsync()
+    {
+        drivers = await RecruitService.GetDriversForDispatcher(id);
+
+        var allJobs = await JobService.GetAllAsync();
+        jobs = allJobs.Where(j => j.DispatcherId == id).ToList();
+        unassignedJobs = jobs.Where(j => j.CurrentStatus == JobStatus.Available).ToList();
+        await InvokeAsync(StateHasChanged);
+    }
 }

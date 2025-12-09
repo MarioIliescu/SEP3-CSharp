@@ -4,11 +4,13 @@
 @using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
-@inject RefreshDriversEvent RefreshDriversEvent
 @using BlazorFleetApp.Services.RecruitDriver
+@using Microsoft.AspNetCore.SignalR.Client
 @inject IDriverService DriverService
 @inject IDispatcherService DispatcherService
 @inject IRecruitService RecruitService
+@inject NavigationManager NavMgr
+@implements IAsyncDisposable
 <div class="container-fluid">
     <div class="row">
         <div class="col-lg-3 d-none d-lg-block"></div>
@@ -26,6 +28,7 @@
     [Parameter] public int? InitialDispatcherId { get; set; }
     [Parameter] public DriverDto? InitialDriver { get; set; }
     [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
+    private HubConnection? hubConnection;
     private DriverDto? _driver;
     private DispatcherDto? _dispatcherDto;
     private string _errorMessage = "";
@@ -34,8 +37,30 @@
     {
         await LoadDriverAsync();
         await LoadDispatcherAsync();
+        await SetupHubAsync();
     }
+    private async Task SetupHubAsync()
+    {
 
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
+        {
+            if (eventType == FleetEventType.DriversUpdated)
+            {
+                await LoadDriverAsync();
+                StateHasChanged();
+            }
+        });
+
+        await hubConnection.StartAsync();
+
+        // Join the dispatcher-specific group
+        await hubConnection.InvokeAsync("JoinGroup", InitialDispatcherId.ToString());
+    }
     private async Task LoadDriverAsync()
     {
         if (InitialDriverId != null) _driver = await DriverService.GetSingleAsync((int)InitialDriverId);
@@ -62,7 +87,8 @@
             {
                 await RecruitService.RecruitDriver(dto);
                 _errorMessage = "";
-                await RefreshDriversEvent.NotifyDriversChangedAsync();
+                if (hubConnection != null)
+                    await hubConnection.InvokeAsync("NotifyEvent", FleetEventType.DriversUpdated);
             }
             else
             {
@@ -75,4 +101,12 @@
         }
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.InvokeAsync("LeaveGroup", InitialDispatcherId.ToString());
+            await hubConnection.DisposeAsync();
+        }
+    }
 }

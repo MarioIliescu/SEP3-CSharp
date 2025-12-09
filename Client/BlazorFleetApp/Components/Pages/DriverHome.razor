@@ -10,11 +10,13 @@
 <PageTitle>Home</PageTitle>
 <h1>
     Hello, @firstName @lastName <br/>
-    @if (userRole != null)
-    {
-        @userRole
-    }
 </h1>
+@if (userRole != null)
+{
+    <JobStatusComponent JobDto="@job">
+    </JobStatusComponent>
+}
+
 Welcome to Fleet Forward.
 @code
 {
@@ -22,9 +24,10 @@ Welcome to Fleet Forward.
     private string firstName = "User";
     private string lastName = "User";
     private UserRole? userRole;
-
+    private JobDto? job;
     protected override async Task OnInitializedAsync()
     {
+        await LoadJobAsync();
         if (State != null)
         {
             var authState = await State;
@@ -42,5 +45,9 @@ Welcome to Fleet Forward.
                 }
             }
         }
+    }
+    private async Task LoadJobAsync()
+    {
+        job = await JobService.GetSingleAsync(10);
     }
 }

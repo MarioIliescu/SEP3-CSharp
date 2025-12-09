@@ -1,0 +1,279 @@
+﻿@using ApiContracts.Dtos.Job
+@implements IAsyncDisposable
+@inject NavigationManager NavMgr
+@using Microsoft.AspNetCore.Components.Authorization
+@using ApiContracts.Enums
+@inject IJobService JobService
+@inject AuthenticationStateProvider AuthStateProvider
+@using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.SignalR.Client
+@if (job != null)
+{
+    <div>
+        @if (userRole == UserRole.Driver)
+        {
+            if (status is JobStatus.Completed or JobStatus.Expired or JobStatus.Available)
+            {
+                <h4>No job being tracked, wait for your dispatcher</h4>
+            }
+            else
+            {
+                <div class="job-status-select-wrapper"
+                     style="background-image: url('@GetStatusImage()');">
+                    <div class="job-status-text-wrapper">
+
+                        @if (status == JobStatus.Assigned)
+                        {
+                            <select class="job-status-select" @bind="status">
+                                <option value="@JobStatus.Available">Deny Job
+                                </option>
+                                <option value="@JobStatus.Accepted">Accept Job
+                                </option>
+                            </select>
+                        }
+                        else
+                        {
+                            <select class="job-status-select" @bind="status">
+                                <option value="@JobStatus.Accepted">Job pending
+                                    start
+                                </option>
+                                <option value="@JobStatus.Loading">Loading the
+                                    Cargo
+                                </option>
+                                <option value="@JobStatus.Ongoing">In route to
+                                    destination
+                                </option>
+                                <option value="@JobStatus.Unloading">Unloading
+                                    Cargo at destination
+                                </option>
+                                <option value="@JobStatus.Completed">Job
+                                    Completed
+                                </option>
+                            </select>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        @if (userRole == UserRole.Dispatcher)
+        {
+            <div class="job-status-select-wrapper" style="background-image: url('@GetStatusImage()');">
+                <div class="job-status-text-wrapper">
+                    <span class="job-status-text">@status</span>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div>Loading job...</div>
+}
+
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    [Parameter] public int? InitialJobId { get; set; }
+    [Parameter] public JobDto? JobDto { get; set; }
+    [Inject] private IJSRuntime JS { get; set; }
+    private HubConnection? hubConnection;
+    private int userId;
+    private UserRole? userRole;
+    private JobDto? job;
+    private JobStatus _status = JobStatus.Available;
+
+    private JobStatus status
+    {
+        get => _status;
+        set
+        {
+            if (_status != value)
+            {
+                // Check for Completed
+                if (value is JobStatus.Completed or JobStatus.Accepted or JobStatus.Available)
+                {
+                    _ = ConfirmAndChangeStatusAsync(value); // async fire-and-forget
+                }
+                else
+                {
+                    _status = value;
+                    _ = ChangeStatusAsync(value);
+                }
+            }
+        }
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserRoleAsync();
+        await LoadJobAsync();
+        // Initialize hub connection
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Subscribe to events
+        hubConnection.On<FleetEventType>("FleetEvent", (eventType) =>
+        {
+            return InvokeAsync(async () =>
+            {
+                switch (eventType)
+                {
+                    case FleetEventType.JobAssigned:
+                    case FleetEventType.JobsUpdated:
+                    case FleetEventType.JobStatusChanged:
+                        await RefreshJobAsync();
+                        break;
+                }
+            });
+        });
+        await hubConnection.StartAsync();
+    }
+
+    private async Task LoadUserRoleAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var roleClaim = user.FindFirst("Role")?.Value;
+            if (!string.IsNullOrEmpty(roleClaim) &&
+                Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole))
+            {
+                userRole = parsedRole;
+            }
+        }
+    }
+
+    private string GetStatusImage()
+    {
+        if (job == null)
+        {
+            return "/images/reddot.png";
+        }
+
+        return job.CurrentStatus switch
+        {
+            JobStatus.Available => "/images/JobStatus/driverNO_job_vector.png",
+            JobStatus.Assigned => "/images/JobStatus/assigned_job_vector.png",
+            JobStatus.Accepted => "/images/JobStatus/accepted_job_vector.png",
+            JobStatus.Loading => "/images/JobStatus/loading_cargo_job_vector.png",
+            JobStatus.Ongoing => "/images/JobStatus/ongoing_vector.png",
+            JobStatus.Unloading => "/images/JobStatus/unloading_cargo_job_vector.png",
+            JobStatus.Completed => "/images/JobStatus/completed_job_vector.png",
+            //JobStatus.Expired => "/images/JobStatus/expired_job_vector.png",
+            _ => "/images/JobStatus/unassigned_job_vector.png"
+        };
+    }
+    private async Task ChangeStatusAsync(JobStatus newStatus)
+    {
+        int driverId;
+        if (job == null) return;
+        if (newStatus is JobStatus.Available or JobStatus.Expired or JobStatus.Completed)
+        {
+            driverId = 0;
+        }
+        else
+        {
+            driverId = job.DriverId;
+        }
+
+        var dto = new UpdateJobDto
+        {
+            Title = job.Title,
+            CargoInfo = job.CargoInfo,
+            CurrentStatus = newStatus,
+            DeliveryTime = job.DeliveryTime,
+            Description = job.Description,
+            DispatcherId = job.DispatcherId,
+            DriverId = driverId,
+            DropLocationState = job.DropLocationState,
+            DropLocationZip = job.DropLocationZip,
+            Id = job.Id,
+            LoadedMiles = job.loadedMiles,
+            WeightOfCargo = job.weightOfCargo,
+            TypeOfTrailerNeeded = job.TypeOfTrailerNeeded,
+            TotalPrice = job.TotalPrice,
+            PickupTime = job.PickupTime,
+            PickupLocationZip = job.PickupLocationZip,
+            PickupLocationState = job.PickupLocationState,
+        };
+        await JobService.UpdateAsync(dto);
+
+        if (hubConnection != null)
+        {
+            await hubConnection.InvokeAsync(
+                "NotifyEvent",
+                FleetEventType.JobStatusChanged
+            );
+        }
+
+        _status = newStatus;
+        StateHasChanged();
+    }
+
+    private async Task RefreshJobAsync()
+    {
+        if (job != null)
+        {
+            job = await JobService.GetSingleAsync(job.Id);
+
+            if (job != null)
+                _status = job.CurrentStatus;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    private async Task LoadJobAsync()
+    {
+        if (JobDto != null)
+        {
+            job = JobDto;
+            _status = job.CurrentStatus;
+        }
+        else if (InitialJobId.HasValue)
+        {
+            job = await JobService.GetSingleAsync(InitialJobId.Value);
+            if (job != null) _status = job.CurrentStatus;
+        }
+        else
+        {
+            job = null;
+        }
+    }
+    private async Task ConfirmAndChangeStatusAsync(JobStatus newStatus)
+    {
+        string? statusText = newStatus switch
+        {
+            JobStatus.Available => "Are you sure you want to deny this job?",
+            JobStatus.Completed => "Are you sure you want to mark this job as completed?",
+            JobStatus.Accepted => "Are you sure you want to accept this job?",
+            _ => string.Empty
+        };
+        bool confirmed = await JS.InvokeAsync<bool>("confirm",
+            $"{statusText} This cannot be undone.");
+
+        if (confirmed)
+        {
+            _status = newStatus;
+            await ChangeStatusAsync(newStatus);
+        }
+        else
+        {
+            // Do nothing, revert to previous
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}
