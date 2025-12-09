@@ -37,6 +37,7 @@ else
                 <AssignJobComponent
                     InitialDriver="driver"
                     InitialDispatcherId="@id"
+                    DriverCurrentJob="currentJob"
                     InitialJobs="unassignedJobs">
                 </AssignJobComponent>
             </Component>
@@ -55,22 +56,7 @@ else
     private List<JobDto> unassignedJobs = new();
     private int id;
     private List<JobDto> jobs = new List<JobDto>();
-    private Dictionary<int, JobDto?> driverAssignments = new();
 
-    private void ComputeDriverAssignments()
-    {
-        if (drivers != null && jobs != null)
-        {
-            driverAssignments = drivers.ToDictionary(
-                d => d.Id,
-                d => jobs.FirstOrDefault(j => j.DriverId == d.Id)
-            );
-        }
-        else
-        {
-            driverAssignments = new Dictionary<int, JobDto?>();
-        }
-    }
 
 
     protected override async Task OnInitializedAsync()
@@ -89,7 +75,6 @@ else
         }
 
         await SetupHubAsync();
-
         await LoadDriversAsync();
         await LoadJobsAsync();
         isLoading = false;
@@ -103,8 +88,6 @@ else
 
         hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
         {
-            hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
-            {
                 switch (eventType)
                 {
                     case FleetEventType.DriverStatusChanged:
@@ -114,8 +97,6 @@ else
                         await RefreshDriversAndJobsAsync();
                         break;
                 }
-            });
-
         });
 
         await hubConnection.StartAsync();
@@ -157,7 +138,6 @@ else
         var allJobs = await JobService.GetAllAsync();
         jobs = allJobs.Where(j => j.DispatcherId == id).ToList();
         unassignedJobs = jobs.Where(j => j.CurrentStatus == JobStatus.Available).ToList();
-        ComputeDriverAssignments();
         await InvokeAsync(StateHasChanged);
     }
 }

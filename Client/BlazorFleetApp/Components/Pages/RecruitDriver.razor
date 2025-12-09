@@ -1,12 +1,16 @@
 ﻿@page "/recruit-driver"
 @using ApiContracts.Dtos.Driver
+@using ApiContracts.Dtos.Job
+@using ApiContracts.Enums
 @using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.Components.Authorization
 @using Services.RecruitDriver
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavMgr
 @implements IAsyncDisposable
 @inject IRecruitService RecruitService
+@inject IJobService JobService
 
 <h3>Recruit Driver - Dispatcher</h3>
 
@@ -22,7 +26,8 @@ else
 {
     @foreach (var driver in drivers)
     {
-        <DriverComponent InitialDriverId="driver.Id" InitialDispatcherId="id">
+        var currentJob = jobs.FirstOrDefault(j => j.DriverId == driver.Id);
+        <DriverComponent InitialDriverId="driver.Id" InitialDispatcherId="id" InitialJob="currentJob">
             <Component>
                 <RecruitComponent InitialDriver="driver" InitialDispatcherId="id"></RecruitComponent>
             </Component>
@@ -36,7 +41,7 @@ else
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     private int id;
     private HubConnection? hubConnection;
-
+    private List<JobDto> jobs = new List<JobDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,6 +55,8 @@ else
                 id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
             }
         }
+
+        await LoadJobsAsync();
         await LoadDriversAsync();
         await SetupHubAsync();
     }
@@ -75,10 +82,11 @@ else
             await hubConnection.InvokeAsync("JoinGroup", id.ToString());
         }
     }
-
-
-
-
+    private async Task LoadJobsAsync()
+    {
+        var allJobs = await JobService.GetAllAsync();
+        jobs = allJobs.Where(j => j.CurrentStatus != JobStatus.Available || j.CurrentStatus != JobStatus.Expired).ToList();
+    }
     private async Task LoadDriversAsync()
     {
         isLoading = true;

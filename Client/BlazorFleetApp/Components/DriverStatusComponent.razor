@@ -117,21 +117,6 @@ else
             }
         }
     }
-
-    private async void OnAuthChanged(Task<AuthenticationState> task)
-    {
-        var authState = await task;
-        var user = authState.User;
-        var roleClaim = user.FindFirst("Role")?.Value;
-        if (!string.IsNullOrEmpty(roleClaim) &&
-            Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole) &&
-            parsedRole == UserRole.Driver)
-        {
-            await LoadDriverAsync();
-            StateHasChanged();
-        }
-    }
-
     private string GetStatusImage()
     {
         if (driver == null)

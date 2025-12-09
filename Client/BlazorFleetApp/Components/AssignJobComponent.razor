@@ -45,7 +45,6 @@
                 </button>
 
                 <div class="error-message">@errorMessage</div>
-                <div class="error-message">@message</div>
             </div>
         }
     </div>
@@ -57,11 +56,11 @@
     [Parameter] public DriverDto? InitialDriver { get; set; }
     [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
     [Parameter] public List<JobDto?> InitialJobs { get; set; }
+    [Parameter] public JobDto? DriverCurrentJob { get; set; }
     private DriverDto? driver;
     private List<JobDto?> jobs = new List<JobDto?>();
     private DispatcherDto? dispatcher;
     private string errorMessage = "";
-    private string message = "";
     private JobDto? selectedJob;
     private HubConnection? hubConnection;
 
@@ -158,7 +157,11 @@
 
     // Refresh the latest status from DB
     driver = await DriverService.GetSingleAsync(driver.Id);
-
+    if (DriverCurrentJob !=null)
+    {
+        errorMessage = "Cannot assign a job when another job is already ongoing";
+        return;
+    }
     if (driver.Status != DriverStatus.Available)
     {
         errorMessage = "Cannot assign a job to a busy or off duty driver";
@@ -196,10 +199,8 @@
 
         await JobService.UpdateAsync(dto);
         await ChangeStatusAsync(DriverStatus.Busy);
-
-        message = "Job has been assigned successfully";
-        selectedJob = null;
         errorMessage = "";
+        selectedJob = null;
         if (hubConnection != null)
         {
             await hubConnection.InvokeAsync("NotifyEvent", FleetEventType.DriversUpdated);
