@@ -1,18 +1,22 @@
 @using ApiContracts.Dtos.Driver
-@implements IDisposable
+@implements IAsyncDisposable
+@inject NavigationManager NavMgr
 @using Microsoft.AspNetCore.Components.Authorization
 @using ApiContracts.Enums
 @inject IDriverService DriverService
 @inject AuthenticationStateProvider AuthStateProvider
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
-@inject RefreshDriversEvent RefreshDriversEvent
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.SignalR.Client
 @if (driver != null)
 {
     <div>
         @if (userRole == UserRole.Driver)
         {
-            <select class="driver-status" style="background-image: url('@GetStatusImage()');" @bind="status">
+            <select class="driver-status"
+                    style="background-image: url('@GetStatusImage()');"
+                    @bind="status">
                 @foreach (DriverStatus s in Enum.GetValues<DriverStatus>())
                 {
                     <option value="@s">@s</option>
@@ -21,7 +25,8 @@
         }
         @if (userRole == UserRole.Dispatcher)
         {
-            <div class="driver-status-text" style="background-image: url('@GetStatusImage()');">
+            <div class="driver-status-text"
+                 style="background-image: url('@GetStatusImage()');">
                 <span>@_status</span>
             </div>
         }
@@ -36,11 +41,13 @@ else
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     [Parameter] public int? InitialDriverId { get; set; }
-
+    [Parameter] public DriverDto? DriverDto { get; set; }
+    private HubConnection? hubConnection;
     private int userId;
     private UserRole? userRole;
     private DriverDto? driver;
     private DriverStatus _status = DriverStatus.Off_duty;
+
     private DriverStatus status
     {
         get => _status;
@@ -56,9 +63,28 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        AuthStateProvider.AuthenticationStateChanged += OnAuthChanged;
-        RefreshDriversEvent.OnDriversChanged += RefreshDriverAsync;
         await LoadDriverAsync();
+        // Initialize hub connection
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Subscribe to events
+        hubConnection.On<FleetEventType>("FleetEvent", (eventType) =>
+        {
+            return InvokeAsync(async () =>
+            {
+                switch (eventType)
+                {
+                    case FleetEventType.DriverStatusChanged:
+                    case FleetEventType.DriversUpdated:
+                        await RefreshDriverAsync();
+                        break;
+                }
+            });
+        });
+        await hubConnection.StartAsync();
     }
 
     private async Task LoadDriverAsync()
@@ -74,6 +100,7 @@ else
             {
                 userRole = parsedRole;
             }
+
             if (userRole == UserRole.Driver)
             {
                 var idClaim = user.FindFirst("Id")?.Value;
@@ -90,20 +117,6 @@ else
             }
         }
     }
-
-    private async void OnAuthChanged(Task<AuthenticationState> task)
-    {
-        var authState = await task;
-        var user = authState.User;
-        var roleClaim = user.FindFirst("Role")?.Value;
-        if (!string.IsNullOrEmpty(roleClaim) &&
-            Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole) &&
-            parsedRole == UserRole.Driver)
-        {
-            await LoadDriverAsync();
-            StateHasChanged();
-        }
-    }
     private string GetStatusImage()
     {
         if (driver == null)
@@ -118,27 +131,46 @@ else
             _ => "/images/reddot.png"
         };
     }
+
     private async Task ChangeStatusAsync(DriverStatus newStatus)
     {
         if (driver == null) return;
+
         driver = driver with { Status = newStatus };
         await DriverService.UpdateAsync(driver);
-        await LoadDriverAsync();
+
+        if (hubConnection != null)
+        {
+            await hubConnection.InvokeAsync(
+                "NotifyEvent",
+                FleetEventType.DriverStatusChanged
+            );
+        }
+
+        _status = newStatus;
         StateHasChanged();
     }
+
     private async Task RefreshDriverAsync()
     {
         if (driver != null)
         {
-            // Reload the driver from the service
             driver = await DriverService.GetSingleAsync(driver.Id);
-            _status = driver.Status;
-            await InvokeAsync(StateHasChanged);
+
+            if (driver != null)
+                _status = driver.Status;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
         }
     }
-    public void Dispose()
-    {
-        AuthStateProvider.AuthenticationStateChanged -= OnAuthChanged;
-        RefreshDriversEvent.OnDriversChanged -= RefreshDriverAsync;
-    }
+
 }

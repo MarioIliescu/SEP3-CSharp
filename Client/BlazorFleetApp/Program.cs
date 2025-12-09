@@ -1,5 +1,6 @@
 using BlazorFleetApp.Authentication;
 using BlazorFleetApp.Components;
+using BlazorFleetApp.Hubs;
 using BlazorFleetApp.Services;
 using BlazorFleetApp.Services.Auth;
 using BlazorFleetApp.Services.Dispatcher;
@@ -16,8 +17,10 @@ builder.Services.AddRazorPages();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddScoped(sp => new HttpClient()
-    { BaseAddress = new Uri(builder.Configuration["FleetWebApi:BaseAddress"] ?? "") });
+builder.Services.AddSingleton(new HttpClient
+{
+    BaseAddress = new Uri(builder.Configuration["FleetWebApi:BaseAddress"] ?? "")
+});
 builder.Services.AddAuthentication().AddCookie(options => { options.LoginPath = "/login"; });
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();
@@ -27,7 +30,7 @@ builder.Services.AddScoped<IDispatcherService, DispatcherServiceClient>();
 builder.Services.AddScoped<IJobService, JobServiceClient>();
 builder.Services.AddScoped<IRecruitService, RecruitService>();
 builder.Services.AddScoped<IAuthService, JwtAuthService>();
-builder.Services.AddSingleton<RefreshDriversEvent>();
+builder.Services.AddSignalR();
 if (builder.Environment.IsDevelopment())
 {
 }
@@ -40,7 +43,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
-
+app.MapHub<FleetHub>("/fleethub");
 app.UseHttpsRedirection();
 
 
