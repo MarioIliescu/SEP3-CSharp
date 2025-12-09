@@ -33,7 +33,7 @@ else
                 @if (_job != null)
                 {
                     <h4>@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
-                    <div class="job-status">@_job.CurrentStatus</div>
+                    <JobStatusComponent JobDto="_job"></JobStatusComponent>
                 }
                 else
                 {

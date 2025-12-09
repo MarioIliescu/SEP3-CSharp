@@ -14,23 +14,27 @@
     <div>
         @if (userRole == UserRole.Driver)
         {
-            <select class="job-status"
-                    style="background-image: url('@GetStatusImage()');"
-                    @bind="status">
-                @foreach (JobStatus s in Enum.GetValues<JobStatus>())
-                {
-                    <option value="@s">@s</option>
-                }
-            </select>
+            <div class="job-status-select-wrapper" style="background-image: url('@GetStatusImage()');">
+                <div class="job-status-text-wrapper">
+                    <select class="job-status-select" @bind="status">
+                        @foreach (JobStatus s in Enum.GetValues<JobStatus>())
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+            </div>
         }
         @if (userRole == UserRole.Dispatcher)
         {
-            <div class="job-status-text"
-                 style="background-image: url('@GetStatusImage()');">
-                <span>@_status</span>
+            <div class="job-status-select-wrapper" style="background-image: url('@GetStatusImage()');">
+                <div class="job-status-text-wrapper">
+                    <span class="job-status-text">@status</span>
+                </div>
             </div>
         }
     </div>
+
 }
 else
 {
@@ -104,6 +108,7 @@ else
             }
         }
     }
+
     private string GetStatusImage()
     {
         if (job == null)
@@ -113,9 +118,15 @@ else
 
         return job.CurrentStatus switch
         {
-            JobStatus.Available => "/images/greendot.png",
-            JobStatus.Assigned => "/images/yellowdot.png",
-            _ => "/images/reddot.png"
+            JobStatus.Available => "/images/JobStatus/driverNO_job_vector.png",
+            JobStatus.Assigned => "/images/JobStatus/assigned_job_vector.png",
+            JobStatus.Accepted => "/images/JobStatus/accepted_job_vector.png",
+            JobStatus.Loading => "/images/JobStatus/loading_cargo_job_vector.png",
+            JobStatus.Ongoing => "/images/JobStatus/ongoing_vector.png",
+            JobStatus.Unloading => "/images/JobStatus/unloading_cargo_job_vector.png",
+            JobStatus.Completed => "/images/JobStatus/completed_job_vector.png",
+            //JobStatus.Expired => "/images/JobStatus/expired_job_vector.png",
+            _ => "/images/JobStatus/unassigned_job_vector.png"
         };
     }
 
@@ -169,7 +180,7 @@ else
 
         await InvokeAsync(StateHasChanged);
     }
-    
+
     public async ValueTask DisposeAsync()
     {
         if (hubConnection is not null)
@@ -177,21 +188,22 @@ else
             await hubConnection.DisposeAsync();
         }
     }
-    
+
     private async Task LoadJobAsync()
     {
         if (JobDto != null)
         {
             job = JobDto;
+            _status = job.CurrentStatus;
         }
         else if (InitialJobId.HasValue)
         {
             job = await JobService.GetSingleAsync(InitialJobId.Value);
+            if (job != null) _status = job.CurrentStatus;
         }
         else
         {
             job = null;
         }
     }
-
 }

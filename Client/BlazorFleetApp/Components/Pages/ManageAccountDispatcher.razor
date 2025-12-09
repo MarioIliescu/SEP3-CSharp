@@ -1,12 +1,9 @@
 @page "/manage-account-dispatcher"
 @using ApiContracts.Dtos.Dispatcher
-@using ApiContracts.Enums
-@using BlazorFleetApp.Services.Auth
 @using BlazorFleetApp.Services.Dispatcher
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IDispatcherService DispatcherService
-@inject IAuthService AuthService
 @attribute [Authorize]
 
 <h3>Manage Account Dispatcher</h3>

@@ -1,17 +1,22 @@
 @page "/dispatcher-home"
+@using ApiContracts.Dtos.Job
 @using ApiContracts.Enums
+@using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@inject IJobService JobService
 @attribute [Authorize]
 
 <PageTitle>Home</PageTitle>
 <h1>
     Hello, @firstName @lastName <br/>
+</h1>
     @if (userRole != null)
     {
-        @userRole
+        <JobComponent InitialJob="@job">
+        </JobComponent>
     }
-</h1>
+
 Welcome to Fleet Forward.
 @code
 {
@@ -19,8 +24,10 @@ Welcome to Fleet Forward.
     private string firstName = "User";
     private string lastName = "User";
     private UserRole? userRole;
+    private JobDto? job;
     protected override async Task OnInitializedAsync()
     {
+        await LoadJobAsync();
         if (State != null)
         {
             var authState = await State;
@@ -38,5 +45,9 @@ Welcome to Fleet Forward.
                 }
             }
         }
+    }
+    private async Task LoadJobAsync()
+    {
+        job = await JobService.GetSingleAsync(10);
     }
 }
