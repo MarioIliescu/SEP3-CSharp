@@ -1,4 +1,5 @@
 ﻿@page "/manage-account-driver"
+@using System.Text.RegularExpressions
 @using ApiContracts.Dtos.Driver
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services.Auth
@@ -25,17 +26,17 @@
 
 <div class="mb-3">
     <label class="form-label">Phone Number</label>
-    <InputText class="form-control" @bind-Value="phoneNumber" />
+    <InputText class="form-control" @bind-Value="phoneNumber"/>
 </div>
 
 <div class="mb-3">
     <label class="form-label">First Name</label>
-    <InputText class="form-control" @bind-Value="firstName" />
+    <InputText class="form-control" @bind-Value="firstName"/>
 </div>
 
 <div class="mb-3">
     <label class="form-label">Last Name</label>
-    <InputText class="form-control" @bind-Value="lastName" />
+    <InputText class="form-control" @bind-Value="lastName"/>
 </div>
 
 <div class="mb-3">
@@ -55,7 +56,7 @@
 
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
-    
+
     private DriverDto? driver;
     private string email = "";
     private string phoneNumber = "";
@@ -75,7 +76,41 @@
         try
         {
             if (driver == null)
-                return; // Or show an error message
+                return; 
+
+            statusMessage = "";
+            List<string> errors = new();
+
+
+            if (string.IsNullOrWhiteSpace(firstName))
+                errors.Add("First name cannot be null or empty.");
+            else if (firstName.Length < 3)
+                errors.Add("First name must be at least 3 characters long.");
+            else if (!Regex.IsMatch(firstName, "^[A-Za-z'-]+$"))
+                errors.Add("First name contains invalid characters.");
+
+            if (string.IsNullOrWhiteSpace(lastName))
+                errors.Add("Last name cannot be null or empty.");
+            else if (lastName.Length < 3)
+                errors.Add("Last name must be at least 3 characters long.");
+            else if (!Regex.IsMatch(lastName, "^[A-Za-z'-]+$"))
+                errors.Add("Last name contains invalid characters.");
+
+            if (string.IsNullOrWhiteSpace(email))
+                errors.Add("Email cannot be null or empty.");
+            else if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                errors.Add("Email format is invalid.");
+
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                errors.Add("Phone number cannot be null or empty.");
+            else if (!Regex.IsMatch(phoneNumber, @"^\+?\d{1,3}([ -]?\d{2,4}){2,5}$"))
+                errors.Add("Phone number format is invalid. Expected formats like +49 123 456 789 or +421-987-654-321.");
+            
+            if (errors.Any())
+            {
+                statusMessage = string.Join("\n", errors);
+                return;
+            }
 
             var updated = driver with
             {
@@ -86,7 +121,7 @@
                 TrailerType = trailerType,
                 CompanyRole = companyRole,
                 Status = status,
-                Id =  userId,
+                Id = userId,
                 LocationZip = locationZIP,
                 LocationState = locationState
             };
@@ -101,13 +136,13 @@
         {
             statusMessage = e.Message;
         }
-
     }
-    
+
     protected override async Task OnInitializedAsync()
     {
         await LoadDriverDataAsync();
     }
+
     private async Task LoadDriverDataAsync()
     {
         if (State == null)
@@ -142,4 +177,5 @@
             }
         }
     }
+
 }

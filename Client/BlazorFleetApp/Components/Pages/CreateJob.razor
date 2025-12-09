@@ -204,6 +204,8 @@
 
         if (string.IsNullOrWhiteSpace(cargoInfo))
             validationErrors.Add("Cargo info is required.");
+        else if (cargoInfo.Length > 30)
+            validationErrors.Add("Cargo info cannot exceed 20 characters.");
 
         if (pickupTime <= DateTime.Now)
             validationErrors.Add("Pickup time must be in the future.");
