@@ -1,0 +1,51 @@
+﻿/* ================================
+   JOB STATUS WRAPPER
+   ================================ */
+.job-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f6b78;
+
+    padding: 6px 12px;
+    padding-left: 42px;              /* perfect icon spacing */
+
+    background-color: #e8f6f8;
+    border-radius: 6px;
+    border: 2px solid #0f6b78;
+
+    background-repeat: no-repeat;
+    background-position: 12px center; /* center + better balance */
+    background-size: 20px 20px;       /* cleaner icon ratio */
+
+    width: max-content;               /* FIX: works better inside flex */
+    box-sizing: border-box;           /* prevent padding overflows */
+}
+
+/* ================================
+   TEXT-ONLY VARIANT (no border box)
+   ================================ */
+.job-status-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f6b78;
+
+    padding: 6px 12px;
+    padding-left: 42px;
+
+    border-radius: 6px;
+
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 20px 20px;
+
+    width: max-content;               /* ensures clean layout */
+    box-sizing: border-box;
+}

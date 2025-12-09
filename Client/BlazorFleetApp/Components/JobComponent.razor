@@ -1,0 +1,67 @@
+﻿@using ApiContracts.Company
+@using ApiContracts.Dtos.Dispatcher
+@implements IAsyncDisposable
+@using ApiContracts.Dtos.Driver
+@using ApiContracts.Dtos.Job
+@using BlazorFleetApp.Services
+@using BlazorFleetApp.Services.Dispatcher
+@using BlazorFleetApp.Services.Driver
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavMgr
+@inject IDispatcherService DispatcherService
+@inject IDriverService DriverService
+@inject ICompanyService CompanyService
+@inject IJobService JobService
+@if (isLoading)
+{
+    <p> Loading component</p>
+}
+else
+{
+    <div class="box-container p-3">
+        <div class="row g-4">
+            <div class="col-xl-3 col-md-6 col-sm-12">
+                @if (_job != null)
+                {
+                    <h4>@_job.Title</h4>
+                    <h4>@_job.PickupTime → @_job.DeliveryTime</h4>
+                }
+            </div>
+            <div class="col-xl-3 col-md-6 col-sm-12">
+                <JobStatusComponent JobDto="_job"></JobStatusComponent>
+            </div>
+
+            <div class="col-xl-3 col-md-6 col-sm-12">
+                @if (Component != null)
+                {
+                    <div>@Component</div>
+                }
+            </div>
+
+        </div>
+    </div>
+}
+
+<h3>JobComponent</h3>
+
+@code {
+    [Parameter] public int? InitialDriverId { get; set; }
+    [Parameter] public DriverDto? InitialDriver { get; set; }
+    [Parameter] public JobDto? InitialJob { get; set; }
+    [Parameter] public int? InitialJobId { get; set; }
+    [Parameter] public RenderFragment? Component { get; set; }
+    [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
+    [Parameter] public int? InitialDispatcherId { get; set; }
+    private bool isLoading = true;
+    private HubConnection? hubConnection;
+    DispatcherDto? _dispatcher;
+    DriverDto? _driver;
+    CompanyDto? _company;
+    JobDto? _job;
+
+    public ValueTask DisposeAsync()
+    {
+        throw new NotImplementedException();
+    }
+}

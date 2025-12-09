@@ -1,0 +1,197 @@
+﻿@using ApiContracts.Dtos.Driver
+@using ApiContracts.Dtos.Job
+@implements IAsyncDisposable
+@inject NavigationManager NavMgr
+@using Microsoft.AspNetCore.Components.Authorization
+@using ApiContracts.Enums
+@inject IJobService JobService
+@inject AuthenticationStateProvider AuthStateProvider
+@using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.SignalR.Client
+@if (job != null)
+{
+    <div>
+        @if (userRole == UserRole.Driver)
+        {
+            <select class="job-status"
+                    style="background-image: url('@GetStatusImage()');"
+                    @bind="status">
+                @foreach (JobStatus s in Enum.GetValues<JobStatus>())
+                {
+                    <option value="@s">@s</option>
+                }
+            </select>
+        }
+        @if (userRole == UserRole.Dispatcher)
+        {
+            <div class="job-status-text"
+                 style="background-image: url('@GetStatusImage()');">
+                <span>@_status</span>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div>Loading job...</div>
+}
+
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    [Parameter] public int? InitialJobId { get; set; }
+    [Parameter] public JobDto? JobDto { get; set; }
+    private HubConnection? hubConnection;
+    private int userId;
+    private UserRole? userRole;
+    private JobDto? job;
+    private JobStatus _status = JobStatus.Available;
+
+    private JobStatus status
+    {
+        get => _status;
+        set
+        {
+            if (_status != value)
+            {
+                _status = value;
+                _ = ChangeStatusAsync(value); // fire-and-forget
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserRoleAsync();
+        await LoadJobAsync();
+        // Initialize hub connection
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        // Subscribe to events
+        hubConnection.On<FleetEventType>("FleetEvent", (eventType) =>
+        {
+            return InvokeAsync(async () =>
+            {
+                switch (eventType)
+                {
+                    case FleetEventType.JobAssigned:
+                    case FleetEventType.JobsUpdated:
+                    case FleetEventType.JobStatusChanged:
+                        await RefreshJobAsync();
+                        break;
+                }
+            });
+        });
+        await hubConnection.StartAsync();
+    }
+
+    private async Task LoadUserRoleAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var roleClaim = user.FindFirst("Role")?.Value;
+            if (!string.IsNullOrEmpty(roleClaim) &&
+                Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole))
+            {
+                userRole = parsedRole;
+            }
+        }
+    }
+    private string GetStatusImage()
+    {
+        if (job == null)
+        {
+            return "/images/reddot.png";
+        }
+
+        return job.CurrentStatus switch
+        {
+            JobStatus.Available => "/images/greendot.png",
+            JobStatus.Assigned => "/images/yellowdot.png",
+            _ => "/images/reddot.png"
+        };
+    }
+
+    private async Task ChangeStatusAsync(JobStatus newStatus)
+    {
+        if (job == null) return;
+
+        var dto = new UpdateJobDto
+        {
+            Title = job.Title,
+            CargoInfo = job.CargoInfo,
+            CurrentStatus = newStatus,
+            DeliveryTime = job.DeliveryTime,
+            Description = job.Description,
+            DispatcherId = job.DispatcherId,
+            DriverId = job.DriverId,
+            DropLocationState = job.DropLocationState,
+            DropLocationZip = job.DropLocationZip,
+            Id = job.Id,
+            LoadedMiles = job.loadedMiles,
+            WeightOfCargo = job.weightOfCargo,
+            TypeOfTrailerNeeded = job.TypeOfTrailerNeeded,
+            TotalPrice = job.TotalPrice,
+            PickupTime = job.PickupTime,
+            PickupLocationZip = job.PickupLocationZip,
+            PickupLocationState = job.PickupLocationState,
+        };
+        await JobService.UpdateAsync(dto);
+
+        if (hubConnection != null)
+        {
+            await hubConnection.InvokeAsync(
+                "NotifyEvent",
+                FleetEventType.JobStatusChanged
+            );
+        }
+
+        _status = newStatus;
+        StateHasChanged();
+    }
+
+    private async Task RefreshJobAsync()
+    {
+        if (job != null)
+        {
+            job = await JobService.GetSingleAsync(job.Id);
+
+            if (job != null)
+                _status = job.CurrentStatus;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+    
+    private async Task LoadJobAsync()
+    {
+        if (JobDto != null)
+        {
+            job = JobDto;
+        }
+        else if (InitialJobId.HasValue)
+        {
+            job = await JobService.GetSingleAsync(InitialJobId.Value);
+        }
+        else
+        {
+            job = null;
+        }
+    }
+
+}
