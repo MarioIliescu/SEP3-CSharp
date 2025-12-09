@@ -59,6 +59,7 @@ message UserProto{
   string phoneNumber = 5;
   string password = 6;
   UserRoleProto role = 7;
+  string photoUrl = 8;
 }
 enum UserRoleProto{
   UNKNOWN_ROLE = 0;
@@ -100,7 +101,7 @@ message DriverProto{
   TrailerTypeProto trailerType = 4;
   string currentState = 5;
   int32 currentZIPCODE = 6;
-  UserProto user =7;
+  UserProto user = 7;
 }
 message JobProto{
 int32  jobId = 1;
@@ -131,7 +132,7 @@ message DriverListProto{
 message DispatcherProto{
   double currentRate = 1;
   repeated int32 driversAssigned = 2;
-  UserProto user =3;
+  UserProto user = 3;
 }
 message DispatcherListProto{
   repeated DispatcherProto dispatchers = 1;

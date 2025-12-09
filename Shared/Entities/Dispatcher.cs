@@ -53,6 +53,12 @@ public class Dispatcher : User
             return this;
         }
 
+        public new Builder SetPhotoUrl(string url)
+        {
+            base.SetPhotoUrl(url);
+            return this;
+        }
+
         public new Builder SetPassword(String password)
         {
             base.SetPassword(password);
@@ -72,6 +78,7 @@ public class Dispatcher : User
                 PhoneNumber = baseUser.PhoneNumber,
                 Password = baseUser.Password,
                 Role = UserRole.Dispatcher,
+                PhotoUrl = baseUser.PhotoUrl,
                 // dispatcher-specific
                 Current_Rate =  _current_rate
             };

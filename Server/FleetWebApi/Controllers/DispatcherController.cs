@@ -57,6 +57,7 @@ public class DispatcherController : ControllerBase
                 .SetEmail(dto.Email)
                 .SetPhoneNumber(dto.PhoneNumber)
                 .SetCurrentRate(dto.CurrentRate)
+                .SetPhotoUrl(dto.PhotoUrl)
                 .Build();
             await _dispatcherService.UpdateAsync(dispatcher);
             return NoContent();
@@ -83,8 +84,8 @@ public class DispatcherController : ControllerBase
             dispatcher.LastName,
             dispatcher.Email,
             dispatcher.PhoneNumber,
-            dispatcher.Current_Rate
-            
+            dispatcher.Current_Rate,
+            dispatcher.PhotoUrl
         );
 
         return Ok(dto);
@@ -115,7 +116,8 @@ public class DispatcherController : ControllerBase
                 dispatcher.LastName,
                 dispatcher.Email,
                 dispatcher.PhoneNumber,
-                dispatcher.Current_Rate))
+                dispatcher.Current_Rate,
+                dispatcher.PhotoUrl))
             .ToList();
 
         return Ok(dispatchersDto);

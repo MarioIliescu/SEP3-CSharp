@@ -104,6 +104,12 @@ public class Driver : User
             return this;
         }
 
+        public new Builder SetPhotoUrl(string url)
+        {
+            base.SetPhotoUrl(url);
+            return this;
+        }
+
         public new Builder SetPassword(String password)
         {
             base.SetPassword(password);
@@ -122,6 +128,7 @@ public class Driver : User
                 Role = baseUser.Role,
                 PhoneNumber = baseUser.PhoneNumber,
                 Password = baseUser.Password,
+                PhotoUrl = baseUser.PhotoUrl,
                 // driver-specific
                 CompanyRole = _companyRole,
                 McNumber = _mcNumber,
