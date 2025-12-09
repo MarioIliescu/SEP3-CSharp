@@ -52,9 +52,6 @@ else
     </div>
 }
 
-
-
-
 @code {
     [Parameter] public int? InitialDriverId { get; set; }
     [Parameter] public DriverDto? InitialDriver { get; set; }
@@ -88,7 +85,6 @@ else
             StateHasChanged();
         }
     }
-
 
     private async Task SetupHubAsync()
     {
@@ -144,8 +140,6 @@ else
             _job = null;
         }
     }
-
-
 
     private async Task RefreshDriverJobAsync(List<JobDto>? allJobs = null)
     {
