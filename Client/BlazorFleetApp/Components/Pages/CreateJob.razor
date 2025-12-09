@@ -3,11 +3,13 @@
 @using ApiContracts.Enums
 @using ApiContracts.Dtos.Job
 @using BlazorFleetApp.Services.Job
+@using BlazorFleetApp.Services.Dispatcher
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject NavigationManager Nav
 @inject IJobService JobService
+@inject IDispatcherService DispatcherService
 @inject AuthenticationStateProvider AuthProvider
 
 @attribute [Authorize]
@@ -64,8 +66,15 @@
             }
         </select>
 
-        <label class="form-label">Total Price </label>
-        <input class="form-input" type="number" placeholder="Total Price" @bind="totalPrice" />
+        <label class="form-label">Base Price (without rate)</label>
+        <input class="form-input"
+               type="number"
+               @bind-value="basePrice"
+               @bind-value:event="oninput" />
+
+
+        <label class="form-label">Total Price (with dispatcher rate)</label>
+        <input class="form-input" type="number" @bind="totalPrice" readonly />
 
         <label class="form-label">Cargo Info</label>
         <input class="form-input" type="text" placeholder="Short cargo description" maxlength="30" @bind="cargoInfo" />
@@ -82,7 +91,6 @@
                 <label class="form-label small">State</label>
                 <input class="form-input" type="text" maxlength="2" placeholder="State" @bind="pickupState" />
             </div>
-
             <div class="column">
                 <label class="form-label small">ZIP</label>
                 <input class="form-input" type="number" placeholder="ZIP" @bind="pickupZip" />
@@ -95,7 +103,6 @@
                 <label class="form-label small">State</label>
                 <input class="form-input" type="text" maxlength="2" placeholder="State" @bind="dropState" />
             </div>
-
             <div class="column">
                 <label class="form-label small">ZIP</label>
                 <input class="form-input" type="number" placeholder="ZIP" @bind="dropZip" />
@@ -106,16 +113,29 @@
     </div>
 
 </div>
+
 @code {
-    private string message = "";
     private string successClass = "";
+    private List<string> validationErrors = new();
 
     private string title = "";
     private string description = "";
     private int loadedMiles;
     private int weight;
     private TrailerType trailerType = TrailerType.Dry_van;
-    private int totalPrice;
+
+    private int _basePrice;
+    private int basePrice
+    {
+        get => _basePrice;
+        set
+        {
+            _basePrice = value;
+            RecalculatePrice();
+        }
+    }      
+    private int totalPrice;     
+
     private string cargoInfo = "";
 
     private DateTime pickupTime = DateTime.Now;
@@ -127,23 +147,31 @@
     private int dropZip;
 
     private int dispatcherId = 0;
-
-    private List<string> validationErrors = new();
+    private decimal dispatcherRatePercent; 
 
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        if (State != null)
-        {
-            var authState = await State;
-            var user = authState.User;
+        var authState = await State;
+        var user = authState.User;
 
-            if (user?.Identity?.IsAuthenticated ?? false)
+        if (user?.Identity?.IsAuthenticated ?? false)
+        {
+            dispatcherId = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
+
+            var dispatcher = await DispatcherService.GetSingleAsync(dispatcherId);
+            if (dispatcher != null)
             {
-                dispatcherId = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
+                dispatcherRatePercent = (decimal)dispatcher.CurrentRate; // e.g. 20
             }
         }
+    }
+
+    private void RecalculatePrice()
+    {
+        decimal rate = dispatcherRatePercent / 100m;  // e.g., 20%
+        totalPrice = (int)(basePrice * (1 + rate));
     }
 
     private async Task CreateJobBlazor()
@@ -159,8 +187,7 @@
         else if (title.Length > 20)
             validationErrors.Add("Title cannot exceed 20 characters.");
 
-        
-            if (description.Length > 300)
+        if (description.Length > 300)
             validationErrors.Add("Description cannot exceed 300 characters.");
 
         if (loadedMiles <= 0)
@@ -169,31 +196,20 @@
         if (weight <= 0)
             validationErrors.Add("Weight must be greater than 0.");
 
-        if (totalPrice <= 0)
-            validationErrors.Add("Total price must be greater than 0.");
+        if (basePrice <= 0)
+            validationErrors.Add("Base price must be greater than 0.");
+
+       // if (totalPrice <= 0)
+          //  validationErrors.Add("Total price must be greater than 0.");
 
         if (string.IsNullOrWhiteSpace(cargoInfo))
             validationErrors.Add("Cargo info is required.");
-        else if (cargoInfo.Length > 30)
-            validationErrors.Add("Cargo info cannot exceed 30 characters.");
 
         if (pickupTime <= DateTime.Now)
             validationErrors.Add("Pickup time must be in the future.");
 
         if (deliveryTime <= pickupTime)
-            validationErrors.Add("Delivery time must be after pickup.");
-
-        if (string.IsNullOrWhiteSpace(pickupState) || !Regex.IsMatch(pickupState, "^[A-Za-z]{2}$"))
-            validationErrors.Add("Pickup state must be exactly 2 letters.");
-
-        if (pickupZip <= 0 || pickupZip >= 100000)
-            validationErrors.Add("Pickup ZIP must be between 1 and 99999.");
-
-        if (string.IsNullOrWhiteSpace(dropState) || !Regex.IsMatch(dropState, "^[A-Za-z]{2}$"))
-            validationErrors.Add("Drop state must be exactly 2 letters.");
-
-        if (dropZip <= 0 || dropZip >= 100000)
-            validationErrors.Add("Drop ZIP must be between 1 and 99999.");
+            validationErrors.Add("Delivery time must be after pickup time.");
 
         if (validationErrors.Any())
             return;
@@ -227,20 +243,15 @@
             description = "";
             loadedMiles = 0;
             weight = 0;
+            basePrice = 0;
             totalPrice = 0;
             cargoInfo = "";
-            pickupTime = DateTime.Now;
-            deliveryTime = DateTime.Now;
             pickupState = "";
-            pickupZip = 0;
             dropState = "";
+            pickupZip = 0;
             dropZip = 0;
             trailerType = TrailerType.Dry_van;
 
-            StateHasChanged();
-            await Task.Delay(3000);
-
-            successClass = "";
         }
         catch (Exception ex)
         {
