@@ -72,7 +72,6 @@ public class Job
             if (id <= 0)
                 throw new ArgumentException("Dispatcher ID must be positive.");
             _dispatcherId = id;
-            Console.WriteLine($"Dispatcher ID set to {_dispatcherId}");
             return this;
         }
 

@@ -93,6 +93,7 @@
 
             await DriverService.UpdateAsync(updated);
             await AuthService.RefreshTokenAsync();
+            await LoadDriverDataAsync();
             statusMessage = "Driver information updated successfully!";
             StateHasChanged();
         }
