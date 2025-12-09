@@ -6,12 +6,13 @@
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Job
 @using BlazorFleetApp.Services.RecruitDriver
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavMgr
 @inject IRecruitService RecruitService
 @inject IJobService JobService
-
+@attribute [Authorize]
 <h3>My Drivers - Dispatcher</h3>
 
 

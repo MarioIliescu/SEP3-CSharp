@@ -4,6 +4,7 @@
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Services.RecruitDriver
 @using Microsoft.AspNetCore.SignalR.Client
@@ -11,7 +12,7 @@
 @implements IAsyncDisposable
 @inject IRecruitService RecruitService
 @inject IJobService JobService
-
+@attribute [Authorize]
 <h3>Recruit Driver - Dispatcher</h3>
 
 @if (isLoading)

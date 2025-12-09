@@ -40,6 +40,12 @@
       <None Update="Components\AssignJobComponent.razor.css">
         <DependentUpon>AssignJobComponent.razor</DependentUpon>
       </None>
+      <None Update="Components\JobComponent.razor.css">
+        <DependentUpon>JobComponent.razor</DependentUpon>
+      </None>
+      <None Update="Components\JobStatusComponent.razor.css">
+        <DependentUpon>JobStatusComponent.razor</DependentUpon>
+      </None>
     </ItemGroup>
 
 </Project>
