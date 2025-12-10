@@ -134,11 +134,13 @@ else
 
     private async Task RefreshDriversAndJobsAsync()
     {
+        isLoading = true;
         drivers = await RecruitService.GetDriversForDispatcher(id);
 
         var allJobs = await JobService.GetAllAsync();
         jobs = allJobs.Where(j => j.DispatcherId == id).ToList();
         unassignedJobs = jobs.Where(j => j.CurrentStatus == JobStatus.Available).ToList();
+        isLoading = false;
         await InvokeAsync(StateHasChanged);
     }
 }
