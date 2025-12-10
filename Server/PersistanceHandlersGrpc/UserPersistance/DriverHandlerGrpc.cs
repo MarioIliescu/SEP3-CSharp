@@ -34,7 +34,7 @@ public class DriverHandlerGrpc : IFleetPersistanceHandler
                 _logger.LogInformation($"Updated driver {driver}");
                 break;
             case ActionType.Delete:
-                _logger.LogInformation("$Trying to delete driver {driver}");
+                _logger.LogInformation($"$Trying to delete driver {driver}");
                 await _driverRepository.DeleteAsync(driver.Id);
                 _logger.LogInformation($"Deleted driver with Id{driver.Id}");
                 break;

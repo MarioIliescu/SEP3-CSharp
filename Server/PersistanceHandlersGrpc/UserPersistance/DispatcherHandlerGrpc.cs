@@ -34,7 +34,7 @@ public class DispatcherHandlerGrpc : IFleetPersistanceHandler
                 _logger.LogInformation($"Updated dispatcher {dispatcher}");
                 break;
             case ActionType.Delete:
-                _logger.LogInformation("$Trying to delete dispatcher {dispatcher}");
+                _logger.LogInformation($"$Trying to delete dispatcher {dispatcher}");
                 await _dispatcherRepository.DeleteAsync(dispatcher.Id);
                 _logger.LogInformation($"Deleted driver with Id{dispatcher.Id}");
                 break;

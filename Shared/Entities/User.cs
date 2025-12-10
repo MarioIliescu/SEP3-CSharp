@@ -13,6 +13,8 @@ public class User
     public string Password { get; set; } = "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*";
     public UserRole Role { get; set; } = UserRole.Driver;
 
+    public string PhotoUrl { get; set; } = "";
+
     public User()
     {
     }
@@ -27,6 +29,7 @@ public class User
         private string _phoneNumber = "+4511119111";
         private string _password = "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*";
         private UserRole _role = UserRole.Driver;
+        private string _photoUrl;
 
 
         public Builder SetId(int id)
@@ -133,6 +136,12 @@ public class User
             _role = role;
             return this;
         }
+
+        public Builder SetPhotoUrl(string url)
+        {
+            _photoUrl = url;
+            return this;
+        }
         
         public new User Build()
         {
@@ -144,7 +153,8 @@ public class User
                 Email = _email,
                 PhoneNumber = _phoneNumber,
                 Password = _password,
-                Role = _role
+                Role = _role,
+                PhotoUrl = _photoUrl
             };
         }
 

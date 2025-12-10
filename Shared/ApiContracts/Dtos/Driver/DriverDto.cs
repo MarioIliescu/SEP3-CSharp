@@ -12,7 +12,7 @@ public record DriverDto(
 
     // User role (forced to DRIVER by builder but included for completeness)
     UserRole Role,
-
+    string PhotoUrl,
     // Driver-specific fields
     string McNumber,
     DriverStatus Status,

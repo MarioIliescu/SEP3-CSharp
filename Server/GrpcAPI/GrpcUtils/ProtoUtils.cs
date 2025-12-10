@@ -24,6 +24,7 @@ public static class ProtoUtils
             .SetPassword(proto.User.Password)
             .SetRole(UserRole.Driver)
             .SetPhoneNumber(proto.User.PhoneNumber)
+            .SetPhotoUrl(proto.User.PhotoUrl ?? "") 
             .Build();
     }
 
@@ -173,7 +174,7 @@ public static class ProtoUtils
             DriverStatus = ParseStatusToProto(payload.Status),
             CompanyRole = ParseCompanyRoleToProto(payload.CompanyRole),
             TrailerType = ParseTrailerTypeToProto(payload.Trailer_type),
-            CurrentZIPCODE = zipcode
+            CurrentZIPCODE = zipcode,
         };
     }
     
@@ -188,6 +189,7 @@ public static class ProtoUtils
             .SetLastName(proto.User.LastName)
             .SetPassword(proto.User.Password)
             .SetRole(UserRole.Dispatcher)
+            .SetPhotoUrl(proto.User.PhotoUrl ?? "")
             .Build();
     }
     public static RequestProto ParseDispatcherRequest(ActionTypeProto action, Dispatcher payload)
@@ -220,6 +222,7 @@ public static class ProtoUtils
             PhoneNumber = user.PhoneNumber,
             Password = user.Password,
             Role = ParseUserRoleToProto(user.Role),
+            PhotoUrl = user.PhotoUrl ?? "",
         };
     }
 
@@ -335,6 +338,7 @@ public static class ProtoUtils
             .SetLastName(proto.LastName)
             .SetPhoneNumber(proto.PhoneNumber)
             .SetPassword(proto.Password)
+            .SetPhotoUrl(proto.PhotoUrl ?? "")
             .Build();
     }
 

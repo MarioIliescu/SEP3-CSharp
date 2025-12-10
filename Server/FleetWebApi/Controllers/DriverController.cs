@@ -59,6 +59,7 @@ public class DriverController : ControllerBase
                 .SetLastName(dto.LastName)
                 .SetEmail(dto.Email)
                 .SetPhoneNumber(dto.PhoneNumber)
+                .SetPhotoUrl(dto.PhotoUrl)
                 .SetMcNumber(dto.McNumber)
                 .SetTrailerType(dto.TrailerType)
                 .SetStatus(dto.Status)
@@ -93,6 +94,7 @@ public class DriverController : ControllerBase
             driver.PhoneNumber,
             driver.Password,
             driver.Role,
+            driver.PhotoUrl,
             driver.McNumber,
             driver.Status,
             driver.Trailer_type,
@@ -131,6 +133,7 @@ public class DriverController : ControllerBase
                 d.PhoneNumber,
                 d.Password,
                 d.Role,
+                d.PhotoUrl,
                 d.McNumber,
                 d.Status,
                 d.Trailer_type,

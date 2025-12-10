@@ -94,7 +94,8 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
             new Claim("LastName", user.LastName),
             new Claim("Email", user.Email),
             new Claim("PhoneNumber", user.PhoneNumber),
-            new Claim("Role", user.Role.ToString())
+            new Claim("Role", user.Role.ToString()),
+            new Claim("PhotoUrl", user.PhotoUrl ?? "images/reddot.png"),
         };
         if (user is Dispatcher dispatcher)
         {
