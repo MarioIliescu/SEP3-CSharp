@@ -27,7 +27,6 @@ Welcome to Fleet Forward.
     private JobDto? job;
     protected override async Task OnInitializedAsync()
     {
-        await LoadJobAsync();
         if (State != null)
         {
             var authState = await State;
@@ -45,9 +44,5 @@ Welcome to Fleet Forward.
                 }
             }
         }
-    }
-    private async Task LoadJobAsync()
-    {
-        job = await JobService.GetSingleAsync(10);
     }
 }

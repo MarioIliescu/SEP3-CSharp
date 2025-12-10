@@ -150,7 +150,7 @@
 @code {
 
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
-
+    [Inject] private IJSRuntime JS { get; set; }
     private List<JobDto> jobs = new();
     private JobDto? selectedJob;
 
@@ -366,18 +366,29 @@
     {
         if (selectedJob == null)
             return;
+        bool confirmed = await JS.InvokeAsync<bool>("confirm",
+            "Are you sure you want to delete this job? This cannot be undone.");
 
-        try
+        if (confirmed)
         {
-            await JobService.DeleteAsync(selectedJob.Id);
-            message = "Job deleted.";
+            try
+            {
+                await JobService.DeleteAsync(selectedJob.Id);
+                message = "Job deleted.";
 
-            selectedJob = null;
-            await LoadJobsAsync();
+                selectedJob = null;
+                await LoadJobsAsync();
+            }
+            catch (Exception ex)
+            {
+                message = "Error deleting job: " + ex.Message;
+            }
         }
-        catch (Exception ex)
+
+        else
         {
-            message = "Error deleting job: " + ex.Message;
+            // Do nothing, revert to previous
+            await InvokeAsync(StateHasChanged);
         }
     }
 }
