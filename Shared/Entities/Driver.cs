@@ -16,13 +16,13 @@ public class Driver : User
 
     public class Builder : User.Builder
     {
-        private String _mcNumber;
+        private String _mcNumber = "Stuffstuff";
         private DriverStatus _status = DriverStatus.Available;
         private TrailerType _trailerType = TrailerType.Dry_van;
         private DriverCompanyRole _companyRole = DriverCompanyRole.Driver;
 
-        private string _state = "NA";
-        private int _zip = 10;
+        private string _state = "AL";
+        private int _zip = 35010;
         
         public new Builder SetMcNumber(String mc)
         {
