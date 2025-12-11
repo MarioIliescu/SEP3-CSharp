@@ -10,11 +10,12 @@ using Microsoft.IdentityModel.Tokens;
 using Services.Auth;
 
 namespace FleetWebApi.Controllers;
+
 [ApiController]
 [Route("[controller]")]
-public class AuthController(IConfiguration config, IAuthService authService) : ControllerBase
+public class AuthController(IConfiguration config, IAuthService authService)
+    : ControllerBase
 {
-
     [HttpPost("login")]
     public async Task<ActionResult> Login([FromBody] LoginRequest userLoginDto)
     {
@@ -28,13 +29,14 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
             if (user is Driver driver)
             {
                 string token = GenerateJwt(driver);
-                return Ok(new{token});
+                return Ok(new { token });
             }
             else if (user is Dispatcher dispatcher)
             {
                 string token = GenerateJwt(dispatcher);
-                return Ok(new{token});
+                return Ok(new { token });
             }
+
             throw new Exception("Something went wrong. Try again");
         }
         catch (Exception e)
@@ -54,7 +56,9 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature),
             Issuer = config["Jwt:Issuer"],
             Audience = config["Jwt:Audience"]
         };
@@ -62,32 +66,42 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
+
     [HttpPost("refresh")]
     public ActionResult Refresh()
     {
-        var user = User; // from current valid JWT
+        var user = User;
         if (user.Identity?.IsAuthenticated != true)
             return Unauthorized();
 
-        // Extract user info from claims
-        var userIdClaim = user.FindFirst("Id")?.Value
-                          ?? throw new UnauthorizedAccessException();
+        var roleClaim = user.FindFirst("Role")?.Value;
 
-        // Rebuild user from claims (or reload from DB)
-        var rebuiltUser = RebuildUserFromClaims(user);
+        if (roleClaim == "Dispatcher")
+        {
+            var rebuiltDispatcher = RebuildUserFromClaims(user);
+            var newToken = GenerateJwt(rebuiltDispatcher);
+            return Ok(new { token = newToken });
+        }
+        else if (roleClaim == "Driver")
+        {
+            var rebuiltDriver = RebuildUserFromClaims(user);
+            var newToken = GenerateJwt(rebuiltDriver);
+            return Ok(new { token = newToken });
+        }
 
-        var newToken = GenerateJwt(rebuiltUser);
-        return Ok(new { token = newToken });
+        return Unauthorized();
     }
+
 
     private List<Claim> GenerateClaims(User user)
     {
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, "FleetForward"),      
+            new Claim(JwtRegisteredClaimNames.Sub, "FleetForward"),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Iat, 
-                new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(), 
+            new Claim(JwtRegisteredClaimNames.Iat,
+                new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()
+                    .ToString(),
                 ClaimValueTypes.Integer64),
             new Claim("Id", user.Id.ToString()),
             new Claim("FirstName", user.FirstName),
@@ -99,7 +113,8 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
         };
         if (user is Dispatcher dispatcher)
         {
-            claims.Add(new Claim("CurrentRate", dispatcher.Current_Rate.ToString()));
+            claims.Add(new Claim("CurrentRate",
+                dispatcher.Current_Rate.ToString()));
         }
 
         if (user is Driver driver)
@@ -107,19 +122,25 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
             claims.Add(new Claim("CompanyRole", driver.CompanyRole.ToString()));
             claims.Add(new Claim("CompanyMC", driver.McNumber));
             claims.Add(new Claim("DriverStatus", driver.Status.ToString()));
-            claims.Add(new Claim("TrailerType", driver.Trailer_type.ToString()));
-            claims.Add(new Claim("Location",driver.Location_State));
-            claims.Add(new Claim("LocationZip",driver.Location_Zip_Code.ToString()));
+            claims.Add(new Claim("TrailerType",
+                driver.Trailer_type.ToString()));
+            claims.Add(new Claim("Location", driver.Location_State));
+            claims.Add(new Claim("LocationZip",
+                driver.Location_Zip_Code.ToString()));
         }
 
         return claims;
     }
+
     private User RebuildUserFromClaims(ClaimsPrincipal claims)
     {
-        var id = int.Parse(claims.FindFirst("Id")?.Value ?? "0");
-        var role = Enum.TryParse<UserRole>(claims.FindFirst("Role")?.Value, out var parsedRole)
+        var idClaim = claims.FindFirst("Id")?.Value;
+            var id = int.Parse(idClaim);
+        var roleClaim = claims.FindFirst("Role")?.Value;
+        var role = Enum.TryParse<UserRole>(roleClaim, out var parsedRole)
             ? parsedRole
-            : UserRole.Driver;
+            : throw new UnauthorizedAccessException(
+                "Role claim missing or invalid");
 
         if (role == UserRole.Driver)
         {
@@ -129,25 +150,47 @@ public class AuthController(IConfiguration config, IAuthService authService) : C
                 .SetLastName(claims.FindFirst("LastName")?.Value ?? "")
                 .SetEmail(claims.FindFirst("Email")?.Value ?? "")
                 .SetPhoneNumber(claims.FindFirst("PhoneNumber")?.Value ?? "")
-                .SetCompanyRole(Enum.TryParse<DriverCompanyRole>(claims.FindFirst("CompanyRole")?.Value, out var cr) ? cr : DriverCompanyRole.Driver)
+                .SetCompanyRole(
+                    Enum.TryParse<DriverCompanyRole>(
+                        claims.FindFirst("CompanyRole")?.Value, out var cr)
+                        ? cr
+                        : DriverCompanyRole.Driver)
                 .SetMcNumber(claims.FindFirst("CompanyMC")?.Value ?? "")
-                .SetStatus(Enum.TryParse<DriverStatus>(claims.FindFirst("DriverStatus")?.Value, out var ds) ? ds : DriverStatus.Available)
-                .SetTrailerType(Enum.TryParse<TrailerType>(claims.FindFirst("TrailerType")?.Value, out var tt) ? tt : TrailerType.Dry_van)
+                .SetStatus(
+                    Enum.TryParse<DriverStatus>(
+                        claims.FindFirst("DriverStatus")?.Value, out var ds)
+                        ? ds
+                        : DriverStatus.Available)
+                .SetTrailerType(
+                    Enum.TryParse<TrailerType>(
+                        claims.FindFirst("TrailerType")?.Value, out var tt)
+                        ? tt
+                        : TrailerType.Dry_van)
                 .SetLocationState(claims.FindFirst("Location")?.Value ?? "")
-                .SetLocationZip(int.Parse(claims.FindFirst("LocationZip")?.Value ?? "35010"))
+                .SetLocationZip(
+                    int.Parse(claims.FindFirst("LocationZip")?.Value ??
+                              "35010"))
                 .Build();
         }
-        else
+        else if (role == UserRole.Dispatcher)
         {
+            var rateClaim = claims.FindFirst("CurrentRate")?.Value;
+            double rate = 0;
+            if (!string.IsNullOrEmpty(rateClaim))
+                double.TryParse(rateClaim, out rate);
+
             return new Dispatcher.Builder()
                 .SetId(id)
                 .SetFirstName(claims.FindFirst("FirstName")?.Value ?? "")
                 .SetLastName(claims.FindFirst("LastName")?.Value ?? "")
                 .SetEmail(claims.FindFirst("Email")?.Value ?? "")
                 .SetPhoneNumber(claims.FindFirst("PhoneNumber")?.Value ?? "")
-                .SetCurrentRate(double.TryParse(claims.FindFirst("CurrentRate")?.Value, out var rate) ? rate : 0)
+                .SetCurrentRate(rate)
                 .Build();
         }
+        else
+        {
+            throw new UnauthorizedAccessException("Unknown role");
+        }
     }
-
 }

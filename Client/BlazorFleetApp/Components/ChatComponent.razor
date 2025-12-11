@@ -30,7 +30,8 @@
     </div>
 
     <div class="chat-input">
-        <input @bind="messageInput" @onkeydown="HandleKeyPress" placeholder="Type a message..." />
+        <input @bind="messageInput" @bind:event="oninput"
+               @onkeydown="HandleKeyPress" placeholder="Type a message..." />
         <button @onclick="SendAsync" disabled="@(!IsConnected)">Send</button>
     </div>
 </div>
@@ -190,16 +191,15 @@
     {
         if (e.Key == "Enter") await SendAsync();
     }
-
     private async Task ScrollToBottomAsync()
     {
-        if (_disposed) return;
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
 
         if (module != null)
-        {
             await module.InvokeVoidAsync("scrollToBottom", chatDiv);
-        }
     }
+
 
     public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
 
@@ -226,4 +226,15 @@
             await module.DisposeAsync();
         }
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./Components/ChatComponent.razor.js"
+            );
+        }
+    }
+
 }

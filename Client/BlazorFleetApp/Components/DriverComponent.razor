@@ -15,40 +15,63 @@
 @inject IDriverService DriverService
 @inject ICompanyService CompanyService
 @inject IJobService JobService
-<div class="driver-card" @onclick="() => OnSelected.InvokeAsync(_driver)">
-    @if (isLoading)
+<div id="@DriverCardId" class="driver-card box-container p-3"
+     style="position: relative;">
+    @if (showExtraColumn)
     {
-        <p> Loading component</p>
+        <div class="overlay" @onclick="HideExtraColumn"></div>
     }
-    else
+
+    <div class="row g-4" @onclick="ToggleExtraColumn"
+         style="cursor:pointer; position: relative; z-index: 2;">
+        <div class="col-xl-3 col-md-6 col-sm-12">
+            <h4>@_driver?.FirstName @_driver?.LastName</h4>
+            <h4>@_company?.CompanyName</h4>
+            @if (_driver?.Id != null)
+            {
+                <DriverStatusComponent InitialDriverId="@_driver.Id"></DriverStatusComponent>
+            }
+        </div>
+
+        <div class="col-xl-3 col-md-6 col-sm-12">
+            @if (_job != null)
+            {
+                <h4>@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
+                <JobStatusComponent JobDto="_job"></JobStatusComponent>
+            }
+            else
+            {
+                <h4 class="text-muted">NO JOB ASSIGNED</h4>
+            }
+        </div>
+
+        <div class="col-xl-3 col-md-6 col-sm-12">
+            @if (Component != null)
+            {
+                <div>@Component</div>
+            }
+        </div>
+    </div>
+
+    @if (showExtraColumn)
     {
-        <div class="box-container p-3">
-            <div class="row g-4">
-                <div class="col-xl-3 col-md-6 col-sm-12">
-                    <h4>@_driver?.FirstName @_driver?.LastName</h4>
-                    <h4>@_company?.CompanyName</h4>
-                    <DriverStatusComponent InitialDriverId="@_driver?.Id"></DriverStatusComponent>
-                </div>
-
-                <div class="col-xl-3 col-md-6 col-sm-12">
-                    @if (_job != null)
-                    {
-                        <h4>@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
-                        <JobStatusComponent JobDto="_job"></JobStatusComponent>
-                    }
-                    else
-                    {
-                        <h4 class="text-muted">NO JOB ASSIGNED AT THE MOMENT</h4>
-                    }
-                </div>
-
-                <div class="col-xl-3 col-md-6 col-sm-12">
-                    @if (Component != null)
-                    {
-                        <div>@Component</div>
-                    }
-                </div>
-            </div>
+        <div class="row g-4 mt-2" @onclick:stopPropagation="true"
+             @onclick="HandleExtraColumnClick"
+             style="cursor:pointer; position: relative; z-index: 3;">
+            <h5 class="mb-2">Driver Info</h5>
+            <p class="mb-1">Name: @_driver?.FirstName @_driver?.LastName</p>
+            <p class="mb-1">MC Number: @_driver?.McNumber</p>
+            <p class="mb-1">Company: @_company?.CompanyName</p>
+            @if (_job != null)
+            {
+                <h5 class="mb-2 mt-3">Assigned Job Info</h5>
+                <p class="mb-1">Job Title: @_job?.Title</p>
+                <p class="mb-0">Status: @_job?.CurrentStatus</p>
+                <p class="mb-0">Pick
+                    Up: @_job?.PickupLocationState, @_job?.PickupLocationZip</p>
+                <p class="mb-0">
+                    Delivery: @_job?.DropLocationState, @_job?.DropLocationZip</p>
+            }
         </div>
     }
 </div>
@@ -58,16 +81,21 @@
     [Parameter] public DriverDto? InitialDriver { get; set; }
     [Parameter] public JobDto? InitialJob { get; set; }
     [Parameter] public int? InitialJobId { get; set; }
-    [Parameter] public RenderFragment? Component { get; set; }
     [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
     [Parameter] public int? InitialDispatcherId { get; set; }
+    [Parameter] public RenderFragment? Component { get; set; }
     [Parameter] public EventCallback<DriverDto> OnSelected { get; set; }
+    [Inject] private IJSRuntime JS { get; set; }
+    private string DriverCardId => $"driverCard_{(ValueType)_driver?.Id ?? Guid.NewGuid()}";
+    private bool showExtraColumn = false;
     private bool isLoading = true;
     private HubConnection? hubConnection;
-    DispatcherDto? _dispatcher;
-    DriverDto? _driver;
-    CompanyDto? _company;
-    JobDto? _job;
+    private DispatcherDto? _dispatcher;
+    private DriverDto? _driver;
+    private CompanyDto? _company;
+    private JobDto? _job;
+    private DotNetObjectReference<DriverComponent>? dotNetRef;
+    private IJSObjectReference? module;
 
     protected override async Task OnInitializedAsync()
     {
@@ -115,8 +143,8 @@
 
     private async Task LoadDriverAsync()
     {
-        if (InitialDriverId != null) _driver = await DriverService.GetSingleAsync((int)InitialDriverId);
-        else if (InitialDriver != null) _driver = InitialDriver;
+        if (InitialDriver != null) _driver = InitialDriver;
+        else if (InitialDriverId.HasValue) _driver = await DriverService.GetSingleAsync((int)InitialDriverId);
     }
 
     private async Task LoadCompanyAsync(DriverDto? driver)
@@ -152,6 +180,7 @@
                 .FirstOrDefault(j => j.DriverId == _driver.Id
                                      && (j.CurrentStatus == JobStatus.Assigned || j.CurrentStatus == JobStatus.Accepted));
         }
+
         if (_job == null && InitialJobId.HasValue)
         {
             _job = await JobService.GetSingleAsync(InitialJobId.Value);
@@ -169,8 +198,51 @@
             _dispatcher = await DispatcherService.GetSingleAsync(InitialDispatcherId.Value);
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        if (InitialJob != _job)
+        {
+            _job = InitialJob;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    private async Task ToggleExtraColumn()
+    {
+        showExtraColumn = !showExtraColumn;
+
+        if (OnSelected.HasDelegate)
+            await OnSelected.InvokeAsync(_driver);
+    }
+
+    [JSInvokable]
+    public void HideExtraColumn()
+    {
+        showExtraColumn = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleExtraColumnClick()
+    {
+        if (OnSelected.HasDelegate)
+            await OnSelected.InvokeAsync(_driver);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef?.Dispose();
+            dotNetRef = DotNetObjectReference.Create(this);
+            module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./Components/DriverComponent.razor.js"
+            );
+            await module.InvokeVoidAsync("registerClickOutside", dotNetRef, DriverCardId);
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
+        dotNetRef?.Dispose();
         if (hubConnection != null)
         {
             if (_dispatcher?.Id != null)
@@ -182,12 +254,5 @@
             await hubConnection.DisposeAsync();
         }
     }
-    protected override async Task OnParametersSetAsync()
-    {
-        if (InitialJob != _job)
-        {
-            _job = InitialJob;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
+
 }

@@ -3,8 +3,6 @@
 @implements IAsyncDisposable
 @using ApiContracts.Dtos.Driver
 @using ApiContracts.Dtos.Job
-@using ApiContracts.Enums
-@using BlazorFleetApp.Services
 @using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
@@ -14,61 +12,79 @@
 @inject NavigationManager NavMgr
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IDispatcherService DispatcherService
-@inject IDriverService DriverService
-@inject ICompanyService CompanyService
 @inject IJobService JobService
 @if (isLoading)
 {
-    <p> Loading component</p>
+    <p>Loading component...</p>
 }
 else
 {
-    <div class="box-container p-3">
-        <div class="row g-4">
-            <div class="col-xl-3 col-md-6 col-sm-12">
-                @if (_job != null)
-                {
-                    <h4>@_job.Title</h4>
-                    <h4>@_job.PickupTime → @_job.DeliveryTime</h4>
-                }
+    <div id="@JobCardId" class="job-card box-container p-3 position-relative">
+        @if (showExtraColumn)
+        {
+            <div class="overlay" @onclick="HideExtraColumn"></div>
+        }
+
+        <!-- Main row -->
+        <div class="row g-4 align-items-center" @onclick="ToggleExtraColumn">
+            <div class="col-xl-4 col-md-6 col-sm-12">
+                <h4 class="mb-1">@_job?.Title</h4>
+                <p class="mb-0 text-muted">@_job?.PickupTime → @_job?.DeliveryTime</p>
             </div>
-            <div class="col-xl-3 col-md-6 col-sm-12">
+
+            <div class="col-xl-4 col-md-6 col-sm-12">
                 <JobStatusComponent JobDto="_job"></JobStatusComponent>
             </div>
 
-            <div class="col-xl-3 col-md-6 col-sm-12">
-                @if (Component != null)
-                {
-                    <div>@Component</div>
-                }
+            <div class="col-xl-4 col-md-6 col-sm-12">
+                <h5 class="mb-0">
+                    $ JOB PRICE (@($"${_job?.TotalPrice:F2} (Dispatcher cut: ${(_job?.TotalPrice * _dispatcher?.CurrentRate):F2})"))
+                </h5>
             </div>
-
         </div>
+
+        @if (showExtraColumn)
+        {
+            <div class="extra-info mt-3 p-3 rounded border bg-light" @onclick:stopPropagation="true" @onclick="HandleExtraColumnClick">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5>Job Info</h5>
+                        <p><strong>Status:</strong> @_job?.CurrentStatus</p>
+                        <p><strong>Loaded miles:</strong> @_job?.loadedMiles miles</p>
+                        <p><strong>Weight:</strong> @_job?.weightOfCargo LBS</p>
+                        <p><strong>Trailer type:</strong> @_job?.TypeOfTrailerNeeded</p>
+                        <p><strong>Pickup:</strong> @_job?.PickupLocationState , @_job?.PickupLocationZip</p>
+                        <p><strong>Delivery:</strong> @_job?.DropLocationState , @_job?.DropLocationZip</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Extra Job Information</h5>
+                        <p><strong>Cargo Info:</strong> @_job?.CargoInfo</p>
+                        <p><strong>Description:</strong> @_job?.Description</p>
+                    </div>
+                </div>
+            </div>
+        }
+
     </div>
 }
 @code {
-    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
-    [Parameter] public int? InitialDriverId { get; set; }
-    [Parameter] public DriverDto? InitialDriver { get; set; }
+    [CascadingParameter] public Task<AuthenticationState>? State { get; set; }
     [Parameter] public JobDto? InitialJob { get; set; }
     [Parameter] public int? InitialJobId { get; set; }
-    [Parameter] public RenderFragment? Component { get; set; }
     [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
     [Parameter] public int? InitialDispatcherId { get; set; }
+    [Parameter] public EventCallback<JobDto?> OnExtraJobColumnClicked { get; set; }
+    [Inject] private IJSRuntime JS { get; set; }
+    private bool showExtraColumn = false;
     private bool isLoading = true;
     private HubConnection? hubConnection;
     DispatcherDto? _dispatcher;
     DriverDto? _driver;
     CompanyDto? _company;
     JobDto? _job;
-
-    public async ValueTask DisposeAsync()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
-    }
+    private DotNetObjectReference<JobComponent>? dotNetRef;
+    private string JobCardId => $"jobCard_{(ValueType)_job?.Id ?? Guid.NewGuid()}";
+    private IJSObjectReference? module;
     private async Task LoadJobAsync()
     {
         if (InitialJob != null)
@@ -88,6 +104,7 @@ else
     {
         await LoadFromClaims();
         await LoadJobAsync();
+        await LoadDispatcherAsync();
         // Initialize hub connection
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
@@ -127,6 +144,60 @@ else
         {
             _job = await JobService.GetSingleAsync(_job.Id);
         }
+        await LoadDispatcherAsync();
         await InvokeAsync(StateHasChanged);
+    }
+    private async Task ToggleExtraColumn()
+    {
+        showExtraColumn = !showExtraColumn;
+
+        if (OnExtraJobColumnClicked.HasDelegate)
+            await OnExtraJobColumnClicked.InvokeAsync(_job);
+    }
+
+    private async Task HandleExtraColumnClick()
+    {
+        if (OnExtraJobColumnClicked.HasDelegate)
+            await OnExtraJobColumnClicked.InvokeAsync(_job);
+    }
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef?.Dispose();
+
+            dotNetRef = DotNetObjectReference.Create(this);
+            module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./Components/JobComponent.razor.js"
+            );
+            await module.InvokeVoidAsync("registerClickOutside", dotNetRef, JobCardId);
+        }
+    }
+
+    [JSInvokable]
+    private void HideExtraColumn()
+    {
+        showExtraColumn = false;
+        StateHasChanged();
+    }
+    public async ValueTask DisposeAsync()
+    {
+        dotNetRef?.Dispose();
+
+        if (module != null)
+            await module.DisposeAsync();
+
+        if (hubConnection != null)
+            await hubConnection.DisposeAsync();
+    }
+    private async Task LoadDispatcherAsync()
+    {
+        if (InitialDispatcher != null)
+            _dispatcher = InitialDispatcher;
+        else if (InitialDispatcherId.HasValue)
+            _dispatcher = await DispatcherService.GetSingleAsync(InitialDispatcherId.Value);
     }
 }
