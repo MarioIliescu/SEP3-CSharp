@@ -1,10 +1,12 @@
 @page "/manage-account-dispatcher"
 @using System.Text.RegularExpressions
 @using ApiContracts.Dtos.Dispatcher
+@using BlazorFleetApp.Services.Auth
 @using BlazorFleetApp.Services.Dispatcher
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IDispatcherService DispatcherService
+@inject IAuthService AuthService
 @attribute [Authorize]
 
 <h3>Manage Account Dispatcher</h3>
@@ -36,8 +38,8 @@
     <InputText class="form-control" @bind-Value="lastName"/>
 </div>
 <div class="mb-3">
-    <label class="form-label">Current rate</label>
-    <input class="form-control" type="number" step="0.01"
+    <label class="form-label">Current rate %</label>
+    <input class="form-control" type="number" step="1"
            placeholder="Current rate"
            @bind="currentRate"/>
 </div>
@@ -111,18 +113,12 @@
                 FirstName = firstName,
                 LastName = lastName,
                 Id = userId,
-                CurrentRate = currentRate
+                CurrentRate = currentRate/100
             };
 
             await DispatcherService.UpdateAsync(updated);
-            dispatcher = await DispatcherService.GetSingleAsync(userId);
-
-            email = dispatcher.Email;
-            phoneNumber = dispatcher.PhoneNumber;
-            firstName = dispatcher.FirstName;
-            lastName = dispatcher.LastName;
-            currentRate = dispatcher.CurrentRate;
-
+            await AuthService.RefreshTokenAsync();
+            await LoadDispatcherDataAsync();
             statusMessage = "Dispatcher information updated successfully!";
             StateHasChanged();
         }
@@ -135,10 +131,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadDriverDataAsync();
+        await LoadDispatcherDataAsync();
     }
 
-    private async Task LoadDriverDataAsync()
+    private async Task LoadDispatcherDataAsync()
     {
         if (State == null)
             return;
@@ -159,7 +155,7 @@
                     firstName = dispatcher.FirstName;
                     lastName = dispatcher.LastName;
                     phoneNumber = dispatcher.PhoneNumber;
-                    currentRate = dispatcher.CurrentRate;
+                    currentRate = dispatcher.CurrentRate *100;
                 }
             }
         }

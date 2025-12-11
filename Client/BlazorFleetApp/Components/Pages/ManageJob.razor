@@ -13,10 +13,10 @@
 @using BlazorFleetApp.Services.Dispatcher
 
 <h3 class="mb-3">Manage Jobs</h3>
-
+<div class="container-fluid">
 <div class="row">
 
-    <div class="col-4">
+    <div class="col-12">
         <button class="btn btn-primary w-100 mb-2" @onclick="LoadJobsAsync">Load Jobs</button>
 
         @if (jobs.Count == 0)
@@ -28,22 +28,13 @@
             <ul class="list-group">
                 @foreach (var job in jobs)
                 {
-                    <li class="list-group-item list-group-item-action"
-                        style="cursor:pointer"
-                        @onclick="() => SelectJob(job)">
-                        <strong>@job.Title</strong><br />
-                        Miles: @job.loadedMiles<br />
-                        Cargo: @job.CargoInfo<br />
-                        Pickup: @job.PickupTime.ToShortDateString()<br />
-                        Delivery: @job.DeliveryTime.ToShortDateString()<br />
-                        @job.PickupLocationState → @job.DropLocationState
-                    </li>
+                <JobComponent InitialJob="job" InitialDispatcherId="dispatcherId"  OnExtraJobColumnClicked="SelectJob"></JobComponent>
                 }
             </ul>
         }
     </div>
 
-    <div class="col-8">
+    <div class="col-12">
 
         @if (selectedJob == null)
         {
@@ -146,7 +137,7 @@
     </div>
 
 </div>
-
+</div>
 @code {
 
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }

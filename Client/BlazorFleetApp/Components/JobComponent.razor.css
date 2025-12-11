@@ -1,1 +1,36 @@
-﻿
+﻿.job-card {
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  padding: 1rem;
+}
+
+.job-card:hover {
+  background-color: #f5f5f5;
+  transform: scale(1.01);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.extra-info {
+  background-color: #fafafa;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.extra-info:hover {
+  background-color: #f0f0f0;
+}
+
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0); /* transparent overlay, only blocks clicks */
+  z-index: 1;
+}

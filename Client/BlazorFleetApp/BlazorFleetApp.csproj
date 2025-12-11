@@ -52,12 +52,15 @@
       <None Update="Components\Pages\MyDrivers.razor.css">
         <DependentUpon>MyDrivers.razor</DependentUpon>
       </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <TypeScriptCompile Update="Components\ChatComponent.razor.ts">
+      <None Update="Components\JobComponent.razor.js">
+        <DependentUpon>JobComponent.razor</DependentUpon>
+      </None>
+      <None Update="Components\DriverComponent.razor.js">
+        <DependentUpon>DriverComponent.razor</DependentUpon>
+      </None>
+      <None Update="Components\ChatComponent.razor.js">
         <DependentUpon>ChatComponent.razor</DependentUpon>
-      </TypeScriptCompile>
+      </None>
     </ItemGroup>
 
 </Project>
