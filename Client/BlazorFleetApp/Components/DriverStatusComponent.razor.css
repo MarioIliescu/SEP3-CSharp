@@ -1,51 +1,42 @@
-/* ================================
-   DRIVER STATUS WRAPPER
-   ================================ */
-.driver-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+.driver-status,
+.driver-status-text {
+    width: 100%;
+    padding: 0.4rem 0.8rem;
+    border-radius: 50px;
+    border: 2px solid #145F74;
+    background-color: transparent;
+    color: black;
+    font-family: 'LemonMilk', sans-serif;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: 0.7s ease;
 
-  font-size: 16px;
-  font-weight: 600;
-  color: #0f6b78;
-
-  padding: 6px 12px;
-  padding-left: 42px;              /* perfect icon spacing */
-
-  background-color: #e8f6f8;
-  border-radius: 6px;
-  border: 2px solid #0f6b78;
-
-  background-repeat: no-repeat;
-  background-position: 12px center; /* center + better balance */
-  background-size: 20px 20px;       /* cleaner icon ratio */
-
-  width: max-content;               /* FIX: works better inside flex */
-  box-sizing: border-box;           /* prevent padding overflows */
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    background-size: 16px 16px;
+    padding-left: 2rem;
 }
 
-/* ================================
-   TEXT-ONLY VARIANT (no border box)
-   ================================ */
-.driver-status-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+.driver-status:focus
+{
+    border-radius: 15px 15px 0 0;
+}
 
-  font-size: 16px;
-  font-weight: 600;
-  color: #0f6b78;
+.driver-status {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+}
 
-  padding: 6px 12px;
-  padding-left: 42px;
+.driver-status option {
+    color: black;
+}
 
-  border-radius: 6px;
-
-  background-repeat: no-repeat;
-  background-position: 12px center;
-  background-size: 20px 20px;
-
-  width: max-content;               /* ensures clean layout */
-  box-sizing: border-box;
+.driver-status-text span {
+    flex: 1;
 }

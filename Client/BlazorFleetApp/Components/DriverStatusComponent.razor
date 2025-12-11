@@ -34,7 +34,7 @@
 }
 else
 {
-    <div>Loading driver...</div>
+    <div><p>Loading driver...</p></div>
 }
 
 
@@ -42,11 +42,13 @@ else
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     [Parameter] public int? InitialDriverId { get; set; }
     [Parameter] public DriverDto? DriverDto { get; set; }
+    [Inject] private IJSRuntime JS { get; set; }
     private HubConnection? hubConnection;
     private int userId;
     private UserRole? userRole;
     private DriverDto? driver;
     private DriverStatus _status = DriverStatus.Off_duty;
+    private IJSObjectReference? module;
 
     private DriverStatus status
     {
@@ -85,6 +87,16 @@ else
             });
         });
         await hubConnection.StartAsync();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./Components/DriverStatusComponent.razor.js"
+            );
+        }
     }
 
     private async Task LoadDriverAsync()
@@ -148,6 +160,7 @@ else
         }
 
         _status = newStatus;
+        await JS.InvokeVoidAsync("blurActiveElement");
         StateHasChanged();
     }
 
@@ -172,5 +185,4 @@ else
             await hubConnection.DisposeAsync();
         }
     }
-
 }

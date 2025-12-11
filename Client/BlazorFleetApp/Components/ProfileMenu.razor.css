@@ -1,0 +1,98 @@
+﻿@font-face {
+    font-family: 'LemonMilk';
+    src: url('fonts/LEMONMILK-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+.profile-menu
+{
+    position: relative;
+    display: block;
+}
+
+.pfp-container
+{
+    width: 3vw;
+    border-radius: 100%;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.pfp-container.active img
+{
+    opacity: 75%;
+    transition: 0.3s ease;
+}
+
+.pfp-container img
+{
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.pop-up-menu
+{
+    pointer-events: none;
+    display: none;
+    position: absolute;
+    top: 110%;
+    right: 50%;
+    transform: translateX(30%);
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #e0e0e0;
+    z-index: 100;
+}
+
+.pop-up-menu.active
+{
+    display: block;
+    pointer-events: auto;
+}
+
+.pop-up-menu ::deep .nav-item
+{
+    font-family: 'LemonMilk', sans-serif;
+    text-decoration: none;
+    color: black;
+}
+
+.pop-up-menu ::deep .nav-item.active
+{
+    font-family: 'LemonMilk', sans-serif;
+    text-decoration: none;
+    color: black;
+}
+
+.pop-up-menu button
+{
+    border: 0;
+    border-radius: 5px;
+    background-color: transparent;
+    color: black;
+    transition: 0.3s ease;
+    width: 100%;
+    text-align: center;
+}
+
+.pop-up-menu #profile-button, #manage-button
+{
+    margin-bottom: 0.5vh;
+}
+
+.pop-up-menu button:hover
+{
+    background-color: #145F74;
+    color: white;
+}
+
+.overlay
+{
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    z-index: 50;
+}
