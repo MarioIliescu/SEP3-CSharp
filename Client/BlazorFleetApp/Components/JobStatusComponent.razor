@@ -175,7 +175,7 @@ else
     {
         int driverId;
         if (job == null) return;
-        if (newStatus is JobStatus.Available or JobStatus.Expired or JobStatus.Completed)
+        if (newStatus is JobStatus.Available)
         {
             driverId = 0;
         }

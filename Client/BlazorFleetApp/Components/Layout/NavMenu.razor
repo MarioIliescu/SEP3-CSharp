@@ -33,6 +33,14 @@
         @if (userRole == UserRole.Dispatcher)
         {
             <div class="nav-link">
+                <NavLink href="dispatcher-job-list" class="nav-item">My Jobs</NavLink>
+                <div class="pop-up-line"></div>
+            </div>
+        }
+        
+        @if (userRole == UserRole.Dispatcher)
+        {
+            <div class="nav-link">
                 <NavLink href="recruit-driver" class="nav-item">Recruit Driver</NavLink>
                 <div class="pop-up-line"></div>
             </div>
@@ -95,7 +103,7 @@
     {
         if (userRole == UserRole.Driver)
         {
-            _homeLink = "driver-home";
+            _homeLink = "drivers-job";
             _logoSource += "LogoDrive.png";
             _manageAccountLink = "manage-account-driver";
         }
