@@ -1,0 +1,234 @@
+﻿@page "/dispatcher-job-list"
+@using ApiContracts.Dtos.Job
+@using ApiContracts.Enums
+@using BlazorFleetApp.Services.Dispatcher
+@using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavMgr
+@implements IAsyncDisposable
+
+@inject IJobService JobService
+@inject IDispatcherService DispatcherService
+
+@attribute [Authorize]
+
+<h3 class="mb-3">Dispatcher Job List</h3>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+
+            @if (!string.IsNullOrWhiteSpace(message))
+            {
+                <p class="text-danger">@message</p>
+            }
+
+            @if (jobs.Count == 0)
+            {
+                <p>No jobs found.</p>
+            }
+            else
+            {
+                <h1>Active jobs</h1>
+                <ul class="list-group">
+                    @foreach (var job in jobs)
+                    {
+                        <JobComponent InitialJob="job"
+                                      InitialDispatcherId="dispatcherId"/>
+                    }
+                </ul>
+            }
+
+        </div>
+        <div class="col-12">
+
+            @if (!string.IsNullOrWhiteSpace(message))
+            {
+                <p class="text-danger">@message</p>
+            }
+
+            @if (completedJobs.Count == 0)
+            {
+                <p>No completed jobs found.</p>
+            }
+            else
+            {
+                <h1>Completed jobs</h1>
+                <ul class="list-group">
+                    @foreach (var job in completedJobs)
+                    {
+                        <JobComponent InitialJob="job"
+                                      InitialDispatcherId="dispatcherId"/>
+                    }
+                </ul>
+            }
+
+        </div>
+        <div class="col-12">
+
+            @if (!string.IsNullOrWhiteSpace(message))
+            {
+                <p class="text-danger">@message</p>
+            }
+
+            @if (expiredJobs.Count == 0)
+            {
+                <p>No expired jobs found.</p>
+            }
+            else
+            {
+                <h1>Expired jobs</h1>
+                <ul class="list-group">
+                    @foreach (var job in expiredJobs)
+                    {
+                        <JobComponent InitialJob="job"
+                                      InitialDispatcherId="dispatcherId"/>
+                    }
+                </ul>
+            }
+
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+
+    private List<JobDto> jobs = new();
+    private List<JobDto> expiredJobs = new();
+    private List<JobDto> completedJobs = new();
+    private HubConnection? hubConnection;
+
+    private int dispatcherId = 0;
+    private string message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated ?? false)
+            {
+                dispatcherId = int.Parse(user.Claims.First(c => c.Type == "Id").Value);
+                await LoadJobsAsync();
+                await LoadExpiredJobsAsync();
+                await LoadCompletedJobsAsync();
+            }
+        }
+    }
+
+    private async Task LoadJobsAsync()
+    {
+        try
+        {
+            var allJobs = await JobService.GetAllAsync();
+
+            jobs = allJobs
+                .Where(j =>
+                    j.DispatcherId == dispatcherId &&
+                    j.CurrentStatus is JobStatus.Available or JobStatus.Ongoing or JobStatus.Assigned or JobStatus.Accepted or JobStatus.Loading or JobStatus.Unloading
+                )
+                .ToList();
+
+            message = "";
+        }
+        catch (Exception ex)
+        {
+            message = "Error loading jobs: " + ex.Message;
+        }
+    }
+
+    private async Task LoadExpiredJobsAsync()
+    {
+        try
+        {
+            var allJobs = await JobService.GetAllAsync();
+
+            expiredJobs = allJobs
+                .Where(j =>
+                    j.DispatcherId == dispatcherId &&
+                    j.CurrentStatus == JobStatus.Expired
+                )
+                .ToList();
+
+            message = "";
+        }
+        catch (Exception ex)
+        {
+            message = "Error loading expired jobs: " + ex.Message;
+        }
+    }
+
+    private async Task LoadCompletedJobsAsync()
+    {
+        try
+        {
+            var allJobs = await JobService.GetAllAsync();
+
+            completedJobs = allJobs
+                .Where(j =>
+                    j.DispatcherId == dispatcherId &&
+                    j.CurrentStatus == JobStatus.Completed
+                )
+                .ToList();
+
+            message = "";
+        }
+        catch (Exception ex)
+        {
+            message = "Error loading completed jobs: " + ex.Message;
+        }
+    }
+
+    private async Task SetupHubAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
+        {
+            switch (eventType)
+            {
+                case FleetEventType.JobsUpdated:
+                case FleetEventType.JobAssigned:
+                    await RefreshJobsAsync();
+                    break;
+            }
+        });
+
+        await hubConnection.StartAsync();
+
+        if (dispatcherId != 0)
+        {
+            await hubConnection.InvokeAsync("JoinGroup", dispatcherId.ToString());
+        }
+    }
+
+    private async Task RefreshJobsAsync()
+    {
+        await LoadJobsAsync();
+        await LoadExpiredJobsAsync();
+        await LoadCompletedJobsAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            if (dispatcherId != 0)
+                await hubConnection.InvokeAsync("LeaveGroup", dispatcherId.ToString());
+
+            await hubConnection.StopAsync();
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+
+}

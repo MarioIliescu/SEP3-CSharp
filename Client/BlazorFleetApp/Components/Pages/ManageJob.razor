@@ -17,7 +17,6 @@
 <div class="row">
 
     <div class="col-12">
-        <button class="btn btn-primary w-100 mb-2" @onclick="LoadJobsAsync">Load Jobs</button>
 
         @if (jobs.Count == 0)
         {
@@ -223,7 +222,7 @@
             return;
         }
 
-        decimal rate = dispatcherRatePercent / 100m;
+        decimal rate = dispatcherRatePercent;
         totalPrice = (int)(basePrice * (1 + rate));
     }
 

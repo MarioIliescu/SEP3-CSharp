@@ -1,0 +1,117 @@
+﻿@page "/drivers-job"
+@using ApiContracts.Dtos.Job
+@using ApiContracts.Enums
+@using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@inject IJobService JobService
+@inject NavigationManager NavMgr
+@implements IAsyncDisposable 
+@attribute [Authorize]
+
+<h3>Your job</h3>
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <p class="text-danger">@message</p>
+}
+
+@if (job == null)
+{
+    <p>No current job assigned.</p>
+}
+else
+{
+    <JobStatusComponent InitialJob="@job" InitialDispatcherId="@job?.DispatcherId"/>
+}
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private int id;
+    private HubConnection? hubConnection;
+    private JobDto? job;
+    private string message = "";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
+            }
+        }
+
+        await LoadJobsAsync();
+        await SetupHubAsync();
+    }
+    private async Task LoadJobsAsync()
+    {
+        try
+        {
+            var allJobs = await JobService.GetAllAsync();
+
+            job = allJobs.FirstOrDefault(j =>
+                j.DriverId == id &&
+                (
+                    j.CurrentStatus == JobStatus.Ongoing ||
+                    j.CurrentStatus == JobStatus.Assigned ||
+                    j.CurrentStatus == JobStatus.Accepted ||
+                    j.CurrentStatus == JobStatus.Loading ||
+                    j.CurrentStatus == JobStatus.Unloading
+                ));
+
+            message = "";
+        }
+        catch (Exception ex)
+        {
+            message = "Error loading jobs: " + ex.Message;
+        }
+    }
+    
+    private async Task SetupHubAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
+        {
+            switch (eventType)
+            {
+                case FleetEventType.JobsUpdated:
+                case FleetEventType.JobAssigned:
+                    await RefreshJobAsync();
+                    break;
+            }
+        });
+
+        await hubConnection.StartAsync();
+
+        if (id != 0)
+        {
+            await hubConnection.InvokeAsync("JoinGroup", id.ToString());
+        }
+    }
+    
+    private async Task RefreshJobAsync()
+    {
+        await LoadJobsAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            if (id != 0)
+                await hubConnection.InvokeAsync("LeaveGroup", id.ToString());
+
+            await hubConnection.StopAsync();
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
