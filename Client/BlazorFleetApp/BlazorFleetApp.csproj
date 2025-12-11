@@ -46,6 +46,18 @@
       <None Update="Components\JobStatusComponent.razor.css">
         <DependentUpon>JobStatusComponent.razor</DependentUpon>
       </None>
+      <None Update="Components\ChatComponent.razor.css">
+        <DependentUpon>ChatComponent.razor</DependentUpon>
+      </None>
+      <None Update="Components\Pages\MyDrivers.razor.css">
+        <DependentUpon>MyDrivers.razor</DependentUpon>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <TypeScriptCompile Update="Components\ChatComponent.razor.ts">
+        <DependentUpon>ChatComponent.razor</DependentUpon>
+      </TypeScriptCompile>
     </ItemGroup>
 
 </Project>

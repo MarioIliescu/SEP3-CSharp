@@ -33,3 +33,13 @@
     width: 33.333%;         /* = 4 columns, not 3 */
   }
 }
+.driver-card {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 5px;
+  margin-bottom: 8px;
+}
+
+.driver-card:hover {
+  background-color: #f5f5f5;
+}

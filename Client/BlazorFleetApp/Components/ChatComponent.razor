@@ -1,0 +1,229 @@
+@using ApiContracts.Dtos.Dispatcher
+@using ApiContracts.Dtos.Driver
+@using BlazorFleetApp.Services.Dispatcher
+@using BlazorFleetApp.Services.Driver
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
+@inject IDriverService DriverService
+@inject IDispatcherService DispatcherService
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+@attribute [Authorize]
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h5>Chat</h5>
+        <p>Dispatcher: @_dispatcher?.FirstName @_dispatcher?.LastName</p>
+        <p>Driver: @_driver?.FirstName @_driver?.LastName</p>
+    </div>
+
+    <div class="chat-messages" @ref="chatDiv">
+        @if (_driver != null && MessagesCache.ContainsKey(_driver.Id))
+        {
+            foreach (var message in MessagesCache[_driver.Id])
+            {
+                <div class="chat-message">@message</div>
+            }
+        }
+    </div>
+
+    <div class="chat-input">
+        <input @bind="messageInput" @onkeydown="HandleKeyPress" placeholder="Type a message..." />
+        <button @onclick="SendAsync" disabled="@(!IsConnected)">Send</button>
+    </div>
+</div>
+
+
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    [Parameter] public int? DriverId { get; set; }
+    [Parameter] public DriverDto? Driver { get; set; }
+    [Parameter] public int? DispatcherId { get; set; }
+    [Parameter] public DispatcherDto? Dispatcher { get; set; }
+    [Parameter] public EventCallback<string> OnMessageReceived { get; set; }
+
+    private HubConnection? hubConnection;
+    private string? messageInput;
+    private DriverDto? _driver;
+    private DispatcherDto? _dispatcher;
+    private bool joinedGroup = false;
+    private bool _disposed = false;
+    private ElementReference chatDiv;
+    private string? _firstName;
+    private string? _lastName;
+    private IJSObjectReference? module;
+    private bool receiveHandlerRegistered = false;
+    // Cache messages per driver
+    private static Dictionary<int, List<string>> MessagesCache { get; set; } = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadClients();
+        await LoadUserClaimsAsync();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        if (!receiveHandlerRegistered)
+        {
+            hubConnection.On<string, string>("ReceiveMessage", async (user, message) =>
+            {
+                if (_disposed || _driver == null) return;
+
+                if (!MessagesCache.ContainsKey(_driver.Id))
+                    MessagesCache[_driver.Id] = new List<string>();
+
+                var newMessage = $"{user}: {message}";
+                var messages = MessagesCache[_driver.Id];
+                if (messages.Count == 0 || messages.Last() != newMessage)
+                    messages.Add(newMessage);
+
+                if (OnMessageReceived.HasDelegate)
+                    await OnMessageReceived.InvokeAsync(newMessage);
+
+                await InvokeAsync(StateHasChanged);
+                await ScrollToBottomAsync();
+            });
+
+
+            receiveHandlerRegistered = true;
+        }
+
+        await hubConnection.StartAsync();
+        await TryJoinGroupAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_disposed) return;
+
+        await LoadClients();
+        await TryJoinGroupAsync();
+    }
+
+    private async Task LoadClients()
+    {
+        await LoadDriverAsync();
+        await LoadDispatcherAsync();
+    }
+
+    private async Task LoadDriverAsync()
+    {
+        if (Driver != null) _driver = Driver;
+        else if (DriverId.HasValue) _driver = await DriverService.GetSingleAsync(DriverId.Value);
+
+        if (_driver != null && !MessagesCache.ContainsKey(_driver.Id))
+            MessagesCache[_driver.Id] = new List<string>();
+    }
+
+    private async Task LoadDispatcherAsync()
+    {
+        if (Dispatcher != null) _dispatcher = Dispatcher;
+        else if (DispatcherId.HasValue) _dispatcher = await DispatcherService.GetSingleAsync(DispatcherId.Value);
+    }
+
+    private async Task LoadUserClaimsAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                _firstName = user.Claims.FirstOrDefault(c => c.Type == "FirstName")?.Value ?? "User";
+                _lastName = user.Claims.FirstOrDefault(c => c.Type == "LastName")?.Value ?? "User";
+            }
+        }
+    }
+
+    private async Task TryJoinGroupAsync()
+    {
+        if (_disposed || _driver == null || _dispatcher == null || hubConnection?.State != HubConnectionState.Connected)
+            return;
+
+        if (joinedGroup)
+        {
+            try
+            {
+                await hubConnection.InvokeAsync("LeaveGroup", _driver.Id, _dispatcher.Id);
+            }
+            catch { /* ignore if already disconnected */ }
+        }
+
+        await hubConnection.InvokeAsync("JoinGroup", _driver.Id, _dispatcher.Id);
+        joinedGroup = true;
+    }
+
+    private async Task SendAsync()
+    {
+        if (_disposed || hubConnection == null || string.IsNullOrWhiteSpace(messageInput) || _driver == null || _dispatcher == null)
+            return;
+
+        var fullName = $"{_firstName} {_lastName}";
+        if (!MessagesCache.ContainsKey(_driver.Id))
+            MessagesCache[_driver.Id] = new List<string>();
+
+        MessagesCache[_driver.Id].Add($"{fullName}: {messageInput}");
+        await hubConnection.SendAsync(
+            "SendMessageAsync",
+            _driver.Id,
+            _dispatcher.Id,
+            messageInput,
+            _firstName ?? "User",
+            _lastName ?? "User"
+        );
+
+        messageInput = string.Empty;
+        await InvokeAsync(StateHasChanged);
+        await ScrollToBottomAsync();
+    }
+
+
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SendAsync();
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        if (_disposed) return;
+
+        if (module != null)
+        {
+            await module.InvokeVoidAsync("scrollToBottom", chatDiv);
+        }
+    }
+
+    public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+
+        if (hubConnection != null)
+        {
+            if (joinedGroup && _driver != null && _dispatcher != null)
+            {
+                try
+                {
+                    await hubConnection.InvokeAsync("LeaveGroup", _driver.Id, _dispatcher.Id);
+                }
+                catch { /* ignore */ }
+            }
+
+            await hubConnection.DisposeAsync();
+        }
+
+        if (module != null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+}
