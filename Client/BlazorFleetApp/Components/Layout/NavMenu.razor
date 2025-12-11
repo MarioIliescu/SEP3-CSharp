@@ -90,6 +90,14 @@
         }
         @if (userRole == UserRole.Driver)
         {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="drivers-job">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Job
+                </NavLink>
+            </div>
+        }
+        @if (userRole == UserRole.Driver)
+        {
             <div class="nav-item px-4 mt-auto">
                 <DriverStatusComponent></DriverStatusComponent>
             </div>

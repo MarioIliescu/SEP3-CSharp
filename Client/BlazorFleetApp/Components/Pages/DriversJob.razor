@@ -10,28 +10,36 @@
 @inject NavigationManager NavMgr
 @implements IAsyncDisposable 
 @attribute [Authorize]
-
-<h3>Your job</h3>
-@if (!string.IsNullOrWhiteSpace(message))
+@if (isLoading)
 {
-    <p class="text-danger">@message</p>
+    <h1>Loading Data</h1>
 }
-
-@if (job == null)
-{
-    <p>No current job assigned.</p>
-}
-else
-{
-    <JobStatusComponent InitialJob="@job" InitialDispatcherId="@job?.DispatcherId"/>
-}
+else if (job != null)
+    {
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 col-lg-8 mb-4">
+                    <JobComponent InitialJob="@job" InitialDispatcherId="@job?.DispatcherId"></JobComponent>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="sticky-top" style="top: 80px;">
+                        <ChatComponent DriverId="@id" DispatcherId="@job?.DispatcherId"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h1>No job available, wait for your dispatcher</h1>
+    }
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     private int id;
     private HubConnection? hubConnection;
     private JobDto? job;
     private string message = "";
-    
+    private bool isLoading = true;
     protected override async Task OnInitializedAsync()
     {
         if (State != null)
@@ -45,10 +53,11 @@ else
             }
         }
 
-        await LoadJobsAsync();
+        await LoadJobAsync();
         await SetupHubAsync();
+        isLoading = false;
     }
-    private async Task LoadJobsAsync()
+    private async Task LoadJobAsync()
     {
         try
         {
@@ -56,13 +65,7 @@ else
 
             job = allJobs.FirstOrDefault(j =>
                 j.DriverId == id &&
-                (
-                    j.CurrentStatus == JobStatus.Ongoing ||
-                    j.CurrentStatus == JobStatus.Assigned ||
-                    j.CurrentStatus == JobStatus.Accepted ||
-                    j.CurrentStatus == JobStatus.Loading ||
-                    j.CurrentStatus == JobStatus.Unloading
-                ));
+                j.CurrentStatus is JobStatus.Ongoing or JobStatus.Assigned or JobStatus.Accepted or JobStatus.Loading or JobStatus.Unloading);
 
             message = "";
         }
@@ -100,7 +103,9 @@ else
     
     private async Task RefreshJobAsync()
     {
-        await LoadJobsAsync();
+        isLoading = true;
+        await LoadJobAsync();
+        isLoading = false;
         await InvokeAsync(StateHasChanged);
     }
     public async ValueTask DisposeAsync()

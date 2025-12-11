@@ -35,11 +35,9 @@
                         else
                         {
                             <select class="job-status-select" @bind="status">
-                                <option value="@JobStatus.Accepted">Job pending
-                                    start
+                                <option value="@JobStatus.Accepted">Job pending start
                                 </option>
-                                <option value="@JobStatus.Loading">Loading the
-                                    Cargo
+                                <option value="@JobStatus.Loading">Loading the cargo
                                 </option>
                                 <option value="@JobStatus.Ongoing">In route to
                                     destination
@@ -82,7 +80,7 @@ else
     private UserRole? userRole;
     private JobDto? job;
     private JobStatus _status = JobStatus.Available;
-
+    bool _notAcceptedYet = true;
     private JobStatus status
     {
         get => _status;
@@ -91,9 +89,14 @@ else
             if (_status != value)
             {
                 // Check for Completed
-                if (value is JobStatus.Completed or JobStatus.Accepted or JobStatus.Available)
+                if (value is JobStatus.Completed or JobStatus.Available)
                 {
                     _ = ConfirmAndChangeStatusAsync(value); // async fire-and-forget
+                }
+                else if (_notAcceptedYet && value is JobStatus.Accepted)
+                {
+                    _notAcceptedYet = false;
+                    _= ConfirmAndChangeStatusAsync(value); // async fire-and-forget
                 }
                 else
                 {
