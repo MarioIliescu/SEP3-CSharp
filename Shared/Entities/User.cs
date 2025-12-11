@@ -29,7 +29,7 @@ public class User
         private string _phoneNumber = "+4511119111";
         private string _password = "VXe6FQmH2*UAQu9U7&wTnD1x7ERS@w*RahW*";
         private UserRole _role = UserRole.Driver;
-        private string _photoUrl;
+        private string _photoUrl = "";
 
 
         public Builder SetId(int id)

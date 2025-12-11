@@ -143,6 +143,10 @@ public class Job
 
         public Builder SetPickupTime(DateTime time)
         {
+            if (time < DateTime.Now && (_status == JobStatus.Available || _status == JobStatus.Assigned))
+            {
+                SetStatus(JobStatus.Expired);
+            }
             _pickupTime = time;
             return this;
         }
@@ -150,7 +154,15 @@ public class Job
         public Builder SetDeliveryTime(DateTime time)
         {
             if (time <= _pickupTime)
-                throw new ArgumentException("Delivery time must be after pickup time.");
+            {
+                throw new ArgumentException(
+                    "Delivery time must be after pickup time.");
+            }
+
+            if (time < DateTime.Now && _status != JobStatus.Completed)
+            {
+                SetStatus(JobStatus.Expired);
+            }
             _deliveryTime = time;
             return this;
         }
@@ -219,6 +231,8 @@ public class Job
                 Total_Price = _totalPrice,
                 Cargo_Info = _cargoInfo,
 
+                Current_Status = _status,
+
                 Pickup_Time = _pickupTime,
                 Delivery_Time = _deliveryTime,
 
@@ -226,9 +240,9 @@ public class Job
                 Pickup_Location_Zip = _pickupZip,
 
                 Drop_Location_State = _dropState,
-                Drop_Location_Zip = _dropZip,
+                Drop_Location_Zip = _dropZip
 
-                Current_Status = _status
+
             };
         }
     }
