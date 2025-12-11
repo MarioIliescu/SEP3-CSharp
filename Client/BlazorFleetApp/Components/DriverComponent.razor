@@ -15,42 +15,43 @@
 @inject IDriverService DriverService
 @inject ICompanyService CompanyService
 @inject IJobService JobService
-@if (isLoading)
-{
-    <p> Loading component</p>
-}
-else
-{
-    <div class="box-container p-3">
-        <div class="row g-4">
-            <div class="col-xl-3 col-md-6 col-sm-12">
-                <h4>@_driver?.FirstName @_driver?.LastName</h4>
-                <h4>@_company?.CompanyName</h4>
+<div class="driver-card" @onclick="() => OnSelected.InvokeAsync(_driver)">
+    @if (isLoading)
+    {
+        <p> Loading component</p>
+    }
+    else
+    {
+        <div class="box-container p-3">
+            <div class="row g-4">
+                <div class="col-xl-3 col-md-6 col-sm-12">
+                    <h4>@_driver?.FirstName @_driver?.LastName</h4>
+                    <h4>@_company?.CompanyName</h4>
                     <DriverStatusComponent InitialDriverId="@_driver?.Id"></DriverStatusComponent>
-            </div>
+                </div>
 
-            <div class="col-xl-3 col-md-6 col-sm-12">
-                @if (_job != null)
-                {
-                    <h4>@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
-                    <JobStatusComponent JobDto="_job"></JobStatusComponent>
-                }
-                else
-                {
-                    <h4 class="text-muted">NO JOB ASSIGNED AT THE MOMENT</h4>
-                }
-            </div>
+                <div class="col-xl-3 col-md-6 col-sm-12">
+                    @if (_job != null)
+                    {
+                        <h4>@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
+                        <JobStatusComponent JobDto="_job"></JobStatusComponent>
+                    }
+                    else
+                    {
+                        <h4 class="text-muted">NO JOB ASSIGNED AT THE MOMENT</h4>
+                    }
+                </div>
 
-            <div class="col-xl-3 col-md-6 col-sm-12">
-                @if (Component != null)
-                {
-                    <div>@Component</div>
-                }
+                <div class="col-xl-3 col-md-6 col-sm-12">
+                    @if (Component != null)
+                    {
+                        <div>@Component</div>
+                    }
+                </div>
             </div>
-
         </div>
-    </div>
-}
+    }
+</div>
 
 @code {
     [Parameter] public int? InitialDriverId { get; set; }
@@ -60,6 +61,7 @@ else
     [Parameter] public RenderFragment? Component { get; set; }
     [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
     [Parameter] public int? InitialDispatcherId { get; set; }
+    [Parameter] public EventCallback<DriverDto> OnSelected { get; set; }
     private bool isLoading = true;
     private HubConnection? hubConnection;
     DispatcherDto? _dispatcher;

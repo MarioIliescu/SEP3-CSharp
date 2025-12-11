@@ -6,9 +6,11 @@ using BlazorFleetApp.Services.Auth;
 using BlazorFleetApp.Services.Dispatcher;
 using BlazorFleetApp.Services.Driver;
 using BlazorFleetApp.Services.Events;
+using BlazorFleetApp.Services.Hubs;
 using BlazorFleetApp.Services.Job;
 using BlazorFleetApp.Services.RecruitDriver;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,18 +33,27 @@ builder.Services.AddScoped<IJobService, JobServiceClient>();
 builder.Services.AddScoped<IRecruitService, RecruitService>();
 builder.Services.AddScoped<IAuthService, JwtAuthService>();
 builder.Services.AddSignalR();
+
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        [ "application/octet-stream" ]);
+});
 if (builder.Environment.IsDevelopment())
 {
 }
 
 var app = builder.Build();
-
+app.UseResponseCompression();
 // Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapHub<ChatHub>("/chathub");
 app.MapHub<FleetHub>("/fleethub");
 app.UseHttpsRedirection();
 
