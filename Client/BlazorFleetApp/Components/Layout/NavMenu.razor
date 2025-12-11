@@ -67,6 +67,14 @@
         @if (userRole == UserRole.Dispatcher)
         {
             <div class="nav-item px-3">
+                <NavLink class="nav-link" href="dispatcher-job-list">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Job list
+                </NavLink>
+            </div>
+        }
+        @if (userRole == UserRole.Dispatcher)
+        {
+            <div class="nav-item px-3">
                 <NavLink class="nav-link" href="manage-job">
                     <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Job
                 </NavLink>
@@ -77,6 +85,14 @@
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="manage-account-driver">
                     <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Account
+                </NavLink>
+            </div>
+        }
+        @if (userRole == UserRole.Driver)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="drivers-job">
+                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Job
                 </NavLink>
             </div>
         }

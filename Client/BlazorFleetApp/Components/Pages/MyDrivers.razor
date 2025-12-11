@@ -35,7 +35,7 @@ else
                 {
                     var currentJob = jobs.FirstOrDefault(j =>
                         j.DriverId == driver.Id &&
-                        (j.CurrentStatus == JobStatus.Assigned || j.CurrentStatus == JobStatus.Accepted));
+                        j.CurrentStatus is not (JobStatus.Available or  JobStatus.Expired or  JobStatus.Completed));
 
                     <!-- Each DriverComponent is clickable -->
                     <DriverComponent InitialDriver="driver"
@@ -115,6 +115,7 @@ else
                     case FleetEventType.DriversUpdated:
                     case FleetEventType.JobsUpdated:
                     case FleetEventType.JobAssigned:
+                    case FleetEventType.JobStatusChanged:
                         await RefreshDriversAndJobsAsync();
                         break;
                 }

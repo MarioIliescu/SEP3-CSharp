@@ -163,14 +163,14 @@
             var dispatcher = await DispatcherService.GetSingleAsync(dispatcherId);
             if (dispatcher != null)
             {
-                dispatcherRatePercent = (decimal)dispatcher.CurrentRate; // e.g. 20
+                dispatcherRatePercent = (decimal)dispatcher.CurrentRate;
             }
         }
     }
 
     private void RecalculatePrice()
     {
-        decimal rate = dispatcherRatePercent / 100m;  // e.g., 20%
+        decimal rate = dispatcherRatePercent;  // e.g., 20%
         totalPrice = (int)(basePrice * (1 + rate));
     }
 
