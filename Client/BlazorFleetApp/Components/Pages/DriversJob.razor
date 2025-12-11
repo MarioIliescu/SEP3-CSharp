@@ -1,0 +1,122 @@
+﻿@page "/drivers-job"
+@using ApiContracts.Dtos.Job
+@using ApiContracts.Enums
+@using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Job
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@inject IJobService JobService
+@inject NavigationManager NavMgr
+@implements IAsyncDisposable 
+@attribute [Authorize]
+@if (isLoading)
+{
+    <h1>Loading Data</h1>
+}
+else if (job != null)
+    {
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 col-lg-8 mb-4">
+                    <JobComponent InitialJob="@job" InitialDispatcherId="@job?.DispatcherId"></JobComponent>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="sticky-top" style="top: 80px;">
+                        <ChatComponent DriverId="@id" DispatcherId="@job?.DispatcherId"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h1>No job available, wait for your dispatcher</h1>
+    }
+@code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    private int id;
+    private HubConnection? hubConnection;
+    private JobDto? job;
+    private string message = "";
+    private bool isLoading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
+            }
+        }
+
+        await LoadJobAsync();
+        await SetupHubAsync();
+        isLoading = false;
+    }
+    private async Task LoadJobAsync()
+    {
+        try
+        {
+            var allJobs = await JobService.GetAllAsync();
+
+            job = allJobs.FirstOrDefault(j =>
+                j.DriverId == id &&
+                j.CurrentStatus is JobStatus.Ongoing or JobStatus.Assigned or JobStatus.Accepted or JobStatus.Loading or JobStatus.Unloading);
+
+            message = "";
+        }
+        catch (Exception ex)
+        {
+            message = "Error loading jobs: " + ex.Message;
+        }
+    }
+    
+    private async Task SetupHubAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
+        {
+            switch (eventType)
+            {
+                case FleetEventType.JobsUpdated:
+                case FleetEventType.JobAssigned:
+                    await RefreshJobAsync();
+                    break;
+            }
+        });
+
+        await hubConnection.StartAsync();
+
+        if (id != 0)
+        {
+            await hubConnection.InvokeAsync("JoinGroup", id.ToString());
+        }
+    }
+    
+    private async Task RefreshJobAsync()
+    {
+        isLoading = true;
+        await LoadJobAsync();
+        isLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            if (id != 0)
+                await hubConnection.InvokeAsync("LeaveGroup", id.ToString());
+
+            await hubConnection.StopAsync();
+            await hubConnection.DisposeAsync();
+        }
+    }
+}

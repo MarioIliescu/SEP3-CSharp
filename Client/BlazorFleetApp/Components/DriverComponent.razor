@@ -37,7 +37,7 @@
             @if (_job != null)
             {
                 <h4>@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
-                <JobStatusComponent JobDto="_job"></JobStatusComponent>
+                <JobStatusComponent JobDto="_job" ></JobStatusComponent>
             }
             else
             {
@@ -125,7 +125,7 @@
 
         hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
         {
-            if (eventType == FleetEventType.DriversUpdated || eventType == FleetEventType.DriverStatusChanged || eventType == FleetEventType.JobsUpdated || eventType == FleetEventType.JobAssigned)
+            if (eventType is FleetEventType.DriversUpdated or FleetEventType.DriverStatusChanged or FleetEventType.JobsUpdated or FleetEventType.JobAssigned)
             {
                 await RefreshDriverJobAsync();
             }
@@ -173,19 +173,20 @@
 
     private async Task RefreshDriverJobAsync(List<JobDto>? allJobs = null)
     {
+        isLoading = true;
         if (_driver == null) return;
         if (allJobs != null)
         {
             _job = allJobs
                 .FirstOrDefault(j => j.DriverId == _driver.Id
-                                     && (j.CurrentStatus == JobStatus.Assigned || j.CurrentStatus == JobStatus.Accepted));
+                                     && j.CurrentStatus is JobStatus.Assigned or JobStatus.Accepted);
         }
 
         if (_job == null && InitialJobId.HasValue)
         {
             _job = await JobService.GetSingleAsync(InitialJobId.Value);
         }
-
+        isLoading = false;
         await InvokeAsync(StateHasChanged);
     }
 
