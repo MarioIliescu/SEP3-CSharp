@@ -13,6 +13,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IDispatcherService DispatcherService
 @inject IJobService JobService
+@inject IDriverService DriverService
 @if (isLoading)
 {
     <p>Loading component...</p>
@@ -60,6 +61,13 @@ else
                         <h5>Extra Job Information</h5>
                         <p><strong>Cargo Info:</strong> @_job?.CargoInfo</p>
                         <p><strong>Description:</strong> @_job?.Description</p>
+                        @if (_driver != null)
+                        {
+                            <h5>Driver Information</h5>
+                            <p><strong>Driver:</strong> @_driver.FirstName @_driver.LastName</p>
+                            <p><strong>Email:</strong> @_driver.Email</p>
+                            <p><strong>McNumber:</strong> @_driver.McNumber</p>
+                        }
                     </div>
                 </div>
             </div>
@@ -105,6 +113,7 @@ else
         await LoadFromClaims();
         await LoadJobAsync();
         await LoadDispatcherAsync();
+        await LoadDriverAsync();
         // Initialize hub connection
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
@@ -145,6 +154,7 @@ else
             _job = await JobService.GetSingleAsync(_job.Id);
         }
         await LoadDispatcherAsync();
+        await LoadDriverAsync();
         await InvokeAsync(StateHasChanged);
     }
     private async Task ToggleExtraColumn()
@@ -199,5 +209,17 @@ else
             _dispatcher = InitialDispatcher;
         else if (InitialDispatcherId.HasValue)
             _dispatcher = await DispatcherService.GetSingleAsync(InitialDispatcherId.Value);
+    }
+
+    private async Task LoadDriverAsync()
+    {
+        try
+        {
+            if (_job != null) _driver = await DriverService.GetSingleAsync(_job.DriverId);
+        }
+        catch (Exception ex)
+        {
+            // ignored
+        }
     }
 }
