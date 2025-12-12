@@ -22,7 +22,7 @@ else if (job != null)
                     <JobComponent InitialJob="@job" InitialDispatcherId="@job?.DispatcherId"></JobComponent>
                 </div>
                 <div class="col-12 col-lg-4">
-                    <div class="sticky-top" style="top: 80px;">
+                    <div class="sticky-top" style="z-index: 1; top : 0;">
                         <ChatComponent DriverId="@id" DispatcherId="@job?.DispatcherId"/>
                     </div>
                 </div>

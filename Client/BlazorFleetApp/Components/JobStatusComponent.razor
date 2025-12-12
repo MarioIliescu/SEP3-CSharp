@@ -156,7 +156,8 @@ else
 
         return job.CurrentStatus switch
         {
-            JobStatus.Available => "/images/JobStatus/driverNO_job_vector.png",
+
+            JobStatus.Available => "/images/JobStatus/unassigned_job_vector.png",
             JobStatus.Assigned => "/images/JobStatus/assigned_job_vector.png",
             JobStatus.Accepted => "/images/JobStatus/accepted_job_vector.png",
             JobStatus.Loading => "/images/JobStatus/loading_cargo_job_vector.png",

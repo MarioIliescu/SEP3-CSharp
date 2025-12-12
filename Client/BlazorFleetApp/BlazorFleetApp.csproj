@@ -61,6 +61,9 @@
       <None Update="Components\ChatComponent.razor.js">
         <DependentUpon>ChatComponent.razor</DependentUpon>
       </None>
+      <None Update="Components\ProfileMenu.razor.css">
+        <DependentUpon>ProfileMenu.razor</DependentUpon>
+      </None>
     </ItemGroup>
 
 </Project>

@@ -44,7 +44,7 @@
     padding: 10px;
     border-radius: 10px;
     background-color: #e0e0e0;
-    z-index: 100;
+    z-index: 1000;
 }
 
 .pop-up-menu.active
