@@ -1,10 +1,11 @@
 using ApiContracts;
 using ApiContracts.Enums;
 using Entities;
-using FleetWebApi.SecurityUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PersistanceContracts;
+using Services.SecurityUtils;
+
 namespace Services.Auth;
 
 public class AuthService : IAuthService

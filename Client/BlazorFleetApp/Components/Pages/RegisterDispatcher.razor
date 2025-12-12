@@ -3,6 +3,7 @@
 @using BlazorFleetApp.Components.Layout
 @using System.Text.RegularExpressions
 @using ApiContracts.Dtos.Dispatcher
+@using BlazorFleetApp.Services.Auth.Security
 @using BlazorFleetApp.Services.Dispatcher
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IDispatcherService DispatcherService
@@ -167,7 +168,7 @@
                     _email,
                     _phonenumber,
                     _currentRate/ 100,
-                    _password
+                    PasswordHasherFront.Hash(_password)
                 )
             );
 

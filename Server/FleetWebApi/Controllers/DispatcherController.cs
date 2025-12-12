@@ -1,9 +1,9 @@
 ﻿using ApiContracts.Dtos.Dispatcher;
 using ApiContracts.Enums;
 using Entities;
-using FleetWebApi.SecurityUtils;
 using Microsoft.AspNetCore.Mvc;
 using Services.Dispatcher;
+using Services.SecurityUtils;
 
 namespace FleetWebApi.Controllers;
 

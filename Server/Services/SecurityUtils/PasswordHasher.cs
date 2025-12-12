@@ -1,8 +1,8 @@
-namespace FleetWebApi.SecurityUtils;
-
-using System;
 using System.Security.Cryptography;
 using System.Text;
+
+namespace Services.SecurityUtils;
+
 /// <summary>
 /// Password hasher for secure passwords
 /// </summary>
@@ -49,31 +49,25 @@ public static class PasswordHasher
     /// <summary>
     /// Verifies a plaintext password against a stored salted hash.
     /// </summary>
-    /// <param name="password">Plaintext password</param>
+    /// <param name="frontendHash">Hashed from the frontend Hasher password</param>
     /// <param name="storedHash">Stored salted hash from DB</param>
     /// <returns>True if password matches, false otherwise</returns>
-    public static bool Verify(string password, string storedHash)
+    public static bool Verify(string frontendHash, string storedHash)
     {
-        if (password == null) throw new ArgumentNullException(nameof(password));
-        if (storedHash == null) throw new ArgumentNullException(nameof(storedHash));
-
-        // Split stored value into salt and hash
         var parts = storedHash.Split('.', 2);
         if (parts.Length != 2) return false;
 
         byte[] salt = Convert.FromBase64String(parts[0]);
         byte[] expectedHash = Convert.FromBase64String(parts[1]);
 
-        // Compute hash of provided password with the stored salt
         byte[] actualHash = Rfc2898DeriveBytes.Pbkdf2(
-            Encoding.UTF8.GetBytes(password),
+            Encoding.UTF8.GetBytes(frontendHash),
             salt,
             Iterations,
             HashAlgorithmName.SHA256,
             HashSize
         );
 
-        // Use fixed-time comparison to prevent timing attacks
         return CryptographicOperations.FixedTimeEquals(actualHash, expectedHash);
     }
 }

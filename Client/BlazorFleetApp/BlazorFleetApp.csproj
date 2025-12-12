@@ -64,6 +64,9 @@
       <None Update="Components\ProfileMenu.razor.css">
         <DependentUpon>ProfileMenu.razor</DependentUpon>
       </None>
+      <None Update="Components\DriverStatusComponent.razor.js">
+        <DependentUpon>DriverStatusComponent.razor</DependentUpon>
+      </None>
     </ItemGroup>
 
 </Project>

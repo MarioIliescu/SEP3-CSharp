@@ -3,6 +3,7 @@
 @using ApiContracts.Enums
 @using BlazorFleetApp.Components.Layout
 @using BlazorFleetApp.Services.Auth
+@using BlazorFleetApp.Services.Auth.Security
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.SignalR.Client
 @layout LoginRegisterLayout
@@ -55,7 +56,7 @@
         _errorMessage = "";
         try
         {
-            await AuthService.LoginAsync(email, password);
+            await AuthService.LoginAsync(email, PasswordHasherFront.Hash(password));
             var authState = await State;
             var user = authState.User;
 

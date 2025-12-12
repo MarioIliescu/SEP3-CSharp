@@ -6,6 +6,7 @@
 @using ApiContracts.Dtos.Driver
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services
+@using BlazorFleetApp.Services.Auth.Security
 @using BlazorFleetApp.Services.Driver
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IDriverService DriverService
@@ -227,7 +228,7 @@
                     lastname,
                     email,
                     phonenumber,
-                    password,
+                    PasswordHasherFront.Hash(password),
                     selectedCompanyMcNumber,
                     trailertype,
                     status,
