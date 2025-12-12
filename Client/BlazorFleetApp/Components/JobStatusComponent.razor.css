@@ -1,41 +1,68 @@
-﻿/* ========================================== SHARED BASE STYLE (for all status displays) ========================================== */
-.job-status, .job-status-text, .job-status-select-wrapper {
-  display: inline-flex;
-  align-items: center;
-  font-size: 16px;
-  font-weight: 600;
-  color: #0f6b78;
-  padding: 16px 24px;
-  padding-left: 230px; /* increase left padding for larger icon */
-  border-radius: 6px;
-  background-repeat: no-repeat;
-  background-position: 16px center; /* 3× size (correct ratio: 276×96) */
-  background-size: 230px 96px;
+﻿/* Outer wrapper for both driver & dispatcher view */
+.job-status-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    max-width: 430px;
+    margin: 0 auto;
+    padding: 0;
+
+    background: transparent;
+    border: none;
+
+    font-family: 'LemonMilk', sans-serif;
+    color: #145F74;
 }
 
-/* ========================================== DRIVER SELECT WRAPPER (styled like a pill) ========================================== */
-.job-status-select-wrapper {
-  border: 2px solid #0f6b78;
-  background-color: #e8f6f8;
+/* Status image on top */
+.job-status-image {
+    width: 120px;      /* smaller image */
+    height: auto;
+    margin-bottom: 6px;
 }
 
-/* ========================================== DRIVER SELECT (remove browser styling) ========================================== */
-.job-status-select {
-  appearance: none;
-  border: none;
-  background: transparent;
-  font-size: 16px;
-  font-weight: 600;
-  color: #0f6b78;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  outline: none;
-  line-height: 20px; /* makes text align perfectly */
+/* Wrapper used only on dispatcher view, but keep it simple */
+.job-status-text-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 2px;
 }
 
-/* ========================================== DISPATCHER TEXT PILL ========================================== */
+/* Dispatcher text below image */
 .job-status-text {
-  border: none;
-  background-color: transparent;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    color: #145F74;
+}
+
+/* ===== DRIVER SELECT LOOK ===== */
+
+.job-status-select {
+    appearance: none;
+    border: none;
+    background: transparent;
+
+    width: 100%;
+    max-width: 260px;
+    padding: 4px 0;
+
+    font-family: 'LemonMilk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+
+    color: #145F74;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Dropdown options */
+.job-status-select option {
+    font-family: 'LemonMilk', sans-serif;
+    font-size: 13px;
+    color: #145F74;
 }
