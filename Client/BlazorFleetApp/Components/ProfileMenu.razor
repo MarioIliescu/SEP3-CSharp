@@ -1,0 +1,108 @@
+﻿@using ApiContracts.Enums
+@using BlazorFleetApp.Services.Auth
+@using Microsoft.AspNetCore.Components.Authorization
+
+<div class="profile-menu">
+    <div class="pfp-container @_active">
+        <img src="@_profilePictureSource" alt=""  @onclick="ToggleActive">
+    </div>
+    <div class="pop-up-menu @_active">
+        <button type="button" id="profile-button" @onclick="RedirectToProfile">Profile</button>
+        @if (userRole == UserRole.Driver && companyRole.Equals("OwnerOperator"))
+        {
+            <button type="button" id="manage-button" @onclick="RedirectToManageCompany">Manage Company</button>
+        }
+        <button type="button" @onclick="LogoutAsync">Log Out</button>
+    </div>
+</div>
+
+@if (_active == "active")
+{
+    <div class="overlay" @onclick="ClosePopUp"></div>
+}
+
+@code 
+{
+    private string _profilePictureSource = "";
+    private string _manageAccountLink = "";
+    private string _active = "";
+    private UserRole userRole;
+    private string companyRole = "";
+    private bool isLoading = true;
+    [Inject] private NavigationManager NavMgr { get; set; }
+    [Inject] private IAuthService AuthService { get; set; }
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        if (State != null)
+        {
+            var authState = await State;
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated ?? false)
+            {
+                companyRole = user.Claims.FirstOrDefault(c => c.Type == "CompanyRole")?.Value ?? "your company role";
+                _profilePictureSource = user.Claims.FirstOrDefault(c => c.Type == "PhotoUrl")?.Value ?? "";
+                var roleClaim = user.FindFirst("Role")?.Value;
+                if (!string.IsNullOrEmpty(roleClaim) &&
+                    Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole))
+                {
+                    userRole = parsedRole;
+                }
+            }
+        }
+        
+        SetRoleSpecificSourcesAndProfile(userRole);
+
+        isLoading = false;
+    }
+    
+    private void SetRoleSpecificSourcesAndProfile(UserRole userRole)
+    {
+        if (userRole == UserRole.Driver)
+        {
+
+            _manageAccountLink = "manage-account-driver";
+        }
+        else if (userRole == UserRole.Dispatcher)
+        {
+
+            _manageAccountLink = "manage-account-dispatcher";
+        }
+
+        if (string.IsNullOrEmpty(_profilePictureSource))
+        {
+            _profilePictureSource = "images/default_profile_picture.png";
+        }
+    }
+    
+    private async Task LogoutAsync()
+    {
+        await AuthService.LogoutAsync(); // call your service to remove tokens / auth
+        NavMgr.NavigateTo("/login"); // redirect to login page
+    }
+
+    private async Task ToggleActive()
+    {
+        _active = (_active == "active") ? "" : "active";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void RedirectToProfile()
+    {
+        NavMgr.NavigateTo(_manageAccountLink);
+        ClosePopUp();
+    }
+
+    private void RedirectToManageCompany()
+    {
+        NavMgr.NavigateTo("manage-company");
+        ClosePopUp();
+    }
+
+    private void ClosePopUp()
+    {
+        _active = "";
+    }
+}

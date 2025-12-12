@@ -1,123 +1,66 @@
 ﻿@using ApiContracts.Enums
 @using BlazorFleetApp.Services.Auth
 @using Microsoft.AspNetCore.Components.Authorization
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">BlazorFleetApp</a>
+
+<div class="top-bar">
+    <div class="logo-container">
+        <img src="@_logoSource" alt="Logo">
     </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
+    
+    <div class="nav-bar">
         
-        <div class="nav-item px-3">
-            @if (userRole == UserRole.Driver)
-            {
-                <NavLink class="nav-link" href="driver-home" Match="NavLinkMatch.All">
-                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-                </NavLink>
-            }
-            else if  (userRole == UserRole.Dispatcher)
-                 {
-                     <NavLink class="nav-link" href="dispatcher-home" Match="NavLinkMatch.All">
-                         <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-                     </NavLink>
-                 }
-            else
-            {
-            <NavLink class="nav-link" href="home" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-            }
+        <div class="nav-link">
+            <NavLink href="@_homeLink" class="nav-item">Home</NavLink>
+            <div class="pop-up-line"></div>
         </div>
-        @if (@companyRole.Equals("OwnerOperator"))
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="manage-company">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Company
-                </NavLink>
-            </div>
-        }
+        
         @if (userRole == UserRole.Dispatcher)
         {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="manage-account-dispatcher">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Account
-                </NavLink>
-            </div>
-        }
-        @if (userRole == UserRole.Dispatcher)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="create-job">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Create Job
-                </NavLink>
-            </div>
-        }
-        @if (userRole == UserRole.Dispatcher)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="my-drivers">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> My Drivers
-                </NavLink>
-            </div>
-        }
-        @if (userRole == UserRole.Dispatcher)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="dispatcher-job-list">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Job list
-                </NavLink>
-            </div>
-        }
-        @if (userRole == UserRole.Dispatcher)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="manage-job">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Job
-                </NavLink>
-            </div>
-        }
-        @if (userRole == UserRole.Driver)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="manage-account-driver">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Account
-                </NavLink>
-            </div>
-        }
-        @if (userRole == UserRole.Driver)
-        {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="drivers-job">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Manage Job
-                </NavLink>
-            </div>
-        }
-        @if (userRole == UserRole.Driver)
-        {
-            <div class="nav-item px-4 mt-auto">
-                <DriverStatusComponent></DriverStatusComponent>
+            <div class="nav-link">
+                <NavLink href="create-job" class="nav-item">Create Job</NavLink>
+                <div class="pop-up-line"></div>
             </div>
         }
         
         @if (userRole == UserRole.Dispatcher)
         {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="recruit-driver">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Recruit Driver
-                </NavLink>
+            <div class="nav-link">
+                <NavLink href="manage-job" class="nav-item">Manage Job</NavLink>
+                <div class="pop-up-line"></div>
             </div>
         }
-        <!-- Logout button at the end -->
-        <div class="nav-item px-3 mt-auto">
-            <button class="btn btn-outline-light w-100" @onclick="LogoutAsync">
-                <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Logout
-            </button>
-        </div>
-    </nav>
+        
+        @if (userRole == UserRole.Dispatcher)
+        {
+            <div class="nav-link">
+                <NavLink href="dispatcher-job-list" class="nav-item">My Jobs</NavLink>
+                <div class="pop-up-line"></div>
+            </div>
+        }
+        
+        @if (userRole == UserRole.Dispatcher)
+        {
+            <div class="nav-link">
+                <NavLink href="recruit-driver" class="nav-item">Recruit Driver</NavLink>
+                <div class="pop-up-line"></div>
+            </div>
+        }
+        
+    </div>
+    
+    <div class="right-side-things">
+        @if (userRole == UserRole.Driver)
+        {
+            <DriverStatusComponent></DriverStatusComponent>
+        }
+        
+        @if (userRole == UserRole.Dispatcher)
+        {
+            <p>Ready to Dispatch?</p>
+        }
+        
+        <ProfileMenu></ProfileMenu>
+    </div>
 </div>
 
 @code {
@@ -125,14 +68,13 @@
     [Inject] private IAuthService AuthService { get; set; }
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     private bool isLoading = true;
-
-    private string companyRole= "your company role";
+    private string _homeLink = "";
+    private string _manageAccountLink = "";
+    private string _logoSource = "images/";
+    private string _profilePictureSource = "";
+    private string _selected = "";
     private UserRole userRole;
-    private async Task LogoutAsync()
-    {
-        await AuthService.LogoutAsync(); // call your service to remove tokens / auth
-        NavMgr.NavigateTo("/login"); // redirect to login page
-    }
+    
     protected override async Task OnInitializedAsync()
     {
         if (State != null)
@@ -142,8 +84,7 @@
 
             if (user?.Identity?.IsAuthenticated ?? false)
             {
-                companyRole = user.Claims.FirstOrDefault(c => c.Type == "CompanyRole")?.Value ?? "your company role";
-
+                _profilePictureSource = user.Claims.FirstOrDefault(c => c.Type == "PhotoUrl")?.Value ?? "";
                 var roleClaim = user.FindFirst("Role")?.Value;
                 if (!string.IsNullOrEmpty(roleClaim) &&
                     Enum.TryParse<UserRole>(roleClaim, true, out var parsedRole))
@@ -152,8 +93,35 @@
                 }
             }
         }
+        
+        SetRoleSpecificSourcesAndProfile(userRole);
 
         isLoading = false;
     }
 
+    private void SetRoleSpecificSourcesAndProfile(UserRole userRole)
+    {
+        if (userRole == UserRole.Driver)
+        {
+            _homeLink = "drivers-job";
+            _logoSource += "LogoDrive.png";
+            _manageAccountLink = "manage-account-driver";
+        }
+        else if (userRole == UserRole.Dispatcher)
+        {
+            _homeLink = "my-drivers";
+            _logoSource += "LogoDispatcher.png";
+            _manageAccountLink = "manage-account-dispatcher";
+        }
+        else
+        {
+            _homeLink = "home";
+            _logoSource += "logo-03.png";
+        }
+
+        if (string.IsNullOrEmpty(_profilePictureSource))
+        {
+            _profilePictureSource = "images/reddot.png";
+        }
+    }
 }

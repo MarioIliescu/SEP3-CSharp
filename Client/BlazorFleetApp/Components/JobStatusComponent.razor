@@ -8,7 +8,7 @@
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.SignalR.Client
-@if (job != null)
+@if (job != null && !isLoading)
 {
     <div>
         @if (userRole == UserRole.Driver)
@@ -19,44 +19,35 @@
             }
             else
             {
-                <div class="job-status-select-wrapper"
-                     style="background-image: url('@GetStatusImage()');">
-                    <div class="job-status-text-wrapper">
+                <div class="job-status-wrapper">
+                    <img class="job-status-image" src="@GetStatusImage()" alt="Status"/>
 
+                    <select class="job-status-select"
+                            @bind="status">
                         @if (status == JobStatus.Assigned)
                         {
-                            <select class="job-status-select" @bind="status">
-                                <option value="@JobStatus.Available">Deny Job
-                                </option>
-                                <option value="@JobStatus.Accepted">Accept Job
-                                </option>
-                            </select>
+                            <option value="@JobStatus.Assigned">Select Option</option>
+                            <option value="@JobStatus.Available">Deny Job</option>
+                            <option value="@JobStatus.Accepted">Accept Job</option>
                         }
                         else
                         {
-                            <select class="job-status-select" @bind="status">
-                                <option value="@JobStatus.Accepted">Job pending start
-                                </option>
-                                <option value="@JobStatus.Loading">Loading the cargo
-                                </option>
-                                <option value="@JobStatus.Ongoing">In route to
-                                    destination
-                                </option>
-                                <option value="@JobStatus.Unloading">Unloading
-                                    Cargo at destination
-                                </option>
-                                <option value="@JobStatus.Completed">Job
-                                    Completed
-                                </option>
-                            </select>
+                            <option value="@JobStatus.Accepted">Job pending start</option>
+                            <option value="@JobStatus.Loading">Loading the cargo</option>
+                            <option value="@JobStatus.Ongoing">In route to destination</option>
+                            <option value="@JobStatus.Unloading">Unloading cargo at destination</option>
+                            <option value="@JobStatus.Completed">Job Completed</option>
                         }
-                    </div>
+                    </select>
                 </div>
             }
         }
+
         @if (userRole == UserRole.Dispatcher)
         {
-            <div class="job-status-select-wrapper" style="background-image: url('@GetStatusImage()');">
+            <div class="job-status-wrapper">
+                <img class="job-status-image" src="@GetStatusImage()" alt="Status"/>
+
                 <div class="job-status-text-wrapper">
                     <span class="job-status-text">@status</span>
                 </div>
@@ -70,6 +61,7 @@ else
 }
 
 
+
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     [Parameter] public int? InitialJobId { get; set; }
@@ -81,6 +73,8 @@ else
     private JobDto? job;
     private JobStatus _status = JobStatus.Available;
     bool _notAcceptedYet = true;
+    bool isLoading = true;
+
     private JobStatus status
     {
         get => _status;
@@ -96,7 +90,7 @@ else
                 else if (_notAcceptedYet && value is JobStatus.Accepted)
                 {
                     _notAcceptedYet = false;
-                    _= ConfirmAndChangeStatusAsync(value); // async fire-and-forget
+                    _ = ConfirmAndChangeStatusAsync(value); // async fire-and-forget
                 }
                 else
                 {
@@ -106,7 +100,7 @@ else
             }
         }
     }
-    
+
     protected override async Task OnInitializedAsync()
     {
         await LoadUserRoleAsync();
@@ -133,6 +127,8 @@ else
             });
         });
         await hubConnection.StartAsync();
+
+        isLoading = false;
     }
 
     private async Task LoadUserRoleAsync()
@@ -171,11 +167,12 @@ else
             _ => "/images/JobStatus/unassigned_job_vector.png"
         };
     }
+
     private async Task ChangeStatusAsync(JobStatus newStatus)
     {
         int driverId;
         if (job == null) return;
-        if (newStatus is JobStatus.Available or JobStatus.Expired or JobStatus.Completed)
+        if (newStatus is JobStatus.Available)
         {
             driverId = 0;
         }
@@ -256,6 +253,7 @@ else
             job = null;
         }
     }
+
     private async Task ConfirmAndChangeStatusAsync(JobStatus newStatus)
     {
         string? statusText = newStatus switch
@@ -279,4 +277,5 @@ else
             await InvokeAsync(StateHasChanged);
         }
     }
+
 }

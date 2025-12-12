@@ -91,10 +91,10 @@
         switch (role)
         {
             case "Dispatcher":
-                 NavMgr.NavigateTo("/dispatcher-home");
+                 NavMgr.NavigateTo("/my-drivers");
                 break;
                case "Driver":
-                 NavMgr.NavigateTo("/driver-home");
+                 NavMgr.NavigateTo("/drivers-job");
                 break;
             default:
                 InvokeAsync(() => NavMgr.NavigateTo("/home")); 
