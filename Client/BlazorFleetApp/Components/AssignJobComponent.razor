@@ -13,8 +13,14 @@
 @inject IJobService JobService
 @implements IAsyncDisposable
 
-<div class="container-fluid">
-    <div class="row">
+<div class="container-fluid position-relative">
+
+    @if (selectedJob != null)
+    {
+        <div class="job-overlay" @onclick="ClearSelectedJob"></div>
+    }
+
+    <div class="row position-relative" style="z-index: 2;">
         <div class="col-12 select-wrapper">
             <select @onchange="OnJobSelectedObject">
                 <option value="">Select Job</option>
@@ -27,9 +33,11 @@
                 }
             </select>
         </div>
+
         @if (selectedJob != null)
         {
-            <div class=" col-12 job-details-card fade-in w-100">
+            <div class="col-12 job-details-card fade-in w-100"
+                 @onclick:stopPropagation="true">
                 <h4>@selectedJob.Title</h4>
 
                 <p>@selectedJob.Description</p>
@@ -40,8 +48,8 @@
                     @selectedJob.PickupLocationState → @selectedJob.DropLocationState
                 </p>
 
-                <button class="primary-button" @onclick="AssignJobAsync">Assign
-                    Job
+                <button class="primary-button" @onclick="AssignJobAsync">
+                    Assign Job
                 </button>
 
                 <div class="error-message">@errorMessage</div>
@@ -247,5 +255,12 @@
     {
         return InvokeAsync(StateHasChanged);
     }
+    
+    private void ClearSelectedJob()
+    {
+        selectedJob = null;
+        errorMessage = string.Empty;
+    }
+
 
 }
