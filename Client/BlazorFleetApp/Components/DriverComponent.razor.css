@@ -1,90 +1,179 @@
-/* ===== DRIVER ROW (CARD) ===== */
-.box-container {
-  width: 100%;
-  padding: 16px 24px;
-  margin-bottom: 10px;
-
-  background: #f9fbfc;
-  border-radius: 10px;
-  border: 3px solid #0f6b78;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-
-  display: flex;           /* fills horizontal space */
-  flex-direction: column;  /* safe for mobile */
-  transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+@font-face {
+    font-family: 'LemonMilk';
+    src: url('fonts/LEMONMILK-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
 }
 
-/* Let Bootstrap handle column widths, override negative margins */
-.box-container .row {
-  width: 100%;
-  margin: 0;
+@font-face {
+    font-family: 'Ausion';
+    src: url('fonts/AusionPersonalUse.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
 }
 
-/* True 3-column layout */
-.box-container .col-xl-3,
-.box-container .col-md-6,
-.box-container .col-sm-12 {
-  flex: 0 0 auto;
-  padding: 0 10px;
-}
-
-@media (min-width: 1200px) {
-  .box-container .col-xl-3 {
-    width: 33.333%;
-  }
-}
-
-/* ===== DRIVER CARD SPECIFIC ===== */
 .driver-card {
-  cursor: pointer;
-  border-radius: 6px;
-  padding: 5px;
-  margin-bottom: 8px;
-  background-color: #ffffff;
-  transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    font-family: 'Ausion', sans-serif;
+    width: 100%;
+    position: relative;
 }
 
-.driver-card:hover {
-  background-color: #f5f5f5;
-  transform: scale(1.01);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+.driver-card * {
+    box-sizing: border-box;
 }
 
-/* ===== EXTRA COLUMN (Driver Info) ===== */
-.extra-column {
-  cursor: pointer;
-  padding: 0.75rem;
-  border-radius: 8px;
-  background-color: #fafafa;
-  margin-top: 0.5rem;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
-  transition: background-color 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
-  opacity: 0;
-  transform: translateY(-10px);
-  animation: slideDownFadeIn 0.25s forwards;
+.driver-card.box-container {
+    border: 3px solid #145F74;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(6px);
+    transition: 0.25s;
+    overflow: hidden;
 }
 
-.extra-column:hover {
-  background-color: #f0f0f0;
-  transform: scale(1.01);
+.driver-card.box-container:hover {
+    border-color: #071F25;
+    box-shadow: 0 8px 20px rgba(7, 31, 37, 0.18);
+    transform: translateY(-1px);
 }
 
-/* ===== OVERLAY ===== */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  background: rgba(0,0,0,0); /* transparent, only blocks clicks */
+.driver-main {
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    align-items: center;
 }
 
-/* ===== ANIMATION ===== */
-@keyframes slideDownFadeIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.driver-card .col-xl-4,
+.driver-card .col-md-6,
+.driver-card .col-sm-12 {
+    min-width: 0;
+}
+
+.driver-stack,
+.component-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    min-width: 0;
+}
+
+.job-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    text-align: center;
+    min-width: 0;
+}
+
+.driver-name {
+    font-family: 'LemonMilk', sans-serif;
+    font-size: 1.25rem;
+    line-height: 1.15;
+    margin: 0;
+    color: #071F25;
+}
+
+.company-name {
+    font-family: 'Ausion', sans-serif;
+    font-size: 1.0rem;
+    line-height: 1.1;
+    color: #3C616A;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.job-route {
+    font-family: 'LemonMilk', sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.15;
+    margin: 0;
+    color: #071F25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.driver-status,
+.job-status {
+    font-family: 'LemonMilk', sans-serif;
+}
+
+.job-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.no-job {
+    font-family: 'LemonMilk', sans-serif;
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+.driver-card .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 95, 116, 0.12);
+    z-index: 1;
+}
+
+.driver-extra {
+    position: relative;
+    z-index: 3;
+    cursor: pointer;
+    animation: driverExpand 240ms cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform-origin: top;
+}
+
+.driver-extra h5 {
+    font-family: 'LemonMilk', sans-serif;
+    color: #145F74;
+}
+
+.driver-extra p {
+    font-family: 'Ausion', sans-serif;
+    color: #071F25;
+}
+
+@keyframes driverExpand {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scaleY(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
+
+@media (max-width: 768px) {
+    .driver-name {
+        font-size: 1.15rem;
+    }
+
+    .job-route {
+        font-size: 1.0rem;
+    }
+
+    .company-name {
+        font-size: 0.98rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .driver-card.box-container {
+        border-width: 2px;
+    }
+
+    .driver-name {
+        font-size: 1.05rem;
+    }
+
+    .job-route {
+        font-size: 0.95rem;
+    }
 }

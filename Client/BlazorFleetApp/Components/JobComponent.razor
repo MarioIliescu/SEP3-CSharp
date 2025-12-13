@@ -39,7 +39,7 @@ else
 
             <div class="col-xl-4 col-md-6 col-sm-12">
                 <h5 class="mb-0">
-                    $ JOB PRICE (@($"${_job?.TotalPrice:F2} (Dispatcher cut: ${(_job?.TotalPrice * _dispatcher?.CurrentRate):F2})"))
+                    @($"${_job?.TotalPrice:F2} (Dispatcher cut: ${(_job?.TotalPrice * _dispatcher?.CurrentRate):F2})")
                 </h5>
             </div>
         </div>

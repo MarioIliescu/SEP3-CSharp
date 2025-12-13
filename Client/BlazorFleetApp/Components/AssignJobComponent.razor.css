@@ -1,108 +1,145 @@
-/* ========== JOB DETAILS CARD ========== */
-.job-details-card {
-  background: #ffffff;
-  padding: 22px;
-  border-radius: 14px;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
-  margin-top: 20px;
-  text-align: left;
-  max-width: 550px;
-  margin-left: auto;
-  margin-right: auto;
+@font-face {
+    font-family: 'LemonMilk';
+    src: url('fonts/LEMONMILK-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
 }
 
-.job-details-card h4 {
-  margin-bottom: 10px;
-  font-weight: 600;
+@font-face {
+    font-family: 'Ausion';
+    src: url('fonts/AusionPersonalUse.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
 }
 
-.job-details-card p {
-  margin: 6px 0;
-  font-size: 16px;
-}
-
-/* Fade-in animation when job is selected */
-.fade-in {
-  animation: fadeIn 0.35s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ========== PRIMARY BUTTON (MERGED + CLEANED) ========== */
-.primary-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-
-  padding: 12px 28px;
-  font-size: 16px;
-  font-weight: 600;
-
-  background: linear-gradient(135deg, #6ec3ff, #3a8dff);
-  color: #ffffff;
-
-  border: none;
-  border-radius: 999px; /* fully rounded pill */
-  cursor: pointer;
-
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 10px rgba(58, 141, 255, 0.25);
-}
-
-.primary-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(58, 141, 255, 0.35);
-  background: linear-gradient(135deg, #7bd2ff, #4b97ff);
-}
-
-.primary-button:active {
-  transform: translateY(0);
-  box-shadow: 0 3px 8px rgba(58, 141, 255, 0.2);
-}
-
-/* ========== ERROR MESSAGE ========== */
-.error-message {
-  margin-top: 10px;
-  color: #d9534f;
-  font-size: 15px;
-  text-align: left;
-}
-/* Center wrapper */
 .select-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
 }
 
-/* Modern select */
 .select-wrapper select {
-  width: 100%;
-  max-width: 320px;    /* centers nicely, prevents huge dropdown */
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 2px solid #0f6b78;
-  background: #e8f6f8;
-  color: #0f6b78;
+    width: 100%;
+    max-width: 360px;
+    height: 44px;
+    padding: 10px 14px;
 
-  font-size: 16px;
-  font-weight: 600;
+    border-radius: 10px;
+    border: 3px solid #145F74;
 
-  outline: none;
-  cursor: pointer;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(6px);
 
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    color: #145F74;
+    font-family: 'LemonMilk', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    outline: none;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
-/* Hover & focus effects */
 .select-wrapper select:hover {
-  border-color: #0f8b94;
+    border-color: #071F25;
 }
 
 .select-wrapper select:focus {
-  border-color: #0f8b94;
-  box-shadow: 0 0 0 3px rgba(15, 139, 148, 0.25);
+    border-color: #071F25;
+    box-shadow: 0 0 0 3px rgba(20, 95, 116, 0.20);
+}
+
+.job-details-card {
+    width: 100%;
+    max-width: 650px;
+    margin: 18px auto 0;
+
+    border: 3px solid #145F74;
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(6px);
+
+    padding: 20px;
+    text-align: left;
+
+    box-shadow: 0 8px 20px rgba(7, 31, 37, 0.14);
+}
+
+.job-details-card h4 {
+    font-family: 'LemonMilk', sans-serif;
+    font-size: 1.15rem;
+    margin: 0 0 10px 0;
+    color: #071F25;
+}
+
+.job-details-card p {
+    font-family: 'Ausion', sans-serif;
+    margin: 6px 0;
+    font-size: 1.02rem;
+    color: #3C616A;
+}
+
+.job-details-card strong {
+    font-family: 'LemonMilk', sans-serif;
+    font-weight: 500;
+    color: #071F25;
+}
+
+.fade-in {
+    animation: fadeIn 240ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.primary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+    height: 44px;
+    margin-top: 12px;
+
+    border-radius: 10px;
+    border: none;
+
+    background: #145F74;
+    color: #ffffff;
+
+    font-family: 'LemonMilk', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.primary-button:hover {
+    background: #071F25;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(7, 31, 37, 0.18);
+}
+
+.primary-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.error-message {
+    margin-top: 10px;
+    font-family: 'LemonMilk', sans-serif;
+    color: #6d151e;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.job-overlay {
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    z-index: 1;
 }

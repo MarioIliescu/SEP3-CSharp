@@ -22,9 +22,14 @@
     <div class="chat-messages" @ref="chatDiv">
         @if (_driver != null && MessagesCache.ContainsKey(_driver.Id))
         {
-            foreach (var message in MessagesCache[_driver.Id])
+            @foreach (var message in MessagesCache[_driver.Id])
             {
-                <div class="chat-message">@message</div>
+                var parts = message.Split(": ", 2);
+
+                <div class="chat-message">
+                    <span class="chat-message-name">@parts[0]</span>
+                    <span class="chat-message-body">@parts.ElementAtOrDefault(1)</span>
+                </div>
             }
         }
     </div>
