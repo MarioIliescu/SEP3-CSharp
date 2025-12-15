@@ -1,8 +1,10 @@
 using Entities;
 using ApiContracts.Company;
 using ApiContracts.Dtos.Driver;
+using ApiContracts.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Services.Company;
+using Services.Driver;
 
 namespace FleetWebApi.Controllers;
 
@@ -11,10 +13,12 @@ namespace FleetWebApi.Controllers;
 public class CompanyController : ControllerBase
 {
     private readonly ICompanyService _companyService;
+    private readonly IDriverService _driverService;
 
-    public CompanyController(ICompanyService companyService)
+    public CompanyController(ICompanyService companyService, IDriverService driverService)
     {
         _companyService = companyService;
+        _driverService = driverService;
     }
 
     // GET /company
@@ -64,6 +68,15 @@ public class CompanyController : ControllerBase
     [HttpPut]
     public async Task<ActionResult> UpdateCompanyAsync([FromBody]  CreateCompanyDto dto)
     {
+        var userIdClaim = User.FindFirst("Id")?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var entity = await _driverService.GetSingleAsync(userId);
+
+        if (entity.CompanyRole != DriverCompanyRole.OwnerOperator)
+            return Forbid();
         var company = new Company.Builder()
             .SetMcNumber(dto.McNumber)
             .SetCompanyName(dto.CompanyName)
