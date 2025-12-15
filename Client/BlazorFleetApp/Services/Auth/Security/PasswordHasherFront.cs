@@ -3,7 +3,7 @@ using System.Text;
 
 namespace BlazorFleetApp.Services.Auth.Security;
 
-public class PasswordHasherFront
+public static class PasswordHasherFront
 {
     /// <summary>
     /// Computes a SHA-256 hash of the password
