@@ -1,6 +1,7 @@
 ﻿using ApiContracts.Dtos.Dispatcher;
 using ApiContracts.Enums;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Dispatcher;
 using Services.SecurityUtils;
@@ -45,6 +46,7 @@ public class DispatcherController : ControllerBase
         }
     }
     [HttpPut]
+    [Authorize]
     public async Task<IActionResult> UpdateDispatcherAsync(
         [FromBody] DispatcherDto dto)
     {

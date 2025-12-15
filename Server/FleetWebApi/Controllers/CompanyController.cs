@@ -2,6 +2,7 @@ using Entities;
 using ApiContracts.Company;
 using ApiContracts.Dtos.Driver;
 using ApiContracts.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Company;
 using Services.Driver;
@@ -66,6 +67,7 @@ public class CompanyController : ControllerBase
 
     // PUT /company
     [HttpPut]
+    [Authorize]
     public async Task<ActionResult> UpdateCompanyAsync([FromBody]  CreateCompanyDto dto)
     {
         var userIdClaim = User.FindFirst("Id")?.Value;

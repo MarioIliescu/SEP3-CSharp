@@ -1,5 +1,6 @@
 ﻿using ApiContracts.Dtos.RecruitDriver;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Dispatcher;
 using Services.RecruitDriver;
@@ -14,6 +15,7 @@ public class RecruitDriverController(IRecruitDriverService recruitDriverService,
 {
     // POST recruit
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> RecruitDriver([FromBody] RecruitDriverDto dto)
     {
         var userIdClaim = User.FindFirst("Id")?.Value;
@@ -35,6 +37,7 @@ public class RecruitDriverController(IRecruitDriverService recruitDriverService,
     
     // DELETE fire driver
     [HttpDelete ("delete")]
+    [Authorize]
     public async Task<IActionResult> FireDriver([FromBody] RecruitDriverDto dto)
     {
         var userIdClaim = User.FindFirst("Id")?.Value;

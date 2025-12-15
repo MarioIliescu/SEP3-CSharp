@@ -1,5 +1,6 @@
 ﻿using ApiContracts.Dtos.Job;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Dispatcher;
 using Services.Driver;
@@ -22,6 +23,7 @@ public class JobController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> CreateJob([FromBody] CreateJobDto dto)
     {
         try
@@ -96,6 +98,7 @@ public class JobController : ControllerBase
     }
     
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<ActionResult> DeleteJob(int id)
     {
         var userIdClaim = User.FindFirst("Id")?.Value;
@@ -103,7 +106,7 @@ public class JobController : ControllerBase
         if (!int.TryParse(userIdClaim, out var userId))
             return Unauthorized();
         
-        var entity = await _dispatcherService.GetSingleAsync(id);
+        var entity = await _dispatcherService.GetSingleAsync(userId);
 
         if (entity.Id != userId)
             return Forbid();
@@ -120,6 +123,7 @@ public class JobController : ControllerBase
     
     // PUT /job
     [HttpPut]
+    [Authorize]
     public async Task<ActionResult> UpdateJobAsync([FromBody] UpdateJobDto dto)
     {
         try

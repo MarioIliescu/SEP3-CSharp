@@ -6,11 +6,13 @@
 @attribute [Authorize]
 @inject IJobService JobService
 @inject IDispatcherService DispatcherService
-
-
+@implements IAsyncDisposable
+@inject NavigationManager NavMgr
 @using ApiContracts.Dtos.Job
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services.Dispatcher
+@using BlazorFleetApp.Services.Events
+@using Microsoft.AspNetCore.SignalR.Client
 
 <h3 class="mb-3">Manage Jobs</h3>
 <div class="container-fluid">
@@ -18,7 +20,7 @@
 
     <div class="col-12">
 
-        @if (jobs.Count == 0)
+        @if (jobs.Count == 0 || isLoading)
         {
             <p>No jobs found.</p>
         }
@@ -143,10 +145,10 @@
     [Inject] private IJSRuntime JS { get; set; }
     private List<JobDto> jobs = new();
     private JobDto? selectedJob;
-
+    private bool isLoading = true;
     private int dispatcherId = 0;
     private string message = "";
-
+    private HubConnection? hubConnection;
     private string title = "";
     private string description = "";
     private int loadedMiles;
@@ -191,6 +193,7 @@
                 {
                     dispatcherRatePercent = (decimal)dispatcher.CurrentRate; // e.g. 20
                 }
+                await SetupHubAsync();
                 await LoadJobsAsync();
             }
         }
@@ -198,6 +201,7 @@
 
     private async Task LoadJobsAsync()
     {
+        isLoading = true;
         try
         {
             var allJobs = await JobService.GetAllAsync();
@@ -208,6 +212,7 @@
 
 
             message = "";
+            isLoading = false;
         }
         catch (Exception ex)
         {
@@ -340,7 +345,13 @@
         };
 
         await JobService.UpdateAsync(update);
-
+        if (hubConnection != null)
+        {
+            await hubConnection.InvokeAsync(
+                "NotifyEvent",
+                FleetEventType.JobsUpdated
+            );
+        }
         message = "Changes saved!";
         await LoadJobsAsync();
     }
@@ -349,6 +360,7 @@
         message = "Error saving job: " + ex.Message;
     }
 }
+
 
 
 
@@ -367,6 +379,13 @@
                 message = "Job deleted.";
 
                 selectedJob = null;
+                if (hubConnection != null)
+                {
+                    await hubConnection.InvokeAsync(
+                        "NotifyEvent",
+                        FleetEventType.JobsUpdated
+                    );
+                }
                 await LoadJobsAsync();
             }
             catch (Exception ex)
@@ -379,6 +398,48 @@
         {
             // Do nothing, revert to previous
             await InvokeAsync(StateHasChanged);
+        }
+    }
+    private async Task RefreshJobsAsync()
+    {
+        await LoadJobsAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            if (dispatcherId != 0)
+                await hubConnection.InvokeAsync("LeaveGroup", dispatcherId.ToString());
+
+            await hubConnection.StopAsync();
+            await hubConnection.DisposeAsync();
+        }
+    }
+    private async Task SetupHubAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
+        {
+            switch (eventType)
+            {
+                case FleetEventType.JobsUpdated:
+                case FleetEventType.JobAssigned:
+                case FleetEventType.JobStatusChanged:
+                    await RefreshJobsAsync();
+                    break;
+            }
+        });
+
+        await hubConnection.StartAsync();
+
+        if (dispatcherId != 0)
+        {
+            await hubConnection.InvokeAsync("JoinGroup", dispatcherId.ToString());
         }
     }
 }
