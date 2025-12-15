@@ -16,6 +16,7 @@
     font-family: 'Ausion', sans-serif;
     width: 100%;
     position: relative;
+    margin-bottom: 1vh;
 }
 
 .driver-card * {
