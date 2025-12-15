@@ -1,6 +1,8 @@
 ﻿using ApiContracts.Dtos.Job;
 using Entities;
 using Microsoft.AspNetCore.Mvc;
+using Services.Dispatcher;
+using Services.Driver;
 using Services.Job;
 
 namespace FleetWebApi.Controllers;
@@ -11,19 +13,31 @@ namespace FleetWebApi.Controllers;
 public class JobController : ControllerBase
 {
     private readonly IJobService _jobService;
+    private readonly IDispatcherService _dispatcherService;
     
-    public JobController(IJobService jobService)
+    public JobController(IJobService jobService, IDispatcherService dispatcherService)
     {
         _jobService = jobService;
+        _dispatcherService = dispatcherService;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateJob([FromBody] CreateJobDto dto)
     {
         try
-        {
+        { 
+            var userIdClaim = User.FindFirst("Id")?.Value;
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+        
+            var entity = await _dispatcherService.GetSingleAsync(dto.DispatcherId);
+
+            if (entity.Id != userId)
+                return Forbid();
+            
             var job = new Job.Builder()
-                .SetDispatcherId(dto.DispatcherId)
+                .SetDispatcherId(userId)
                 .SetTitle(dto.Title)
                 .SetDescription(dto.Description)
                 .SetLoadedMiles(dto.loadedMiles)
@@ -84,6 +98,16 @@ public class JobController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> DeleteJob(int id)
     {
+        var userIdClaim = User.FindFirst("Id")?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+        
+        var entity = await _dispatcherService.GetSingleAsync(id);
+
+        if (entity.Id != userId)
+            return Forbid();
+        
         Job? job = await _jobService.GetSingleAsync(id);
         if (job == null)
         {
@@ -105,7 +129,14 @@ public class JobController : ControllerBase
             {
                 return NotFound($"Job with ID {dto.Id} not found.");
             }
+            var userIdClaim = User.FindFirst("Id")?.Value;
 
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            if (existingJob.DispatcherId != userId)
+                return Forbid();
+            
             var updatedJob = new Job.Builder()
                 .SetId(dto.Id)
                 .SetDispatcherId(dto.DispatcherId)

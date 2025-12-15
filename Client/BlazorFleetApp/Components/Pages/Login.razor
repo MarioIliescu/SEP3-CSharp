@@ -30,7 +30,6 @@
                 <input type="@passwordFieldType" id="password-field" name="password-field" placeholder="Password" @bind="password">
                 <img class="show-password-vector" src="images/ShowPasswordVector.png" @onclick="ToggleFieldType"/>
             </div>
-            <a href="" @onclick="GoToForgotPassword">Forgot password?</a>
             <p id="error-message-popup">@_errorMessage</p>
             <input type="button" id="login-button" name="login-button" value="Log in" @onclick="LoginAsync">
             <p>Don't have an account? <a href="" @onclick="GoToRegister">Create account</a> </p>
@@ -49,7 +48,6 @@
     private string _errorMessage = "";
 
     private void GoToRegister() => NavMgr.NavigateTo("select-role");
-    private void GoToForgotPassword() => NavMgr.NavigateTo("forgot_password");
 
     private async Task LoginAsync()
     {
