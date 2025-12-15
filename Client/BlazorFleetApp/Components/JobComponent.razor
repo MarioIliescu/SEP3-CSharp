@@ -82,7 +82,6 @@ else
     [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
     [Parameter] public int? InitialDispatcherId { get; set; }
     [Parameter] public EventCallback<JobDto?> OnExtraJobColumnClicked { get; set; }
-    [Inject] private IJSRuntime JS { get; set; }
     private bool showExtraColumn = false;
     private bool isLoading = true;
     private HubConnection? hubConnection;
@@ -90,9 +89,7 @@ else
     DriverDto? _driver;
     CompanyDto? _company;
     JobDto? _job;
-    private DotNetObjectReference<JobComponent>? dotNetRef;
     private string JobCardId => $"jobCard_{(ValueType)_job?.Id ?? Guid.NewGuid()}";
-    private IJSObjectReference? module;
     private async Task LoadJobAsync()
     {
         if (InitialJob != null)
@@ -116,7 +113,15 @@ else
         await LoadDriverAsync();
         // Initialize hub connection
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"), options =>
+            {
+                options.AccessTokenProvider = async () =>
+                {
+                    var authState = await State;
+                    var user = authState.User;
+                    return user?.Claims.FirstOrDefault(c => c.Type == "access_token")?.Value;
+                };
+            })
             .WithAutomaticReconnect()
             .Build();
 
@@ -170,36 +175,12 @@ else
         if (OnExtraJobColumnClicked.HasDelegate)
             await OnExtraJobColumnClicked.InvokeAsync(_job);
     }
-
-
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            dotNetRef?.Dispose();
-
-            dotNetRef = DotNetObjectReference.Create(this);
-            module = await JS.InvokeAsync<IJSObjectReference>(
-                "import", "./Components/JobComponent.razor.js"
-            );
-            await module.InvokeVoidAsync("registerClickOutside", dotNetRef, JobCardId);
-        }
-    }
-
-    [JSInvokable]
     private void HideExtraColumn()
     {
         showExtraColumn = false;
-        StateHasChanged();
     }
     public async ValueTask DisposeAsync()
     {
-        dotNetRef?.Dispose();
-
-        if (module != null)
-            await module.DisposeAsync();
-
         if (hubConnection != null)
             await hubConnection.DisposeAsync();
     }

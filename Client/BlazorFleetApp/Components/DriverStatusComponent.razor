@@ -202,6 +202,22 @@ else
         {
             // hub already stopped / disposing
         }
+        if (module != null)
+        {
+            try
+            {
+                await module.DisposeAsync();
+            }
+            catch (TaskCanceledException)
+            {
+                // JS runtime unavailable, ignore safely
+            }
+            catch (JSDisconnectedException)
+            {
+                // Blazor disconnected
+            }
+        }
+
     }
 
 }

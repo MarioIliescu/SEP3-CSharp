@@ -6,6 +6,7 @@
 @using BlazorFleetApp.Services.Job
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavMgr
 @inject IDriverService DriverService
@@ -58,6 +59,7 @@
 </div>
 
 @code {
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     [Parameter] public int? InitialDriverId { get; set; }
     [Parameter] public int? InitialDispatcherId { get; set; }
     [Parameter] public DriverDto? InitialDriver { get; set; }
@@ -82,7 +84,15 @@
     private async Task SetupHubAsync()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
+            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"), options =>
+            {
+                options.AccessTokenProvider = async () =>
+                {
+                    var authState = await State;
+                    var user = authState.User;
+                    return user?.Claims.FirstOrDefault(c => c.Type == "access_token")?.Value;
+                };
+            })
             .WithAutomaticReconnect()
             .Build();
 
@@ -149,13 +159,23 @@
 
     private async Task AssignJobAsync()
     {
-        if (driver == null)
+        if (driver == null || driver.Id == 0)
         {
-            errorMessage = "Driver not loaded.";
+            errorMessage = "Cannot assign job: driver not selected or invalid.";
+            return;
+        }
+        if (dispatcher == null || dispatcher.Id == 0)
+        {
+            errorMessage = "Dispatcher not loaded.";
             return;
         }
 
-        // Refresh the latest status from DB
+        if (selectedJob == null)
+        {
+            errorMessage = "No job selected.";
+            return;
+        }
+
         driver = await DriverService.GetSingleAsync(driver.Id);
         if (DriverCurrentJob != null)
         {
@@ -163,15 +183,9 @@
             return;
         }
 
-        if (driver.Status != DriverStatus.Available)
+        if (driver?.Status != DriverStatus.Available)
         {
             errorMessage = "Cannot assign a job to a busy or off duty driver";
-            return;
-        }
-
-        if (selectedJob == null)
-        {
-            errorMessage = "No job selected.";
             return;
         }
 

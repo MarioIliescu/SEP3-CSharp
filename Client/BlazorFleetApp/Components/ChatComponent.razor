@@ -230,7 +230,12 @@
 
         if (module != null)
         {
-            await module.DisposeAsync();
+            try
+            {
+                await module.DisposeAsync();
+            }
+            catch (TaskCanceledException) { }
+            catch (JSDisconnectedException) { }
         }
     }
 
