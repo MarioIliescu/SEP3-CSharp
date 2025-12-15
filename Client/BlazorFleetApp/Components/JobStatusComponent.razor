@@ -116,13 +116,9 @@ else
         {
             return InvokeAsync(async () =>
             {
-                switch (eventType)
+                if (eventType is FleetEventType.JobStatusChanged or FleetEventType.JobAssigned or FleetEventType.JobsUpdated)
                 {
-                    case FleetEventType.JobAssigned:
-                    case FleetEventType.JobsUpdated:
-                    case FleetEventType.JobStatusChanged:
-                        await RefreshJobAsync();
-                        break;
+                    await RefreshJobAsync();
                 }
             });
         });

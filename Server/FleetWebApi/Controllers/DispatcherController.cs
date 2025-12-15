@@ -104,6 +104,7 @@ public class DispatcherController : ControllerBase
     }
     
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<ActionResult> DeleteDispatcher(int id)
     {
         var userIdClaim = User.FindFirst("Id")?.Value;

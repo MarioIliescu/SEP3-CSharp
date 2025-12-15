@@ -5,12 +5,14 @@
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.RecruitDriver
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.SignalR.Client
 @inject IDriverService DriverService
 @inject IDispatcherService DispatcherService
 @inject IRecruitService RecruitService
 @inject NavigationManager NavMgr
 @implements IAsyncDisposable
+@attribute [Authorize]
 <div class="container-fluid">
     <div class="row">
         <div class="col-lg-3 d-none d-lg-block"></div>

@@ -59,6 +59,7 @@ public class RecruitDriverController(IRecruitDriverService recruitDriverService,
     
     // GET all drivers for dispatcher
     [HttpGet("dispatcher/{id:int}")]
+    [Authorize]
     public async Task<IActionResult> GetDriversForDispatcher(int id)
     {
         var userIdClaim = User.FindFirst("Id")?.Value;

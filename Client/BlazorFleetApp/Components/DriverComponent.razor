@@ -15,73 +15,83 @@
 @inject IDriverService DriverService
 @inject ICompanyService CompanyService
 @inject IJobService JobService
-<div id="@DriverCardId" class="driver-card box-container p-3">
-    @if (showExtraColumn)
-    {
-        <div class="overlay" @onclick="HideExtraColumn"></div>
-    }
+@if (isLoading)
+{
+    <p>Loading</p>
+}
+else
+{
+    <div id="@DriverCardId" class="driver-card box-container p-3">
+        @if (showExtraColumn)
+        {
+            <div class="overlay" @onclick="HideExtraColumn"></div>
+        }
 
-    <div class="row g-4 driver-main" @onclick="ToggleExtraColumn">
-        <div class="col-xl-4 col-md-6 col-sm-12">
-            <div class="driver-stack">
-                <h4 class="driver-name">@_driver?.FirstName @_driver?.LastName</h4>
-                <div class="company-name">@_company?.CompanyName</div>
+        <div class="row g-4 driver-main" @onclick="ToggleExtraColumn">
+            <div class="col-xl-4 col-md-6 col-sm-12">
+                <div class="driver-stack">
+                    <h4 class="driver-name">@_driver?.FirstName @_driver?.LastName</h4>
+                    <div class="company-name">@_company?.CompanyName</div>
 
-                @if (_driver?.Id != null)
-                {
-                    <div class="driver-status">
-                        <DriverStatusComponent InitialDriverId="@_driver.Id"></DriverStatusComponent>
-                    </div>
-                }
+                    @if (_driver?.Id != 0)
+                    {
+                        <div class="driver-status">
+                            <DriverStatusComponent InitialDriverId="@_driver?.Id"></DriverStatusComponent>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-md-6 col-sm-12">
+                <div class="job-stack">
+                    @if (_job != null)
+                    {
+                        <h4 class="job-route">@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
+                        <div class="job-status">
+                            @if (_job?.DriverId == 0)
+                            {
+                                _job = null;
+                            }
+                            <JobStatusComponent JobDto="_job"></JobStatusComponent>
+                        </div>
+                    }
+                    else
+                    {
+                        <h4 class="no-job text-muted">NO JOB ASSIGNED</h4>
+                    }
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-md-6 col-sm-12">
+                <div class="component-stack">
+                    @if (Component != null)
+                    {
+                        <div>@Component</div>
+                    }
+                </div>
             </div>
         </div>
 
-        <div class="col-xl-4 col-md-6 col-sm-12">
-            <div class="job-stack">
+        @if (showExtraColumn)
+        {
+            <div class="row g-4 mt-2 driver-extra" @onclick:stopPropagation="true" @onclick="HandleExtraColumnClick">
+                <h5 class="mb-2">Driver Info</h5>
+                <p class="mb-1">Name: @_driver?.FirstName @_driver?.LastName</p>
+                <p class="mb-1">MC Number: @_driver?.McNumber</p>
+                <p class="mb-1">Company: @_company?.CompanyName</p>
+
                 @if (_job != null)
                 {
-                    <h4 class="job-route">@_job.PickupLocationZip, @_job.PickupLocationState → @_job.DropLocationZip, @_job.DropLocationState</h4>
-
-                    <div class="job-status">
-                        <JobStatusComponent JobDto="_job"></JobStatusComponent>
-                    </div>
-                }
-                else
-                {
-                    <h4 class="no-job text-muted">NO JOB ASSIGNED</h4>
+                    <h5 class="mb-2 mt-3">Assigned Job Info</h5>
+                    <p class="mb-1">Job Title: @_job?.Title</p>
+                    <p class="mb-0">Status: @_job?.CurrentStatus</p>
+                    <p class="mb-0">Pick Up: @_job?.PickupLocationState, @_job?.PickupLocationZip</p>
+                    <p class="mb-0">Delivery: @_job?.DropLocationState, @_job?.DropLocationZip</p>
                 }
             </div>
-        </div>
-
-        <div class="col-xl-4 col-md-6 col-sm-12">
-            <div class="component-stack">
-                @if (Component != null)
-                {
-                    <div>@Component</div>
-                }
-            </div>
-        </div>
+        }
     </div>
-
-    @if (showExtraColumn)
-    {
-        <div class="row g-4 mt-2 driver-extra" @onclick:stopPropagation="true" @onclick="HandleExtraColumnClick">
-            <h5 class="mb-2">Driver Info</h5>
-            <p class="mb-1">Name: @_driver?.FirstName @_driver?.LastName</p>
-            <p class="mb-1">MC Number: @_driver?.McNumber</p>
-            <p class="mb-1">Company: @_company?.CompanyName</p>
-
-            @if (_job != null)
-            {
-                <h5 class="mb-2 mt-3">Assigned Job Info</h5>
-                <p class="mb-1">Job Title: @_job?.Title</p>
-                <p class="mb-0">Status: @_job?.CurrentStatus</p>
-                <p class="mb-0">Pick Up: @_job?.PickupLocationState, @_job?.PickupLocationZip</p>
-                <p class="mb-0">Delivery: @_job?.DropLocationState, @_job?.DropLocationZip</p>
-            }
-        </div>
-    }
-</div>
+}
 
 @code {
     [Parameter] public int? InitialDriverId { get; set; }
@@ -111,7 +121,7 @@
             await LoadDispatcherAsync();
             await LoadDriverAsync();
             await LoadCompanyAsync(_driver);
-            await LoadJobAsync();
+            await LoadJobFirstRenderAsync();
 
             if (_dispatcher != null || _driver != null)
                 await SetupHubAsync();
@@ -132,7 +142,9 @@
 
         hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
         {
-            if (eventType is FleetEventType.DriversUpdated or FleetEventType.DriverStatusChanged or FleetEventType.JobsUpdated or FleetEventType.JobAssigned)
+            if (eventType is FleetEventType.DriversUpdated or FleetEventType.DriverStatusChanged or
+                FleetEventType.JobsUpdated or FleetEventType.JobAssigned
+                or FleetEventType.JobStatusChanged)
             {
                 await RefreshDriverJobAsync();
             }
@@ -162,38 +174,35 @@
             _company = null;
     }
 
-    private async Task LoadJobAsync()
+    private async Task LoadJobFirstRenderAsync()
     {
         if (InitialJob != null)
-        {
             _job = InitialJob;
-        }
         else if (InitialJobId.HasValue)
-        {
             _job = await JobService.GetSingleAsync(InitialJobId.Value);
-        }
         else
-        {
             _job = null;
-        }
     }
 
-    private async Task RefreshDriverJobAsync(List<JobDto>? allJobs = null)
+
+    private async Task RefreshDriverJobAsync()
     {
         isLoading = true;
-        if (_driver == null) return;
-        if (allJobs != null)
+        try
         {
-            _job = allJobs
-                .FirstOrDefault(j => j.DriverId == _driver.Id
-                                     && j.CurrentStatus is JobStatus.Assigned or JobStatus.Accepted);
-        }
+            if (_driver == null) return;
+            await LoadDriverAsync();
+            var allJobs = await JobService.GetAllAsync();
+            _job = allJobs.FirstOrDefault(j =>
+                j.DriverId == _driver.Id &&
+                j.CurrentStatus is not (JobStatus.Available or JobStatus.Expired or JobStatus.Completed));
 
-        if (_job == null && InitialJobId.HasValue)
-        {
-            _job = await JobService.GetSingleAsync(InitialJobId.Value);
         }
-        isLoading = false;
+        finally
+        {
+            isLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
         await InvokeAsync(StateHasChanged);
     }
 

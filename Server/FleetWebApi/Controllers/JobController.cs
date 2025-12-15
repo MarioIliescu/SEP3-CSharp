@@ -128,22 +128,24 @@ public class JobController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirst("Id")?.Value;
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
             var existingJob = await _jobService.GetSingleAsync(dto.Id);
             if (existingJob == null)
             {
                 return NotFound($"Job with ID {dto.Id} not found.");
             }
-            var userIdClaim = User.FindFirst("Id")?.Value;
 
-            if (!int.TryParse(userIdClaim, out var userId))
-                return Unauthorized();
+            if (existingJob.DispatcherId != userId &&  existingJob.DriverId != userId)
+            {
+                return StatusCode(403, "You are not allowed to update this job.");
+            }
 
-            if (existingJob.DispatcherId != userId)
-                return Forbid();
-            
             var updatedJob = new Job.Builder()
                 .SetId(dto.Id)
-                .SetDispatcherId(dto.DispatcherId)
+                .SetDispatcherId(userId)
                 .SetDriverId(dto.DriverId)
                 .SetTitle(dto.Title)
                 .SetDescription(dto.Description)
