@@ -215,7 +215,7 @@ else
     {
         try
         {
-            if (_job != null) _driver = await DriverService.GetSingleAsync(_job.DriverId);
+            if (_job != null && _job.DriverId != 0) _driver = await DriverService.GetSingleAsync(_job.DriverId);
         }
         catch (Exception ex)
         {

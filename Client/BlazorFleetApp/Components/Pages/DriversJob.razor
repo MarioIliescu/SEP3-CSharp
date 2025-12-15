@@ -14,7 +14,7 @@
 {
     <h1>Loading Data</h1>
 }
-else if (job != null)
+else if (job != null && job?.CurrentStatus is not (JobStatus.Expired or JobStatus.Completed))
     {
         <div class="container-fluid">
             <div class="row">

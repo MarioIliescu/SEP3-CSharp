@@ -209,7 +209,7 @@ public class Job
 
         public Builder SetStatus(JobStatus status)
         {
-            if (status == JobStatus.Expired)
+            if (status == JobStatus.Expired && _status != JobStatus.Completed)
             {
                 _status = JobStatus.Expired;
             }

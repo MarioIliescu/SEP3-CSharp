@@ -49,13 +49,13 @@ public static class ProtoUtils
             .SetTrailerType(ParseTrailerTypeProtoToTrailerType(proto.JobTrailerType))
             .SetTotalPrice(proto.TotalPrice)
             .SetCargoInfo(proto.CargoInfo)
+            .SetStatus(ParseJobStatusProtoToJobStatus(proto.CurrentJobStatus)) // important to be set before dates
             .SetPickupTime(proto.PickUpTime.ToDateTime())
             .SetDeliveryTime(proto.DeliveryTime.ToDateTime())
             .SetPickupState(proto.PickUpLocationState)
             .SetPickupZip(proto.PickUpLocationZipCode)
             .SetDropState(proto.DropLocationState)
             .SetDropZip(proto.DropLocationZipCode)
-            .SetStatus(ParseJobStatusProtoToJobStatus(proto.CurrentJobStatus))
             .Build();
     }
 

@@ -28,7 +28,7 @@ else
     @foreach (var driver in drivers)
     {
         var currentJob = jobs.FirstOrDefault(j => j.DriverId == driver.Id);
-        <DriverComponent InitialDriverId="driver.Id" InitialDispatcherId="id" InitialJob="currentJob">
+        <DriverComponent InitialDriverId="driver.Id" InitialDispatcherId="id" >
             <Component>
                 <RecruitComponent InitialDriver="driver" InitialDispatcherId="id"></RecruitComponent>
             </Component>
