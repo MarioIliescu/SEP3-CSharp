@@ -1,6 +1,8 @@
 ﻿using ApiContracts.Dtos.RecruitDriver;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Services.Dispatcher;
 using Services.RecruitDriver;
 
 namespace FleetWebApi.Controllers;
@@ -8,16 +10,26 @@ namespace FleetWebApi.Controllers;
 
 [ApiController]
 [Route("recruit-driver")]
-public class RecruitDriverController(IRecruitDriverService recruitDriverService)
+public class RecruitDriverController(IRecruitDriverService recruitDriverService, IDispatcherService dispatcherService)
     : ControllerBase
 {
     // POST recruit
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> RecruitDriver([FromBody] RecruitDriverDto dto)
     {
-        var driver = new Driver.Builder().SetId(dto.DriverId).Build();
-        var dispatcher = new Dispatcher.Builder().SetId(dto.DispatcherId).Build();
+        var userIdClaim = User.FindFirst("Id")?.Value;
 
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+        
+        var dispatcher = await dispatcherService.GetSingleAsync(dto.DispatcherId);
+
+        if (dispatcher.Id != userId)
+            return Forbid();
+        
+        var driver = new Driver.Builder().SetId(dto.DriverId).Build();
+        
         var created = await recruitDriverService.RecruitDriverAsync(driver, dispatcher);
 
         return Ok(created);
@@ -25,10 +37,20 @@ public class RecruitDriverController(IRecruitDriverService recruitDriverService)
     
     // DELETE fire driver
     [HttpDelete ("delete")]
+    [Authorize]
     public async Task<IActionResult> FireDriver([FromBody] RecruitDriverDto dto)
     {
+        var userIdClaim = User.FindFirst("Id")?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+        
+        var dispatcher = await dispatcherService.GetSingleAsync(dto.DispatcherId);
+
+        if (dispatcher.Id != userId)
+            return Forbid();
+        
         var driver = new Driver.Builder().SetId(dto.DriverId).Build();
-        var dispatcher = new Dispatcher.Builder().SetId(dto.DispatcherId).Build();
         
         await recruitDriverService.FireDriverAsync(driver, dispatcher);
 
@@ -37,8 +59,19 @@ public class RecruitDriverController(IRecruitDriverService recruitDriverService)
     
     // GET all drivers for dispatcher
     [HttpGet("dispatcher/{id:int}")]
+    [Authorize]
     public async Task<IActionResult> GetDriversForDispatcher(int id)
     {
+        var userIdClaim = User.FindFirst("Id")?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+        
+        var dispatcher = await dispatcherService.GetSingleAsync(id);
+
+        if (dispatcher.Id != userId)
+            return Forbid();
+        
         var drivers = recruitDriverService.GetDispatcherDriversListAsync(id);
         return Ok(drivers);
     }

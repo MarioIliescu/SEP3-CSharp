@@ -34,9 +34,7 @@ else
                 {
                     var currentJob = jobs.FirstOrDefault(j =>
                         j.DriverId == driver.Id &&
-                        j.CurrentStatus is not (JobStatus.Available or  JobStatus.Expired or  JobStatus.Completed));
-
-                    <!-- Each DriverComponent is clickable -->
+                        j.CurrentStatus is not (JobStatus.Available or JobStatus.Expired or JobStatus.Completed));
                     <DriverComponent InitialDriver="driver"
                                      InitialJob="currentJob"
                                      InitialDispatcherId="id"
@@ -108,16 +106,16 @@ else
 
         hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
         {
-                switch (eventType)
-                {
-                    case FleetEventType.DriverStatusChanged:
-                    case FleetEventType.DriversUpdated:
-                    case FleetEventType.JobsUpdated:
-                    case FleetEventType.JobAssigned:
-                    case FleetEventType.JobStatusChanged:
-                        await RefreshDriversAndJobsAsync();
-                        break;
-                }
+            if (eventType is
+                FleetEventType.JobsUpdated
+                or FleetEventType.JobStatusChanged
+                or FleetEventType.JobAssigned
+                or FleetEventType.DriversUpdated
+                or FleetEventType.DriverStatusChanged
+               )
+            {
+                await RefreshDriversAndJobsAsync();
+            }
         });
 
         await hubConnection.StartAsync();
@@ -160,12 +158,14 @@ else
         var allJobs = await JobService.GetAllAsync();
         jobs = allJobs.Where(j => j.DispatcherId == id).ToList();
         unassignedJobs = jobs.Where(j => j.CurrentStatus == JobStatus.Available).ToList();
+        //TODO fix this later, in another life maybe
+        await InvokeAsync(StateHasChanged);
         isLoading = false;
         await InvokeAsync(StateHasChanged);
     }
-    private void HandleDriverSelected(DriverDto driver)
+    private async Task HandleDriverSelected(DriverDto driver)
     {
         selectedDriver = driver;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 }

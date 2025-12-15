@@ -1,6 +1,7 @@
 ﻿using ApiContracts.Dtos.Dispatcher;
 using ApiContracts.Enums;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Dispatcher;
 using Services.SecurityUtils;
@@ -45,13 +46,24 @@ public class DispatcherController : ControllerBase
         }
     }
     [HttpPut]
+    [Authorize]
     public async Task<IActionResult> UpdateDispatcherAsync(
         [FromBody] DispatcherDto dto)
     {
+        var userIdClaim = User.FindFirst("Id")?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+        
+        var entity = await _dispatcherService.GetSingleAsync(dto.Id);
+
+        if (entity.Id != userId)
+            return Forbid();
+        
         try
         {
             var dispatcher = new Dispatcher.Builder()
-                .SetId(dto.Id)
+                .SetId(userId)
                 .SetFirstName(dto.FirstName)
                 .SetLastName(dto.LastName)
                 .SetEmail(dto.Email)
@@ -92,8 +104,19 @@ public class DispatcherController : ControllerBase
     }
     
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<ActionResult> DeleteDispatcher(int id)
     {
+        var userIdClaim = User.FindFirst("Id")?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+        
+        var entity = await _dispatcherService.GetSingleAsync(id);
+
+        if (entity.Id != userId)
+            return Forbid();
+        
         Dispatcher? dispatcher = await _dispatcherService.GetSingleAsync(id);
         if (dispatcher == null)
         {

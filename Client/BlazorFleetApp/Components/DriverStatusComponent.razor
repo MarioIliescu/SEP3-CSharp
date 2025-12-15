@@ -77,12 +77,11 @@ else
         {
             return InvokeAsync(async () =>
             {
-                switch (eventType)
+                if (eventType is FleetEventType.DriverStatusChanged
+                    or FleetEventType.DriversUpdated
+                   )
                 {
-                    case FleetEventType.DriverStatusChanged:
-                    case FleetEventType.DriversUpdated:
-                        await RefreshDriverAsync();
-                        break;
+                    await RefreshDriverAsync();
                 }
             });
         });
@@ -178,11 +177,31 @@ else
     }
 
 
+    private bool _disposed;
+
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection is not null)
+        if (_disposed)
+            return;
+
+        _disposed = true;
+
+        if (hubConnection is null)
+            return;
+
+        try
         {
+            await hubConnection.StopAsync();
             await hubConnection.DisposeAsync();
         }
+        catch (ObjectDisposedException)
+        {
+            // safe to ignore
+        }
+        catch (InvalidOperationException)
+        {
+            // hub already stopped / disposing
+        }
     }
+
 }

@@ -10,11 +10,12 @@
 @inject NavigationManager NavMgr
 @implements IAsyncDisposable 
 @attribute [Authorize]
-@if (isLoading)
+@if (isLoading || job == null || job?.CurrentStatus is
+         (JobStatus.Available or JobStatus.Expired or JobStatus.Completed))
 {
-    <h1>Loading Data</h1>
+    <h1>No job available, wait for your dispatcher</h1>
 }
-else if (job != null && job?.CurrentStatus is not (JobStatus.Expired or JobStatus.Completed))
+else
     {
         <div class="container-fluid">
             <div class="row">
@@ -28,10 +29,6 @@ else if (job != null && job?.CurrentStatus is not (JobStatus.Expired or JobStatu
                 </div>
             </div>
         </div>
-    }
-    else
-    {
-        <h1>No job available, wait for your dispatcher</h1>
     }
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
@@ -62,10 +59,11 @@ else if (job != null && job?.CurrentStatus is not (JobStatus.Expired or JobStatu
         try
         {
             var allJobs = await JobService.GetAllAsync();
-
             job = allJobs.FirstOrDefault(j =>
                 j.DriverId == id &&
-                j.CurrentStatus is JobStatus.Ongoing or JobStatus.Assigned or JobStatus.Accepted or JobStatus.Loading or JobStatus.Unloading);
+                j.CurrentStatus != JobStatus.Completed &&
+                j.CurrentStatus != JobStatus.Available &&
+                j.CurrentStatus != JobStatus.Expired);
 
             message = "";
         }
@@ -84,12 +82,13 @@ else if (job != null && job?.CurrentStatus is not (JobStatus.Expired or JobStatu
 
         hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
         {
-            switch (eventType)
+            if (eventType is
+                FleetEventType.JobsUpdated
+                or FleetEventType.JobStatusChanged
+                or FleetEventType.JobAssigned
+               )
             {
-                case FleetEventType.JobsUpdated:
-                case FleetEventType.JobAssigned:
-                    await RefreshJobAsync();
-                    break;
+                await RefreshJobAsync();
             }
         });
 
@@ -105,6 +104,10 @@ else if (job != null && job?.CurrentStatus is not (JobStatus.Expired or JobStatu
     {
         isLoading = true;
         await LoadJobAsync();
+        if (job?.CurrentStatus is JobStatus.Available or JobStatus.Completed or JobStatus.Expired)
+        {
+            job = null;
+        }
         isLoading = false;
         await InvokeAsync(StateHasChanged);
     }

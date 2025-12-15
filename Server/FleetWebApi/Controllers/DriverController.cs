@@ -1,5 +1,6 @@
 ﻿using ApiContracts.Dtos.Driver;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Driver;
 using Services.SecurityUtils;
@@ -48,13 +49,23 @@ public class DriverController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async Task<IActionResult> UpdateDriverAsync(
         [FromBody] DriverDto dto)
     {
+        var userIdClaim = User.FindFirst("Id")?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+        
+        var entity = await _driverService.GetSingleAsync(dto.Id);
+
+        if (entity.Id != userId)
+            return Forbid();
         try
         {
             var driver = new Driver.Builder()
-                .SetId(dto.Id)
+                .SetId(userId)
                 .SetFirstName(dto.FirstName)
                 .SetLastName(dto.LastName)
                 .SetEmail(dto.Email)
@@ -107,14 +118,20 @@ public class DriverController : ControllerBase
     }
     
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<ActionResult> DeleteDriver(int id)
     {
+        var userIdClaim = User.FindFirst("Id")?.Value;
+
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
         Driver? driver = await _driverService.GetSingleAsync(id);
         if (driver == null)
         {
             return NotFound($"Driver with ID {id} not found.");
         }
-
+        if (driver.Id != userId)
+            return Forbid();
         await _driverService.DeleteAsync(id);
         return NoContent();
     }

@@ -194,12 +194,13 @@
 
         hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
         {
-            switch (eventType)
+            if (eventType is
+                FleetEventType.JobsUpdated
+                or FleetEventType.JobStatusChanged
+                or FleetEventType.JobAssigned
+               )
             {
-                case FleetEventType.JobsUpdated:
-                case FleetEventType.JobAssigned:
-                    await RefreshJobsAsync();
-                    break;
+                await RefreshJobsAsync();
             }
         });
 
