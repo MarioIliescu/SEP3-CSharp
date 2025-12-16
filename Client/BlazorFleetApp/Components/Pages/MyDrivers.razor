@@ -22,7 +22,7 @@
 }
 else if (drivers == null || !drivers.Any())
 {
-    <p>No drivers available.</p>
+    <h1>No drivers available.</h1>
 }
 else
 {
@@ -99,6 +99,7 @@ else
 
         isLoading = false;
     }
+
     private async Task SetupHubAsync()
     {
         hubConnection = new HubConnectionBuilder()
@@ -153,6 +154,7 @@ else
         jobs = allJobs.Where(j => j.DispatcherId == id).ToList();
         unassignedJobs = jobs.Where(j => j.CurrentStatus == JobStatus.Available).ToList();
     }
+
     public async ValueTask DisposeAsync()
     {
         if (hubConnection != null)
@@ -174,6 +176,7 @@ else
         isLoading = false;
         await InvokeAsync(StateHasChanged);
     }
+
     private async Task HandleDriverSelected(DriverDto driver)
     {
         selectedDriver = driver;

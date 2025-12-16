@@ -1,0 +1,15 @@
+﻿@font-face {
+    font-family: 'LemonMilk';
+    src: url('fonts/LEMONMILK-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+h1
+{
+    position: absolute;
+    width: 100vw;
+    text-align: center;
+    font-family: 'LemonMilk', sans-serif;
+    top: 50%;
+}
