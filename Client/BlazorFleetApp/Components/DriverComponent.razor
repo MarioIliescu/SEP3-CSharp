@@ -38,7 +38,6 @@ else
                     {
                         <div class="driver-status">
                             <DriverStatusComponent
-                                @key="_driver?.Id"
                                 InitialDriverId="@_driver?.Id" />
                         </div>
                     }
@@ -141,6 +140,11 @@ else
 
     private async Task SetupHubAsync()
     {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"), options =>
             {
@@ -154,24 +158,18 @@ else
             .WithAutomaticReconnect()
             .Build();
 
-
         hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
         {
-            if (eventType is
-                FleetEventType.JobsUpdated or FleetEventType.JobAssigned
-                or FleetEventType.JobStatusChanged or FleetEventType.DriversUpdated)
+            if (eventType is FleetEventType.DriverStatusChanged or FleetEventType.DriversUpdated)
+            {
+                await LoadDriverStatusRefresh();
+            }
+
+            if (eventType is FleetEventType.JobAssigned or FleetEventType.JobsUpdated or FleetEventType.JobStatusChanged)
             {
                 await RefreshDriverJobAsync();
-                await LoadDriverAsync();
-                await InvokeAsync(StateHasChanged);
             }
-
-            if (eventType is FleetEventType.DriverStatusChanged )
-            {
-
-                await LoadDriverStatusRefresh();
-                await InvokeAsync(StateHasChanged);
-            }
+            await InvokeAsync(StateHasChanged);
         });
 
         await hubConnection.StartAsync();
@@ -182,6 +180,7 @@ else
         if (_driver?.Id != null)
             await hubConnection.InvokeAsync("JoinGroup", _driver.Id.ToString());
     }
+
 
 
     private async Task LoadDriverAsync()
@@ -203,8 +202,13 @@ else
         if (_driver != null)
         {
             _driver = await DriverService.GetSingleAsync(_driver.Id);
+            if (_driver != null)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
+
 
     private async Task LoadCompanyAsync(DriverDto? driver)
     {
