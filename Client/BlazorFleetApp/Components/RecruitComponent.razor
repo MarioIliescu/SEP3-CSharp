@@ -4,14 +4,14 @@
 @using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Hubs
 @using BlazorFleetApp.Services.RecruitDriver
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
 @inject IDriverService DriverService
 @inject IDispatcherService DispatcherService
 @inject IRecruitService RecruitService
-@inject NavigationManager NavMgr
-@implements IAsyncDisposable
+@inject FleetHubClient FleetHub
 @attribute [Authorize]
 <div class="container-fluid">
     <div class="row">
@@ -30,7 +30,6 @@
     [Parameter] public int? InitialDispatcherId { get; set; }
     [Parameter] public DriverDto? InitialDriver { get; set; }
     [Parameter] public DispatcherDto? InitialDispatcher { get; set; }
-    private HubConnection? hubConnection;
     private DriverDto? _driver;
     private DispatcherDto? _dispatcherDto;
     private string _errorMessage = "";
@@ -39,29 +38,13 @@
     {
         await LoadDriverAsync();
         await LoadDispatcherAsync();
-        await SetupHubAsync();
-    }
-    private async Task SetupHubAsync()
-    {
 
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
-            .WithAutomaticReconnect()
-            .Build();
+        await FleetHub.StartAsync();
 
-        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
-        {
-            if (eventType == FleetEventType.DriversUpdated)
-            {
-                await LoadDriverAsync();
-                StateHasChanged();
-            }
-        });
+        if (InitialDispatcherId.HasValue)
+            await FleetHub.JoinGroupAsync(InitialDispatcherId.Value.ToString());
 
-        await hubConnection.StartAsync();
-
-        // Join the dispatcher-specific group
-        await hubConnection.InvokeAsync("JoinGroup", InitialDispatcherId.ToString());
+        FleetHub.OnFleetEvent += HandleFleetEvent;
     }
     private async Task LoadDriverAsync()
     {
@@ -79,36 +62,40 @@
     {
         try
         {
-            RecruitDriverDto? dto = null;
-            if (_dispatcherDto != null && _driver != null)
-            {
-                dto = new RecruitDriverDto(_driver.Id, _dispatcherDto.Id);
-            }
-
-            if (dto != null)
-            {
-                await RecruitService.RecruitDriver(dto);
-                _errorMessage = "";
-                if (hubConnection != null)
-                    await hubConnection.InvokeAsync("NotifyEvent", FleetEventType.DriversUpdated);
-            }
-            else
+            if (_dispatcherDto == null || _driver == null)
             {
                 _errorMessage = "Driver could not be found, try again later";
+                return;
             }
+
+            var dto = new RecruitDriverDto(_driver.Id, _dispatcherDto.Id);
+            await RecruitService.RecruitDriver(dto);
+
+            _errorMessage = "";
+
+            await FleetHub.NotifyGroupAsync(
+                _dispatcherDto.Id.ToString(),
+                FleetEventType.DriversUpdated);
         }
         catch (Exception ex)
         {
             _errorMessage = ex.Message;
         }
     }
-
-    public async ValueTask DisposeAsync()
+    private async Task HandleFleetEvent(FleetEventType eventType)
     {
-        if (hubConnection != null)
+        if (eventType == FleetEventType.DriversUpdated)
         {
-            await hubConnection.InvokeAsync("LeaveGroup", InitialDispatcherId.ToString());
-            await hubConnection.DisposeAsync();
+            await LoadDriverAsync();
+            await InvokeAsync(StateHasChanged);
         }
     }
+    public async ValueTask DisposeAsync()
+    {
+        FleetHub.OnFleetEvent -= HandleFleetEvent;
+
+        if (InitialDispatcherId.HasValue)
+            await FleetHub.LeaveGroupAsync(InitialDispatcherId.Value.ToString());
+    }
+
 }

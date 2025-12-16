@@ -6,10 +6,10 @@
 @using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Hubs
 @using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.SignalR.Client
-@inject NavigationManager NavMgr
+@inject FleetHubClient FleetHub
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IDispatcherService DispatcherService
 @inject IJobService JobService
@@ -84,7 +84,6 @@ else
     [Parameter] public EventCallback<JobDto?> OnExtraJobColumnClicked { get; set; }
     private bool showExtraColumn = false;
     private bool isLoading = true;
-    private HubConnection? hubConnection;
     DispatcherDto? _dispatcher;
     DriverDto? _driver;
     CompanyDto? _company;
@@ -111,36 +110,17 @@ else
         await LoadJobAsync();
         await LoadDispatcherAsync();
         await LoadDriverAsync();
-        // Initialize hub connection
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"), options =>
-            {
-                options.AccessTokenProvider = async () =>
-                {
-                    var authState = await State;
-                    var user = authState.User;
-                    return user?.Claims.FirstOrDefault(c => c.Type == "access_token")?.Value;
-                };
-            })
-            .WithAutomaticReconnect()
-            .Build();
+        if (_job == null)
+            return;
 
-        // Subscribe to events
-        hubConnection.On<FleetEventType>("FleetEvent", (eventType) =>
-        {
-            return InvokeAsync(async () =>
-            {
-                if (eventType is
-                    FleetEventType.JobsUpdated
-                    or FleetEventType.JobStatusChanged
-                    or FleetEventType.JobAssigned
-                   )
-                {
-                    await RefreshJobAsync();
-                }
-            });
-        });
-        await hubConnection.StartAsync();
+        await FleetHub.StartAsync();
+
+        // Join job-specific group
+        await FleetHub.JoinGroupAsync(_job.Id.ToString());
+
+        FleetHub.OnFleetEvent += HandleFleetEvent;
+
+        isLoading = false;
         isLoading = false;
     }
     private async Task LoadFromClaims()
@@ -181,8 +161,10 @@ else
     }
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection != null)
-            await hubConnection.DisposeAsync();
+        FleetHub.OnFleetEvent -= HandleFleetEvent;
+
+        if (_job != null)
+            await FleetHub.LeaveGroupAsync(_job.Id.ToString());
     }
     private async Task LoadDispatcherAsync()
     {
@@ -203,4 +185,14 @@ else
             // ignored
         }
     }
+    private async Task HandleFleetEvent(FleetEventType eventType)
+    {
+        if (eventType is FleetEventType.JobsUpdated
+            or FleetEventType.JobStatusChanged
+            or FleetEventType.JobAssigned)
+        {
+            await RefreshJobAsync();
+        }
+    }
+
 }

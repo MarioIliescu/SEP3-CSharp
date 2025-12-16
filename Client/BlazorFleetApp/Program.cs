@@ -1,6 +1,5 @@
 using BlazorFleetApp.Authentication;
 using BlazorFleetApp.Components;
-using BlazorFleetApp.Hubs;
 using BlazorFleetApp.Services;
 using BlazorFleetApp.Services.Auth;
 using BlazorFleetApp.Services.Dispatcher;
@@ -32,6 +31,7 @@ builder.Services.AddScoped<IDispatcherService, DispatcherServiceClient>();
 builder.Services.AddScoped<IJobService, JobServiceClient>();
 builder.Services.AddScoped<IRecruitService, RecruitService>();
 builder.Services.AddScoped<IAuthService, JwtAuthService>();
+builder.Services.AddScoped<FleetHubClient>();
 builder.Services.AddSignalR();
 
 builder.Services.AddResponseCompression(opts =>

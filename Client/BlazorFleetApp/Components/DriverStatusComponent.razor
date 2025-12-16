@@ -1,22 +1,23 @@
 @using ApiContracts.Dtos.Driver
-@implements IAsyncDisposable
-@inject NavigationManager NavMgr
-@using Microsoft.AspNetCore.Components.Authorization
 @using ApiContracts.Enums
-@inject IDriverService DriverService
-@inject AuthenticationStateProvider AuthStateProvider
 @using BlazorFleetApp.Services.Driver
 @using BlazorFleetApp.Services.Events
-@using BlazorFleetApp.Services.Job
-@using Microsoft.AspNetCore.SignalR.Client
+@using BlazorFleetApp.Services.Hubs
+@using Microsoft.AspNetCore.Components.Authorization
+@inject FleetHubClient FleetHub
+@inject IDriverService DriverService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JS
+
 @if (driver != null)
 {
     <div>
         @if (userRole == UserRole.Driver)
         {
             <select class="driver-status"
+                    disabled="@isUpdating"
                     style="background-image: url('@GetStatusImage()');"
-                    @bind="status">
+                    @bind="@statusValue">
                 @foreach (DriverStatus s in Enum.GetValues<DriverStatus>())
                 {
                     <option value="@s">@s</option>
@@ -37,90 +38,49 @@ else
     <div><p>Loading driver...</p></div>
 }
 
-
 @code {
-    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     [Parameter] public int? InitialDriverId { get; set; }
     [Parameter] public DriverDto? DriverDto { get; set; }
-    [Inject] private IJSRuntime JS { get; set; }
-    private HubConnection? hubConnection;
-    private int userId;
-    private UserRole? userRole;
+
     private DriverDto? driver;
-    private DriverStatus _status = DriverStatus.Off_duty;
-    private IJSObjectReference? module;
-    private DriverStatus status
+    private DriverStatus statusValueBacking;
+    private DriverStatus statusValue
     {
-        get => _status;
+        get => statusValueBacking;
         set
         {
-            if (driver == null || !_hubInitialized) return;
-            if (_status != value)
+            if (statusValueBacking != value)
             {
-                _status = value;
+                statusValueBacking = value;
                 _ = ChangeStatusAsync(value);
             }
         }
     }
 
+    private DriverStatus _status;
+    private UserRole? userRole;
+    private bool isUpdating;
+    private bool _disposed;
+    private bool _subscribed;
+    private bool _joinedGroup;
 
     protected override async Task OnInitializedAsync()
     {
+        await FleetHub.StartAsync();
         await LoadDriverAsync();
-    }
-    private bool _hubInitialized;
 
-    private async Task SetupHubAsync()
-    {
-        if (_hubInitialized)
-            return;
-
-        if (hubConnection != null)
+        if (driver != null && !_joinedGroup)
         {
-            try
-            {
-                await hubConnection.StopAsync();
-                await hubConnection.DisposeAsync();
-            }
-            catch { }
+            await FleetHub.JoinGroupAsync(driver.Id.ToString());
+            _joinedGroup = true;
         }
 
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
-            .WithAutomaticReconnect()
-            .Build();
-
-        hubConnection.On<FleetEventType>("FleetEvent", async eventType =>
+        if (!_subscribed)
         {
-            await InvokeAsync(async () =>
-            {
-                if (eventType == FleetEventType.DriverStatusChanged
-                    || eventType == FleetEventType.DriversUpdated)
-                {
-                    await RefreshDriverAsync();
-                    await InvokeAsync(StateHasChanged);
-                }
-            });
-        });
-
-        await hubConnection.StartAsync();
-
-        _hubInitialized = true;
-    }
-
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await SetupHubAsync();
-            if (driver != null)
-                await RefreshDriverAsync();
-            module = await JS.InvokeAsync<IJSObjectReference>("import", "./Components/DriverStatusComponent.razor.js");
+            FleetHub.OnFleetEvent += HandleFleetEvent;
+            _subscribed = true;
         }
     }
-
-
 
     private async Task LoadDriverAsync()
     {
@@ -144,89 +104,84 @@ else
             {
                 driver = await DriverService.GetSingleAsync(id);
                 if (driver != null)
+                {
                     _status = driver.Status;
+                    statusValue = driver.Status;
+                }
             }
         }
 
         await InvokeAsync(StateHasChanged);
     }
 
-
-    private string GetStatusImage()
-    {
-        if (driver == null)
-        {
-            return "/images/reddot.png";
-        }
-
-        return driver.Status switch
+    private string GetStatusImage() =>
+        driver?.Status switch
         {
             DriverStatus.Available => "/images/greendot.png",
             DriverStatus.Busy => "/images/yellowdot.png",
             _ => "/images/reddot.png"
         };
-    }
 
     private async Task ChangeStatusAsync(DriverStatus newStatus)
     {
-        if (driver == null || driver.Status == newStatus || !_hubInitialized)
+        if (driver == null || driver.Status == newStatus || isUpdating)
             return;
+
+        isUpdating = true;
         driver = driver with { Status = newStatus };
         await DriverService.UpdateAsync(driver);
 
-        if (hubConnection != null)
-            await hubConnection.InvokeAsync("NotifyEvent", FleetEventType.DriverStatusChanged);
+        if (driver != null)
+            await FleetHub.NotifyGroupAsync(driver.Id.ToString(), FleetEventType.DriverStatusChanged);
 
         _status = newStatus;
+        statusValue = newStatus;
 
-        if (JS != null)
-            await JS.InvokeVoidAsync("blurActiveElement");
-
+        isUpdating = false;
+        await JS.InvokeVoidAsync("blurActiveElement");
         await InvokeAsync(StateHasChanged);
     }
-
-
-
 
     private async Task RefreshDriverAsync()
     {
-        if (driver != null)
+        if (_disposed || driver == null) return;
+
+        var latest = await DriverService.GetSingleAsync(driver.Id);
+        if (latest != null)
         {
-            driver = await DriverService.GetSingleAsync(driver.Id);
-
-            if (driver != null)
-                _status = driver.Status;
+            driver = latest;
+            _status = driver.Status;
+            statusValue = driver.Status;
+            await InvokeAsync(StateHasChanged);
         }
-
-        await InvokeAsync(StateHasChanged);
     }
 
+    private async Task HandleFleetEvent(FleetEventType evt)
+    {
+        if (_disposed) return;
 
-    private bool _disposed;
+        if (driver != null &&
+            (evt == FleetEventType.DriverStatusChanged || evt == FleetEventType.DriversUpdated))
+        {
+            if (!isUpdating)
+                await RefreshDriverAsync();
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {
-        if (_disposed)
-            return;
-
         _disposed = true;
-        _hubInitialized = false;
 
-        if (hubConnection != null)
+        if (_subscribed)
         {
-            try
-            {
-                await hubConnection.StopAsync();
-                await hubConnection.DisposeAsync();
-            }
-            catch { }
+            FleetHub.OnFleetEvent -= HandleFleetEvent;
+            _subscribed = false;
         }
 
-        if (module != null)
+        if (_joinedGroup && driver != null)
         {
-            try { await module.DisposeAsync(); } catch { }
+            await FleetHub.LeaveGroupAsync(driver.Id.ToString());
+            _joinedGroup = false;
         }
     }
-
-
 }

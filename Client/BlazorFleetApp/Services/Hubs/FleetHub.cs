@@ -1,7 +1,7 @@
 using BlazorFleetApp.Services.Events;
 using Microsoft.AspNetCore.SignalR;
 
-namespace BlazorFleetApp.Hubs
+namespace BlazorFleetApp.Services.Hubs
 {
     public class FleetHub : Hub
     {

@@ -12,8 +12,9 @@
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Hubs
 @using Microsoft.AspNetCore.SignalR.Client
-
+@inject FleetHubClient FleetHub
 <h3 class="mb-3">Manage Jobs</h3>
 <div class="container-fluid">
 <div class="row">
@@ -148,7 +149,6 @@
     private bool isLoading = true;
     private int dispatcherId = 0;
     private string message = "";
-    private HubConnection? hubConnection;
     private string title = "";
     private string description = "";
     private int loadedMiles;
@@ -345,13 +345,7 @@
         };
 
         await JobService.UpdateAsync(update);
-        if (hubConnection != null)
-        {
-            await hubConnection.InvokeAsync(
-                "NotifyEvent",
-                FleetEventType.JobsUpdated
-            );
-        }
+        await FleetHub.NotifyGroupAsync(dispatcherId.ToString(),FleetEventType.JobsUpdated);
         message = "Changes saved!";
         await LoadJobsAsync();
     }
@@ -379,13 +373,7 @@
                 message = "Job deleted.";
 
                 selectedJob = null;
-                if (hubConnection != null)
-                {
-                    await hubConnection.InvokeAsync(
-                        "NotifyEvent",
-                        FleetEventType.JobsUpdated
-                    );
-                }
+                await FleetHub.NotifyGroupAsync(dispatcherId.ToString(),FleetEventType.JobsUpdated);
                 await LoadJobsAsync();
             }
             catch (Exception ex)
@@ -400,46 +388,49 @@
             await InvokeAsync(StateHasChanged);
         }
     }
-    private async Task RefreshJobsAsync()
-    {
-        await LoadJobsAsync();
-        await InvokeAsync(StateHasChanged);
-    }
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection != null)
-        {
-            if (dispatcherId != 0)
-                await hubConnection.InvokeAsync("LeaveGroup", dispatcherId.ToString());
-
-            await hubConnection.StopAsync();
-            await hubConnection.DisposeAsync();
-        }
+        FleetHub.OnFleetEvent -= HandleFleetEvent;
+        if (dispatcherId != 0)
+            await FleetHub.LeaveGroupAsync(dispatcherId.ToString());
     }
+
     private async Task SetupHubAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
-            .WithAutomaticReconnect()
-            .Build();
+        // Subscribe to fleet events
+        FleetHub.OnFleetEvent -= HandleFleetEvent;
+        FleetHub.OnFleetEvent += HandleFleetEvent;
 
-        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
-        {
-            switch (eventType)
-            {
-                case FleetEventType.JobsUpdated:
-                case FleetEventType.JobAssigned:
-                case FleetEventType.JobStatusChanged:
-                    await RefreshJobsAsync();
-                    break;
-            }
-        });
-
-        await hubConnection.StartAsync();
-
+        // Join dispatcher group
         if (dispatcherId != 0)
+            await FleetHub.JoinGroupAsync(dispatcherId.ToString());
+    }
+
+    private async Task HandleFleetEvent(FleetEventType evt)
+    {
+        switch (evt)
         {
-            await hubConnection.InvokeAsync("JoinGroup", dispatcherId.ToString());
+            case FleetEventType.JobsUpdated:
+            case FleetEventType.JobAssigned:
+            case FleetEventType.JobStatusChanged:
+                await LoadJobsAsync();
+                if (selectedJob != null)
+                {
+                    var updated = jobs.FirstOrDefault(j => j.Id == selectedJob.Id);
+                    if (updated != null)
+                    {
+                        SelectJob(updated);
+                    }
+                    else
+                    {
+                        selectedJob = null;
+                    }
+                }
+
+                await InvokeAsync(StateHasChanged);
+                break;
         }
     }
+
+
 }

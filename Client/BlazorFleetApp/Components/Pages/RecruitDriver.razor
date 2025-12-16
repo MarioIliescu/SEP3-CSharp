@@ -4,14 +4,13 @@
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Job
+@using BlazorFleetApp.Services.Hubs
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Services.RecruitDriver
-@using Microsoft.AspNetCore.SignalR.Client
-@inject NavigationManager NavMgr
-@implements IAsyncDisposable
 @inject IRecruitService RecruitService
 @inject IJobService JobService
+@inject FleetHubClient FleetHub
 @attribute [Authorize]
 
 @if (isLoading)
@@ -26,8 +25,9 @@ else
 {
     @foreach (var driver in drivers)
     {
-        var currentJob = jobs.FirstOrDefault(j => j.DriverId == driver.Id);
-        <DriverComponent InitialDriverId="driver.Id" InitialDispatcherId="id" >
+        var currentJob = jobs.FirstOrDefault(j => j.DriverId == driver.Id && j.CurrentStatus is not (JobStatus.Available or JobStatus.Expired));
+
+        <DriverComponent InitialDriverId="driver.Id" InitialDispatcherId="id">
             <Component>
                 <RecruitComponent InitialDriver="driver" InitialDispatcherId="id"></RecruitComponent>
             </Component>
@@ -37,72 +37,83 @@ else
 
 @code {
     private List<DriverDto>? drivers;
+    private List<JobDto> jobs = new();
     private bool isLoading;
-    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     private int id;
-    private HubConnection? hubConnection;
-    private List<JobDto> jobs = new List<JobDto>();
+    private bool _disposed;
+
+    [CascadingParameter] public Task<AuthenticationState> State { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        if (State != null)
-        {
-            var authState = await State;
-            var user = authState.User;
+        var authState = await State;
+        var user = authState.User;
 
-            if (user?.Identity?.IsAuthenticated ?? false)
-            {
-                id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
-            }
+        if (user?.Identity?.IsAuthenticated ?? false)
+        {
+            id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
         }
 
-        await LoadJobsAsync();
-        await LoadDriversAsync();
-        await SetupHubAsync();
-    }
-    private async Task SetupHubAsync()
-    {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
-            .WithAutomaticReconnect()
-            .Build();
+        await LoadAllDataAsync();
 
-        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
-        {
-            if (eventType == FleetEventType.DriversUpdated || eventType == FleetEventType.DriverStatusChanged)
-            {
-                await LoadDriversAsync();
-            }
-        });
-
-        await hubConnection.StartAsync();
+        // Start FleetHub and subscribe to events
+        await FleetHub.StartAsync();
+        FleetHub.OnFleetEvent -= HandleFleetEvent;
+        FleetHub.OnFleetEvent += HandleFleetEvent;
 
         if (id != 0)
-        {
-            await hubConnection.InvokeAsync("JoinGroup", id.ToString());
-        }
+            await FleetHub.JoinGroupAsync(id.ToString());
     }
+
+    private async Task LoadAllDataAsync()
+    {
+        await LoadJobsAsync();
+        await LoadDriversAsync();
+    }
+
     private async Task LoadJobsAsync()
     {
         var allJobs = await JobService.GetAllAsync();
-        jobs = allJobs.Where(j => j.CurrentStatus != JobStatus.Available || j.CurrentStatus != JobStatus.Expired).ToList();
+
+        // Only jobs that are currently assigned to drivers
+        jobs = allJobs
+            .Where(j => j.CurrentStatus is not (JobStatus.Available or JobStatus.Expired))
+            .ToList();
+
+        if (!_disposed)
+            await InvokeAsync(StateHasChanged);
     }
+
     private async Task LoadDriversAsync()
     {
         isLoading = true;
         await InvokeAsync(StateHasChanged);
+
         drivers = await RecruitService.GetDrivers();
 
         isLoading = false;
-        await InvokeAsync(StateHasChanged);
+        if (!_disposed)
+            await InvokeAsync(StateHasChanged);
     }
+
+    private async Task HandleFleetEvent(FleetEventType evt)
+    {
+        if (_disposed) return;
+
+        if (evt is FleetEventType.DriversUpdated or FleetEventType.DriverStatusChanged)
+            await LoadDriversAsync();
+
+        if (evt is FleetEventType.JobsUpdated or FleetEventType.JobAssigned or FleetEventType.JobStatusChanged)
+            await LoadJobsAsync();
+    }
+
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection != null && id != 0)
-        {
-            await hubConnection.InvokeAsync("LeaveGroup", id.ToString());
-            await hubConnection.StopAsync();
-            await hubConnection.DisposeAsync();
-        }
+        _disposed = true;
+
+        FleetHub.OnFleetEvent -= HandleFleetEvent;
+
+        if (id != 0)
+            await FleetHub.LeaveGroupAsync(id.ToString());
     }
 }
