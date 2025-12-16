@@ -49,7 +49,7 @@ else
     private DriverDto? driver;
     private DriverStatus _status = DriverStatus.Off_duty;
     private IJSObjectReference? module;
-
+    private bool _isUpdatingStatus;
     private DriverStatus status
     {
         get => _status;
@@ -86,6 +86,13 @@ else
             });
         });
         await hubConnection.StartAsync();
+        if (driver != null)
+        {
+            await hubConnection.InvokeAsync(
+                "JoinGroup",
+                driver.Id.ToString()
+            );
+        };
     }
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -145,22 +152,29 @@ else
 
     private async Task ChangeStatusAsync(DriverStatus newStatus)
     {
-        if (driver == null) return;
-
-        driver = driver with { Status = newStatus };
-        await DriverService.UpdateAsync(driver);
-
-        if (hubConnection != null)
+        if (driver == null || _isUpdatingStatus) return;
+        _isUpdatingStatus = true;
+        try
         {
-            await hubConnection.InvokeAsync(
-                "NotifyEvent",
-                FleetEventType.DriverStatusChanged
-            );
-        }
+            driver = driver with { Status = newStatus };
+            await DriverService.UpdateAsync(driver);
 
-        _status = newStatus;
-        await JS.InvokeVoidAsync("blurActiveElement");
-        StateHasChanged();
+            if (hubConnection != null)
+            {
+                await hubConnection.InvokeAsync(
+                    "NotifyEvent",
+                    FleetEventType.DriverStatusChanged
+                );
+            }
+
+            _status = newStatus;
+            await JS.InvokeVoidAsync("blurActiveElement");
+        }
+        finally
+        {
+            _isUpdatingStatus = false;
+        }
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task RefreshDriverAsync()
@@ -188,7 +202,13 @@ else
 
         if (hubConnection is null)
             return;
-
+        if (driver != null)
+        {
+            await hubConnection.InvokeAsync(
+                "LeaveGroup",
+                driver.Id.ToString()
+            );
+        }
         try
         {
             await hubConnection.StopAsync();

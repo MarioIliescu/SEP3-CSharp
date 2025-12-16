@@ -75,6 +75,10 @@ public sealed class CompanyTests
     // Validation – McNumber
     // ---------------------------
 
+    //----------------------------
+    // Unhappy path
+    //----------------------------
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

@@ -38,7 +38,8 @@ else
                     {
                         <div class="driver-status">
                             <DriverStatusComponent
-                                InitialDriverId="@_driver?.Id"></DriverStatusComponent>
+                                @key="_driver?.Id"
+                                InitialDriverId="@_driver?.Id" />
                         </div>
                     }
                 </div>
@@ -156,11 +157,20 @@ else
 
         hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
         {
-            if (eventType is FleetEventType.DriversUpdated or FleetEventType.DriverStatusChanged or
+            if (eventType is
                 FleetEventType.JobsUpdated or FleetEventType.JobAssigned
-                or FleetEventType.JobStatusChanged)
+                or FleetEventType.JobStatusChanged or FleetEventType.DriversUpdated)
             {
                 await RefreshDriverJobAsync();
+                await LoadDriverAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+
+            if (eventType is FleetEventType.DriverStatusChanged )
+            {
+
+                await LoadDriverStatusRefresh();
+                await InvokeAsync(StateHasChanged);
             }
         });
 
@@ -176,12 +186,24 @@ else
 
     private async Task LoadDriverAsync()
     {
-        if (_driver != null && (_driver.Id == InitialDriverId || _driver.Id == InitialDriver?.Id))
+        if (InitialDriver != null)
         {
+            _driver = InitialDriver;
             return;
         }
-        if (InitialDriver != null) _driver = InitialDriver;
-        else if (InitialDriverId.HasValue) _driver = await DriverService.GetSingleAsync((int)InitialDriverId);
+
+        if (InitialDriverId.HasValue)
+        {
+            _driver = await DriverService.GetSingleAsync(InitialDriverId.Value);
+        }
+    }
+
+    private async Task LoadDriverStatusRefresh()
+    {
+        if (_driver != null)
+        {
+            _driver = await DriverService.GetSingleAsync(_driver.Id);
+        }
     }
 
     private async Task LoadCompanyAsync(DriverDto? driver)
@@ -216,13 +238,10 @@ else
     private async Task RefreshDriverJobAsync()
     {
         if (_driver == null) return;
-
-        // Check if we have a cached job already
         if (_job != null && _job.CurrentStatus is not JobStatus.Expired and not JobStatus.Completed)
         {
             return;
         }
-
         isLoading = true;
         try
         {
