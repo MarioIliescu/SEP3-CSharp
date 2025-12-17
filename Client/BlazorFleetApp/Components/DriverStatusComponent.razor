@@ -4,6 +4,7 @@
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Hubs
 @using Microsoft.AspNetCore.Components.Authorization
+@implements IAsyncDisposable
 @inject FleetHubClient FleetHub
 @inject IDriverService DriverService
 @inject AuthenticationStateProvider AuthStateProvider

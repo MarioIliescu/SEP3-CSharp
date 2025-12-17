@@ -1,14 +1,13 @@
 ﻿@page "/dispatcher-job-list"
 @using ApiContracts.Dtos.Job
 @using ApiContracts.Enums
-@using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Job
 @using BlazorFleetApp.Services.Hubs
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@implements IAsyncDisposable
 @inject IJobService JobService
-@inject IDispatcherService DispatcherService
 @inject FleetHubClient FleetHub
 
 @attribute [Authorize]

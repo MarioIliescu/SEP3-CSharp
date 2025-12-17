@@ -7,13 +7,11 @@
 @inject IJobService JobService
 @inject IDispatcherService DispatcherService
 @implements IAsyncDisposable
-@inject NavigationManager NavMgr
 @using ApiContracts.Dtos.Job
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Hubs
-@using Microsoft.AspNetCore.SignalR.Client
 @inject FleetHubClient FleetHub
 <h3 class="mb-3">Manage Jobs</h3>
 <div class="container-fluid">

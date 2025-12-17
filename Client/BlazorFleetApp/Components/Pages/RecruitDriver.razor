@@ -1,15 +1,12 @@
 ﻿@page "/recruit-driver"
 @using ApiContracts.Dtos.Driver
-@using ApiContracts.Dtos.Job
-@using ApiContracts.Enums
 @using BlazorFleetApp.Services.Events
-@using BlazorFleetApp.Services.Job
 @using BlazorFleetApp.Services.Hubs
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using Services.RecruitDriver
 @inject IRecruitService RecruitService
-@inject IJobService JobService
+@implements IAsyncDisposable
 @inject FleetHubClient FleetHub
 @attribute [Authorize]
 
@@ -25,8 +22,6 @@ else
 {
     @foreach (var driver in drivers)
     {
-        var currentJob = jobs.FirstOrDefault(j => j.DriverId == driver.Id && j.CurrentStatus is not (JobStatus.Available or JobStatus.Expired));
-
         <DriverComponent InitialDriverId="driver.Id" InitialDispatcherId="id">
             <Component>
                 <RecruitComponent InitialDriver="driver" InitialDispatcherId="id"></RecruitComponent>
@@ -37,7 +32,6 @@ else
 
 @code {
     private List<DriverDto>? drivers;
-    private List<JobDto> jobs = new();
     private bool isLoading;
     private int id;
     private bool _disposed;
@@ -54,7 +48,7 @@ else
             id = int.Parse(user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value ?? "0");
         }
 
-        await LoadAllDataAsync();
+        await LoadDriversAsync();
 
         // Start FleetHub and subscribe to events
         await FleetHub.StartAsync();
@@ -64,25 +58,8 @@ else
         if (id != 0)
             await FleetHub.JoinGroupAsync(id.ToString());
     }
-
-    private async Task LoadAllDataAsync()
-    {
-        await LoadJobsAsync();
-        await LoadDriversAsync();
-    }
-
-    private async Task LoadJobsAsync()
-    {
-        var allJobs = await JobService.GetAllAsync();
-
-        // Only jobs that are currently assigned to drivers
-        jobs = allJobs
-            .Where(j => j.CurrentStatus is not (JobStatus.Available or JobStatus.Expired))
-            .ToList();
-
-        if (!_disposed)
-            await InvokeAsync(StateHasChanged);
-    }
+    
+    
 
     private async Task LoadDriversAsync()
     {
@@ -102,9 +79,6 @@ else
 
         if (evt is FleetEventType.DriversUpdated or FleetEventType.DriverStatusChanged)
             await LoadDriversAsync();
-
-        if (evt is FleetEventType.JobsUpdated or FleetEventType.JobAssigned or FleetEventType.JobStatusChanged)
-            await LoadJobsAsync();
     }
 
     public async ValueTask DisposeAsync()

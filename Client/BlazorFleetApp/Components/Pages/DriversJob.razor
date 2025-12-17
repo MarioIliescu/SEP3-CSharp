@@ -2,12 +2,12 @@
 @using ApiContracts.Dtos.Job
 @using ApiContracts.Enums
 @using BlazorFleetApp.Services.Events
+@using BlazorFleetApp.Services.Hubs
 @using BlazorFleetApp.Services.Job
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.SignalR.Client
+@inject FleetHubClient FleetHub
 @inject IJobService JobService
-@inject NavigationManager NavMgr
 @implements IAsyncDisposable 
 @attribute [Authorize]
 @if (isLoading || job == null || job?.CurrentStatus is
@@ -33,7 +33,6 @@ else
 @code {
     [CascadingParameter] public Task<AuthenticationState> State { get; set; }
     private int id;
-    private HubConnection? hubConnection;
     private JobDto? job;
     private string message = "";
     private bool isLoading = true;
@@ -51,7 +50,7 @@ else
         }
 
         await LoadJobAsync();
-        await SetupHubAsync();
+        await SetupFleetHubAsync();
         isLoading = false;
     }
     private async Task LoadJobAsync()
@@ -73,53 +72,48 @@ else
         }
     }
     
-    private async Task SetupHubAsync()
+    private async Task SetupFleetHubAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
-            .WithAutomaticReconnect()
-            .Build();
-
-        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
-        {
-            if (eventType is
-                FleetEventType.JobsUpdated
-                or FleetEventType.JobStatusChanged
-                or FleetEventType.JobAssigned
-               )
-            {
-                await RefreshJobAsync();
-            }
-        });
-
-        await hubConnection.StartAsync();
+        FleetHub.OnFleetEvent -= HandleFleetEvent;
+        FleetHub.OnFleetEvent += HandleFleetEvent;
 
         if (id != 0)
-        {
-            await hubConnection.InvokeAsync("JoinGroup", id.ToString());
-        }
+            await FleetHub.JoinGroupAsync(id.ToString());
     }
     
     private async Task RefreshJobAsync()
     {
         isLoading = true;
+
         await LoadJobAsync();
-        if (job?.CurrentStatus is JobStatus.Available or JobStatus.Completed or JobStatus.Expired)
+
+        if (job?.CurrentStatus is JobStatus.Available
+            or JobStatus.Completed
+            or JobStatus.Expired)
         {
             job = null;
         }
+
         isLoading = false;
         await InvokeAsync(StateHasChanged);
     }
+    private async Task HandleFleetEvent(FleetEventType evt)
+    {
+        switch (evt)
+        {
+            case FleetEventType.JobsUpdated:
+            case FleetEventType.JobAssigned:
+            case FleetEventType.JobStatusChanged:
+                await RefreshJobAsync();
+                break;
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection != null)
-        {
-            if (id != 0)
-                await hubConnection.InvokeAsync("LeaveGroup", id.ToString());
+        FleetHub.OnFleetEvent -= HandleFleetEvent;
 
-            await hubConnection.StopAsync();
-            await hubConnection.DisposeAsync();
-        }
+        if (id != 0)
+            await FleetHub.LeaveGroupAsync(id.ToString());
     }
 }
