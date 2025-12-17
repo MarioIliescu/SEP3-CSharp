@@ -49,23 +49,13 @@ public class DriverController : ControllerBase
     }
 
     [HttpPut]
-    [Authorize]
     public async Task<IActionResult> UpdateDriverAsync(
         [FromBody] DriverDto dto)
     {
-        var userIdClaim = User.FindFirst("Id")?.Value;
-
-        if (!int.TryParse(userIdClaim, out var userId))
-            return Unauthorized();
-        
-        var entity = await _driverService.GetSingleAsync(dto.Id);
-
-        if (entity.Id != userId)
-            return Forbid();
         try
         {
             var driver = new Driver.Builder()
-                .SetId(userId)
+                .SetId(dto.Id)
                 .SetFirstName(dto.FirstName)
                 .SetLastName(dto.LastName)
                 .SetEmail(dto.Email)

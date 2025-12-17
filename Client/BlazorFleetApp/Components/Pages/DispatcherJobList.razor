@@ -4,23 +4,18 @@
 @using BlazorFleetApp.Services.Dispatcher
 @using BlazorFleetApp.Services.Events
 @using BlazorFleetApp.Services.Job
+@using BlazorFleetApp.Services.Hubs
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.SignalR.Client
-@inject NavigationManager NavMgr
-@implements IAsyncDisposable
-
 @inject IJobService JobService
 @inject IDispatcherService DispatcherService
+@inject FleetHubClient FleetHub
 
 @attribute [Authorize]
-
-<h3 class="mb-3">Dispatcher Job List</h3>
 
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-
             @if (!string.IsNullOrWhiteSpace(message))
             {
                 <p class="text-danger">@message</p>
@@ -41,15 +36,9 @@
                     }
                 </ul>
             }
-
         </div>
+
         <div class="col-12">
-
-            @if (!string.IsNullOrWhiteSpace(message))
-            {
-                <p class="text-danger">@message</p>
-            }
-
             @if (completedJobs.Count == 0)
             {
                 <p>No completed jobs found.</p>
@@ -65,15 +54,9 @@
                     }
                 </ul>
             }
-
         </div>
+
         <div class="col-12">
-
-            @if (!string.IsNullOrWhiteSpace(message))
-            {
-                <p class="text-danger">@message</p>
-            }
-
             @if (expiredJobs.Count == 0)
             {
                 <p>No expired jobs found.</p>
@@ -89,7 +72,6 @@
                     }
                 </ul>
             }
-
         </div>
     </div>
 </div>
@@ -100,34 +82,46 @@
     private List<JobDto> jobs = new();
     private List<JobDto> expiredJobs = new();
     private List<JobDto> completedJobs = new();
-    private HubConnection? hubConnection;
 
     private int dispatcherId = 0;
     private string message = "";
+    private bool _disposed;
 
     protected override async Task OnInitializedAsync()
     {
-        if (State != null)
-        {
-            var authState = await State;
-            var user = authState.User;
+        var authState = await State;
+        var user = authState.User;
 
-            if (user.Identity?.IsAuthenticated ?? false)
-            {
-                dispatcherId = int.Parse(user.Claims.First(c => c.Type == "Id").Value);
-                await LoadJobsAsync();
-                await LoadExpiredJobsAsync();
-                await LoadCompletedJobsAsync();
-            }
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            dispatcherId = int.Parse(user.Claims.First(c => c.Type == "Id").Value);
+            await LoadAllJobsAsync();
+
+            // Start FleetHubClient
+            await FleetHub.StartAsync();
+
+            // Subscribe to fleet events
+            FleetHub.OnFleetEvent -= HandleFleetEvent;
+            FleetHub.OnFleetEvent += HandleFleetEvent;
+
+            if (dispatcherId != 0)
+                await FleetHub.JoinGroupAsync(dispatcherId.ToString());
         }
     }
 
-    private async Task LoadJobsAsync()
+    private async Task LoadAllJobsAsync()
+    {
+        await LoadActiveJobsAsync();
+        await LoadCompletedJobsAsync();
+        await LoadExpiredJobsAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadActiveJobsAsync()
     {
         try
         {
             var allJobs = await JobService.GetAllAsync();
-
             jobs = allJobs
                 .Where(j =>
                     j.DispatcherId == dispatcherId &&
@@ -143,41 +137,14 @@
         }
     }
 
-    private async Task LoadExpiredJobsAsync()
-    {
-        try
-        {
-            var allJobs = await JobService.GetAllAsync();
-
-            expiredJobs = allJobs
-                .Where(j =>
-                    j.DispatcherId == dispatcherId &&
-                    j.CurrentStatus == JobStatus.Expired
-                )
-                .ToList();
-
-            message = "";
-        }
-        catch (Exception ex)
-        {
-            message = "Error loading expired jobs: " + ex.Message;
-        }
-    }
-
     private async Task LoadCompletedJobsAsync()
     {
         try
         {
             var allJobs = await JobService.GetAllAsync();
-
             completedJobs = allJobs
-                .Where(j =>
-                    j.DispatcherId == dispatcherId &&
-                    j.CurrentStatus == JobStatus.Completed
-                )
+                .Where(j => j.DispatcherId == dispatcherId && j.CurrentStatus == JobStatus.Completed)
                 .ToList();
-
-            message = "";
         }
         catch (Exception ex)
         {
@@ -185,51 +152,37 @@
         }
     }
 
-    private async Task SetupHubAsync()
+    private async Task LoadExpiredJobsAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavMgr.ToAbsoluteUri("/fleethub"))
-            .WithAutomaticReconnect()
-            .Build();
-
-        hubConnection.On<FleetEventType>("FleetEvent", async (eventType) =>
+        try
         {
-            if (eventType is
-                FleetEventType.JobsUpdated
-                or FleetEventType.JobStatusChanged
-                or FleetEventType.JobAssigned
-               )
-            {
-                await RefreshJobsAsync();
-            }
-        });
-
-        await hubConnection.StartAsync();
-
-        if (dispatcherId != 0)
+            var allJobs = await JobService.GetAllAsync();
+            expiredJobs = allJobs
+                .Where(j => j.DispatcherId == dispatcherId && j.CurrentStatus == JobStatus.Expired)
+                .ToList();
+        }
+        catch (Exception ex)
         {
-            await hubConnection.InvokeAsync("JoinGroup", dispatcherId.ToString());
+            message = "Error loading expired jobs: " + ex.Message;
         }
     }
 
-    private async Task RefreshJobsAsync()
+    private async Task HandleFleetEvent(FleetEventType evt)
     {
-        await LoadJobsAsync();
-        await LoadExpiredJobsAsync();
-        await LoadCompletedJobsAsync();
-        await InvokeAsync(StateHasChanged);
+        if (_disposed) return;
+
+        if (evt is FleetEventType.JobsUpdated or FleetEventType.JobAssigned or FleetEventType.JobStatusChanged)
+        {
+            await LoadAllJobsAsync();
+        }
     }
+
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection != null)
-        {
-            if (dispatcherId != 0)
-                await hubConnection.InvokeAsync("LeaveGroup", dispatcherId.ToString());
+        _disposed = true;
+        FleetHub.OnFleetEvent -= HandleFleetEvent;
 
-            await hubConnection.StopAsync();
-            await hubConnection.DisposeAsync();
-        }
+        if (dispatcherId != 0)
+            await FleetHub.LeaveGroupAsync(dispatcherId.ToString());
     }
-
-
 }

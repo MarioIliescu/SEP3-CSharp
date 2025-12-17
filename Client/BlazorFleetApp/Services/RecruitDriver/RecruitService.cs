@@ -1,6 +1,5 @@
 using ApiContracts.Dtos.Driver;
 using ApiContracts.Dtos.RecruitDriver;
-using BlazorFleetApp.Hubs;
 using BlazorFleetApp.Services.Events;
 using Microsoft.AspNetCore.SignalR;
 

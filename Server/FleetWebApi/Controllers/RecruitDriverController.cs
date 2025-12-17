@@ -15,19 +15,10 @@ public class RecruitDriverController(IRecruitDriverService recruitDriverService,
 {
     // POST recruit
     [HttpPost]
-    [Authorize]
     public async Task<IActionResult> RecruitDriver([FromBody] RecruitDriverDto dto)
     {
-        var userIdClaim = User.FindFirst("Id")?.Value;
-
-        if (!int.TryParse(userIdClaim, out var userId))
-            return Unauthorized();
-        
         var dispatcher = await dispatcherService.GetSingleAsync(dto.DispatcherId);
 
-        if (dispatcher.Id != userId)
-            return Forbid();
-        
         var driver = new Driver.Builder().SetId(dto.DriverId).Build();
         
         var created = await recruitDriverService.RecruitDriverAsync(driver, dispatcher);
@@ -59,18 +50,10 @@ public class RecruitDriverController(IRecruitDriverService recruitDriverService,
     
     // GET all drivers for dispatcher
     [HttpGet("dispatcher/{id:int}")]
-    [Authorize]
     public async Task<IActionResult> GetDriversForDispatcher(int id)
     {
-        var userIdClaim = User.FindFirst("Id")?.Value;
 
-        if (!int.TryParse(userIdClaim, out var userId))
-            return Unauthorized();
-        
         var dispatcher = await dispatcherService.GetSingleAsync(id);
-
-        if (dispatcher.Id != userId)
-            return Forbid();
         
         var drivers = recruitDriverService.GetDispatcherDriversListAsync(id);
         return Ok(drivers);
